@@ -1,0 +1,13 @@
+Package: cdcatR
+Title: Congitive Diagnostic Computerized Adaptive Testing in R 
+Version: 0.9
+Date: 2019-3-4
+Authors@R: c(person(given = "Miguel A.",family = "Sorrel", role = c("aut", "cre"),email = "miguel.sorrel@uam.es"),person(given = "Francisco J.", family = "Abad", role = c("aut")))
+Author: Miguel A. Sorrel [aut, cre], Francisco J. Abad [aut]
+Maintainer: Miguel A. Sorrel <miguel.sorrel@uam.es>
+Description: This package holds functions for conducting CD-CAT applications.
+Depends: R (>= 3.4.0), GDINA (>= 2.2.0), ggplot2, cowplot
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.1.9000
