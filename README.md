@@ -16,4 +16,4 @@ Install the devtools package (if necessary), and install the package from the Gi
 #install.packages("devtools")
 devtools::install_github("miguel-sorrel/cdcatR")
 
-An stable version of cdcatR should be shortly available at CRAN.
+A stable version of cdcatR should be shortly available at CRAN.
