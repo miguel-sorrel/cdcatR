@@ -2,7 +2,7 @@
 
 ## How to cite the package
 
-Sorrel, M.A., and Abad, F.J. (2019). cdcatR: Cognitive Diagnostic Computerized Adaptive Testing in R. R package version 0.9.
+Sorrel, M.A., and Abad, F.J. (2019). cdcatR: Cognitive Diagnostic Computerized Adaptive Testing in R. R package version 0.9. Retrieved from https://github.com/miguel-sorrel/cdcatR.
 
 ## Features of the package
 * Conducting CD-CAT applications in R
