@@ -1,8 +1,8 @@
-# cdcatR: Congitive Diagnostic Computerized Adaptive Testing in R
+# cdcatR: Cognitive Diagnostic Computerized Adaptive Testing in R
 
 ## How to cite the package
 
-Sorrel, M.A., and Abad, F.J. (2019). cdcatR: Congitive Diagnostic Computerized Adaptive Testing in R. R package version 0.9.
+Sorrel, M.A., and Abad, F.J. (2019). cdcatR: Cognitive Diagnostic Computerized Adaptive Testing in R. R package version 0.9.
 
 ## Features of the package
 * Conducting CD-CAT applications in R
