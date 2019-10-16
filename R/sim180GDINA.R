@@ -12,4 +12,4 @@
 #'
 #'
 #'
-"sim180GDINA"
+"sim180DINA"

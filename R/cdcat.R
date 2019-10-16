@@ -4,9 +4,8 @@
 #' index (GDI; de la Torre & Chiu, 2016; Kaplan, de la Torre, & Barrada, 2016). The next item to be selected by the adaptive algorithm is
 #' the one with the highest GDI.
 #'
-#' @param GDINA.obj Calibrated item bank.
+#' @param GDINA.obj Calibrated item bank. An estimated model object of class GDINA
 #' @param dat Dataset to be analyzed (if is.null(dat) then dat <- GDINA.obj$options$dat) (i.e., post-hoc CD-CAT simulation).
-#' @param itemSelect Item selection rule: GDI, JSD, MPWKL, PWKL, random
 #' @param MAXJ Maximum number of items to be applied. Default is 20.
 #' @param FIXED.LENGTH Fixed CAT-legnth (TRUE) or fixed-precision (FALSE). Default is TRUE.
 #' @param att.prior Prior distribution for MAP/EAP estimates.
@@ -135,7 +134,6 @@
 #'
 cdcat <- function(GDINA.obj,
                   dat = NULL,
-                  itemSelect = "GDI",
                   MAXJ = 20,
                   FIXED.LENGTH = TRUE,
                   att.prior = NULL,
@@ -144,6 +142,13 @@ cdcat <- function(GDINA.obj,
                   i.print = 250, ...)
   {
 
+  GDI.M <- function(LC.prob, prior) {
+    GDI.est <- c(0)
+    for (jj in 1:nrow(LC.prob)) {
+      MPj <- sum(LC.prob[jj,]*prior)
+      GDI.est[jj] <- sum(prior*(LC.prob[jj,]-MPj)^2)    }
+    return(GDI.est)
+  }
 
   est <- GDINA.obj
   if(length(table(est$model)) == 1) {model <- names(table(est$model))} else {model <- "Combination"}
@@ -156,7 +161,6 @@ cdcat <- function(GDINA.obj,
 
   Q <- GDINA.obj$options$Q
   N <- nrow(X)
-  J <- nrow(Q)
   K <- ncol(Q)
   L <- 2^K
   pattern <- attributepattern(K)
@@ -167,26 +171,14 @@ cdcat <- function(GDINA.obj,
 
   out <- list()
 
-  if(itemSelect != "random") {
-
   for(i in 1:N) {
     if (i %% i.print == 0) {print(i)}
 
     mlogPost_GDI <- post.initial[i,]
     est.GDI <- NULL
     item.log <- NULL
-    ############################################# item selection rule
-if(itemSelect == "GDI") {
-  GDI <- GDI.M(LC.prob = est$LC.prob,  mlogPost_GDI)
-} else if (itemSelect == "JSD") {
-  GDI <- JSD.DICO.M(LC.prob = est$LC.prob,  mlogPost_GDI)
-} else if (itemSelect == "MPWKL") {
-  GDI <- MPWKL.M(LC.prob = est$LC.prob,  mlogPost_GDI)
-} else if (itemSelect == "PWKL") {
-  GDI <- PWKL.M(LC.prob = est$LC.prob,  mlogPost_GDI, point.est = sample(1:L, size = 1))
-}
-    names(GDI) <- 1:length(GDI)
-
+    GDI <- GDI.M(LC.prob = est$LC.prob,  mlogPost_GDI)
+    names(GDI) <- 1:length((GDI))
     jjselect <- 1
     jjcatGDI <- IP <- NULL
 
@@ -218,18 +210,8 @@ if(itemSelect == "GDI") {
         mlogPost_GDI <- mPost_GDI/msumPost_GDI
         p.aj_GDI <- mlogPost_GDI %*% pattern
 
-        #############################################
-        if(itemSelect == "GDI") {
-          GDI <- GDI.M(LC.prob = est$LC.prob, mlogPost_GDI)
-        } else if (itemSelect == "JSD") {
-          GDI <- JSD.DICO.M(LC.prob = est$LC.prob,  mlogPost_GDI)
-        } else if (itemSelect == "MPWKL") {
-          GDI <- MPWKL.M(LC.prob = est$LC.prob, mlogPost_GDI)
-        } else if (itemSelect == "PWKL") {
-          GDI <- PWKL.M(LC.prob = est$LC.prob, mlogPost_GDI, point.est = which.max(p.xi.aj_GDI))
-        }
-        names(GDI) <- 1:length(GDI)
-        #############################################
+        GDI <- GDI.M(LC.prob = est$LC.prob, prior = mlogPost_GDI)
+        names(GDI) <- 1:length((GDI))
 
         est.GDI <- rbind(est.GDI,
                          c(Lclass[which.max(p.xi.aj_GDI)], max(p.xi.aj_GDI),
@@ -245,13 +227,13 @@ if(itemSelect == "GDI") {
     } else {
 
       while(max(mlogPost_GDI) < max.cut){
-        #############################################
+
         if (is.null(jjcatGDI)) {
           jjcatGDI[jjselect] <- as.numeric(names(which.max(GDI)))
         } else {
           jjcatGDI[jjselect] <- as.numeric(names(which.max(GDI[-c(jjcatGDI)])))
         }
-        #############################################
+
         x.jj = X[i,jjcatGDI[jjselect]]
         IP = cbind(IP,x.jj)
 
@@ -270,18 +252,10 @@ if(itemSelect == "GDI") {
         msumPost_GDI <- sum(mPost_GDI)
         mlogPost_GDI <- mPost_GDI/msumPost_GDI
         p.aj_GDI <- mlogPost_GDI %*% pattern
-        #############################################
-        if(itemSelect == "GDI") {
-          GDI <- GDI.M(LC.prob = est$LC.prob, mlogPost_GDI)
-        } else if (itemSelect == "JSD") {
-          GDI <- JSD.DICO.M(LC.prob = est$LC.prob,  mlogPost_GDI)
-        } else if (itemSelect == "MPWKL") {
-          GDI <- MPWKL.M(LC.prob = est$LC.prob, mlogPost_GDI)
-        } else if (itemSelect == "PWKL") {
-          GDI <- PWKL.M(LC.prob = est$LC.prob, mlogPost_GDI, point.est = which.max(p.xi.aj_GDI))
-        }
-        names(GDI) <- 1:length(GDI)
-        #############################################
+
+        GDI <- GDI.M(LC.prob = est$LC.prob, prior = mlogPost_GDI)
+        names(GDI) <- 1:length((GDI))
+
         est.GDI <- rbind(est.GDI,
                          c(Lclass[which.max(p.xi.aj_GDI)], max(p.xi.aj_GDI),
                            Lclass[which.max(mlogPost_GDI)], max(mlogPost_GDI),
@@ -301,106 +275,10 @@ if(itemSelect == "GDI") {
   }
   res <- list()
   res$est <- out
-  res$specifications <- list("dat" = dat, "GDINA.obj" = GDINA.obj, "model" = model, "itemSelect" = itemSelect, "MAXJ" = MAXJ, "FIXED.LENGTH" = FIXED.LENGTH,
+  res$specifications <- list("dat" = dat, "GDINA.obj" = GDINA.obj, "model" = model, "MAXJ" = MAXJ, "FIXED.LENGTH" = FIXED.LENGTH,
                              "att.prior" = att.prior, "post.initial" = post.initial, "max.cut" = max.cut,
                              "i.print" = i.print)
   class(res) <- "cdcat"
-  } # end != random
-
-  if(itemSelect == "random") {
-
-   for(i in 1:N) {
-     if (i %% i.print == 0) {print(i)}
-
-     mlogPost_GDI <- post.initial[i,]
-     est.GDI <- NULL
-     item.log <- NULL
-     jjselect <- 1
-     jjcatGDI <- IP <- NULL
-
-     if (FIXED.LENGTH == TRUE) {
-
-         jjrand <- sample(x = 1:J, size = MAXJ, prob = rep(1/J,J)) # choose MAXJ items at random
-         IP = X[i, jjrand]
-
-         p.xi <- matrix(est$LC.prob[jjrand,], ncol = L)
-         p.xi.aj1_GDI <- matrix(0,nrow = L, ncol = length(IP))
-         for (l in 1L:L){
-           for (jj in 1L:length(IP)){
-             res <- 1
-             p.xi.aj1_GDI[l,jj] = res*(p.xi[jj,l]^IP[jj])*((1-p.xi[jj,l])^(1-IP[jj]))
-             res <- p.xi.aj1_GDI[l,jj]
-           }
-         }
-
-         p.xi.aj_GDI <- (t(as.matrix(apply(p.xi.aj1_GDI, 1, prod))))
-         mPost_GDI   <- p.xi.aj_GDI * att.prior
-         msumPost_GDI <- sum(mPost_GDI)
-         mlogPost_GDI <- mPost_GDI/msumPost_GDI
-         p.aj_GDI <- mlogPost_GDI %*% pattern
-
-         est.GDI <- rbind(est.GDI,
-                          c(Lclass[which.max(p.xi.aj_GDI)], max(p.xi.aj_GDI),
-                            Lclass[which.max(mlogPost_GDI)], max(mlogPost_GDI),
-                            paste(as.numeric(p.aj_GDI > .50), collapse = ""), p.aj_GDI))
-
-       colnames(est.GDI) <- c("ML", "Lik", "MAP", "Post", "EAP", paste("K", 1:K, sep = ""))
-
-       item.log <- jjrand
-   } else {
-
-     itemsrand <- 1:J
-     names(itemsrand) <- 1:length(J)
-
-     while(max(mlogPost_GDI) < max.cut){
-
-           if (is.null(jjcatGDI)) {
-           jjcatGDI[jjselect] <- sample(x = itemsrand, size = 1, prob = rep(1/length(itemsrand),length(itemsrand)))
-         } else {
-           jjcatGDI[jjselect] <- sample(x = itemsrand[-jjcatGDI], size = 1, prob = rep(1/length(itemsrand[-jjcatGDI]),length(itemsrand[-jjcatGDI])))
-         }
-         #############################################
-         x.jj = X[i,jjcatGDI[jjselect]]
-         IP = cbind(IP,x.jj)
-
-         p.xi <- matrix(est$LC.prob[jjcatGDI,], ncol = L)
-         p.xi.aj1_GDI <- matrix(0,nrow = L, ncol = length(IP))
-         for (l in 1L:L){
-           for (jj in 1L:length(IP)){
-             res <- 1
-             p.xi.aj1_GDI[l,jj] = res*(p.xi[jj,l]^IP[jj])*((1-p.xi[jj,l])^(1-IP[jj]))
-             res <- p.xi.aj1_GDI[l,jj]
-           }
-         }
-
-         p.xi.aj_GDI <- (t(as.matrix(apply(p.xi.aj1_GDI, 1, prod))))
-         mPost_GDI   <- p.xi.aj_GDI * att.prior
-         msumPost_GDI <- sum(mPost_GDI)
-         mlogPost_GDI <- mPost_GDI/msumPost_GDI
-         p.aj_GDI <- mlogPost_GDI %*% pattern
-
-         est.GDI <- rbind(est.GDI,
-                          c(Lclass[which.max(p.xi.aj_GDI)], max(p.xi.aj_GDI),
-                            Lclass[which.max(mlogPost_GDI)], max(mlogPost_GDI),
-                            paste(as.numeric(p.aj_GDI > .50), collapse = ""), p.aj_GDI))
-         jjselect <- jjselect + 1
-         if((jjselect) > MAXJ) {break}
-       }
-       colnames(est.GDI) <- c("ML", "Lik", "MAP", "Post", "EAP", paste("K", 1:K, sep = ""))
-       item.log <- c(item.log, jjcatGDI)
-     }
-
-     out[[i]] <- list(est.cat.GDI = est.GDI,
-                      item.usage = item.log)
-
-   } # end i
-   res <- list()
-   res$est <- out
-   res$specifications <- list("dat" = dat, "GDINA.obj" = GDINA.obj, "model" = model, "itemSelect" = itemSelect, "MAXJ" = MAXJ, "FIXED.LENGTH" = FIXED.LENGTH,
-                              "att.prior" = att.prior, "post.initial" = post.initial, "max.cut" = max.cut,
-                              "i.print" = i.print)
-   class(res) <- "cdcat"
-  } # end == random
 
   return(res)
 }

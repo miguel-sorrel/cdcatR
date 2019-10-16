@@ -4,16 +4,14 @@
 \alias{cdcat}
 \title{Cognitively based computerized adaptive test application}
 \usage{
-cdcat(GDINA.obj, dat = NULL, itemSelect = "GDI", MAXJ = 20,
-  FIXED.LENGTH = TRUE, att.prior = NULL, post.initial = NULL,
-  max.cut = 0.8, i.print = 250, ...)
+cdcat(GDINA.obj, dat = NULL, MAXJ = 20, FIXED.LENGTH = TRUE,
+  att.prior = NULL, post.initial = NULL, max.cut = 0.8,
+  i.print = 250, ...)
 }
 \arguments{
-\item{GDINA.obj}{Calibrated item bank.}
+\item{GDINA.obj}{Calibrated item bank. An estimated model object of class GDINA}
 
 \item{dat}{Dataset to be analyzed (if is.null(dat) then dat <- GDINA.obj$options$dat) (i.e., post-hoc CD-CAT simulation).}
-
-\item{itemSelect}{Item selection rule: GDI, JSD, MPWKL, PWKL, random}
 
 \item{MAXJ}{Maximum number of items to be applied. Default is 20.}
 
