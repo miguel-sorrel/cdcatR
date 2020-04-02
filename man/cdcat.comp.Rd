@@ -4,16 +4,18 @@
 \alias{cdcat.comp}
 \title{Comparison of multiple cdcat objects}
 \usage{
-cdcat.comp(cdcat.obj.l, alpha, ...)
+cdcat.comp(cdcat.obj.l, alpha, label = NULL, ...)
 }
 \arguments{
-\item{cdcat.obj.l}{List of \code{cdcat} objects to be compared.}
+\item{cdcat.obj.l}{List of \code{cdcat} objects to be compared}
 
-\item{alpha}{N x K matrix with the attribute patterns to be compared to the \code{cdcat} results.}
+\item{alpha}{N x K matrix with the attribute patterns to be compared to the \code{cdcat} results}
+
+\item{label}{labels for the \code{cdcat} objects. If NULL (by default), the models are used as label}
 }
 \value{
 \code{cdcat.comp} returns an object of class \code{cdcat.comp}.
 }
 \description{
-This function compares differet \code{cdcat} objects in terms of classification accuracy (FIXED.LENGTH == TRUE) and/or CAT lenght FIXED.LENGTH == FALSE).
+This function compares different \code{cdcat} objects in terms of classification accuracy (\code{FIXED.LENGTH == TRUE}) and/or CAT lenght \code{FIXED.LENGTH == FALSE}).
 }

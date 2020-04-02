@@ -4,67 +4,83 @@
 \alias{cdcat}
 \title{Cognitively based computerized adaptive test application}
 \usage{
-cdcat(GDINA.obj, dat = NULL, MAXJ = 20, FIXED.LENGTH = TRUE,
-  att.prior = NULL, post.initial = NULL, max.cut = 0.8,
-  i.print = 250, ...)
+cdcat(
+  fit = NULL,
+  dat = NULL,
+  Q = NULL,
+  itemSelect = "GDI",
+  MAXJ = 20,
+  FIXED.LENGTH = TRUE,
+  att.prior = NULL,
+  post.initial = NULL,
+  max.cut = 0.8,
+  NPS.args = list(gate = "AND", pseudo.prob = T, w.type = 1, seed = NULL),
+  n.cores = 2,
+  i.print = 250,
+  ...
+)
 }
 \arguments{
-\item{GDINA.obj}{Calibrated item bank. An estimated model object of class GDINA}
+\item{fit}{Calibrated item bank with the GDINA or CDM package}
 
-\item{dat}{Dataset to be analyzed (if is.null(dat) then dat <- GDINA.obj$options$dat) (i.e., post-hoc CD-CAT simulation).}
+\item{dat}{Dataset to be analyzed. If \code{is.null(dat)} it takes data from the fit object (i.e., post-hoc simulation)}
 
-\item{MAXJ}{Maximum number of items to be applied. Default is 20.}
+\item{Q}{Q-matrix to be used in the analysis. If \code{is.null(Q)} it takes Q from the fit object}
 
-\item{FIXED.LENGTH}{Fixed CAT-legnth (TRUE) or fixed-precision (FALSE). Default is TRUE.}
+\item{itemSelect}{Item selection rule: GDI, JSD, MPWKL, PWKL, NPS, random}
 
-\item{att.prior}{Prior distribution for MAP/EAP estimates.}
+\item{MAXJ}{Maximum number of items to be applied. Default is 20}
 
-\item{post.initial}{Prior distribution for GDI.}
+\item{FIXED.LENGTH}{Fixed CAT-length (TRUE) or fixed-precision (FALSE). Default is TRUE}
 
-\item{max.cut}{Cutoff for fixed-precision (posterior pattern > max.cut). Default is .80.}
+\item{att.prior}{Prior distribution for MAP/EAP estimates}
 
-\item{i.print}{Print examinee information. Default is 250.}
+\item{post.initial}{Prior distribution for \code{itemSelect}}
+
+\item{max.cut}{Cutoff for fixed-precision (posterior pattern > max.cut). Default is .80}
+
+\item{NPS.args}{A list of options when \code{itemSelect = "NPS"}}
+
+\item{n.cores}{Number of cores to be used during parallelization. Default is 2}
+
+\item{i.print}{Print examinee information. Default is 250}
 }
 \value{
 \code{cdcat} returns an object of class \code{cdcat}.
 }
 \description{
-\code{cdcat} conducts a CD-CAT application for a given dataset. Items are selected according to the general discrimination
-index (GDI; de la Torre & Chiu, 2016; Kaplan, de la Torre, & Barrada, 2016). The next item to be selected by the adaptive algorithm is
-the one with the highest GDI.
+\code{cdcat} conducts a CD-CAT application for a given dataset. Different item selection rules can be used: the general discrimination index
+(GDI; de la Torre & Chiu, 2016; Kaplan et al., 2015), the Jensen-Shannon divergence index (JSD; Kang et al., 2017; Minchen & de la Torre, 2016;
+Yigit et al., 2018), the posterior-weighted Kullback-Leibler index (PWKL; Cheng, 2009), the modified PWKL index (MPWKL; Kaplan et al., 2015), the nonparametric
+item selection method (NPS; Chang et al., 2018), or random selection. Fixed length or fixed precision CD-CAT can be applied.
 }
 \examples{
-####################################
-#        Example 1.                #
-#     CD-CAT simulation for a      #
-#     GDINA obj                    #
-####################################
+######################################
+# Example 1.                         #
+# CD-CAT simulation for a GDINA obj  #
+######################################
 
-#--------Data generation --------#
+#-----------Data generation----------#
 Q <- sim180GDINA$simQ
 K <- ncol(Q)
 dat <- sim180GDINA$simdat
 att <- sim180GDINA$simalpha
 
-#--------Model estimation --------#
-fit <- GDINA(dat = dat, Q = Q, verbose = 0)
+#----------Model estimation----------#
+fit <- GDINA(dat = dat, Q = Q, verbose = 0) # GDINA package
+# fit <- gdina(data = dat, q.matrix = Q, progress = 0) # CDM package
 
-#--------CD-CAT --------#
-res.FIXJ <- cdcat(dat = fit$options$dat,
-                 GDINA.obj = fit,
-                 FIXED.LENGTH = TRUE)
-res.VARJ <- cdcat(dat = fit$options$dat,
-                 GDINA.obj = fit,
-                 FIXED.LENGTH = FALSE)
+#---------------CD-CAT---------------#
+res.FIXJ <- cdcat(fit = fit, dat = dat, FIXED.LENGTH = TRUE, n.cores = 4)
+res.VARJ <- cdcat(fit = fit, dat = dat, FIXED.LENGTH = FALSE, n.cores = 4)
 
-#--------Results --------#
+#---------------Results--------------#
 res.FIXJ$est[[1]] # estimates for the first examinee (fixed-length)
 res.VARJ$est[[1]] # estimates for the first examinee (fixed-precision)
 att.plot(res.FIXJ, i = 1) # plot for estimates for the first examinee (fixed-length)
 att.plot(res.VARJ, i = 1) # plot for estimates for the first examinee (fixed-length)
 # FIXJ summary
-res.FIXJ.sum.real <- cdcat.summary(cdcat.obj = res.FIXJ,
-                                  alpha = att) # vs. real accuracy
+res.FIXJ.sum.real <- cdcat.summary(cdcat.obj = res.FIXJ, alpha = att) # vs. real accuracy
 res.FIXJ.sum.real$recovery$plotPCV
 res.FIXJ.sum.real$recovery$plotPCA
 # VARJ summary
@@ -73,21 +89,21 @@ res.VARJ.sum.post$CATlength$stats
 res.VARJ.sum.post$CATlength$plot
 res.VARJ.sum.post$recovery
 # Post-hoc CAT simulation (only if dat is fit$options$dat)
-att.J <- personparm(fit, "MAP")[, -(K+1)]
+att.J <- personparm(fit, "MAP")[, -(K+1)] # GDINA package
+# att.J <- t(sapply(strsplit(as.character(fit$pattern$map.est), ""), as.numeric)) # CDM package
 class.J <- ClassRate(att, att.J) # upper-limit for accuracy
 res.FIXJ.sum.post <- cdcat.summary(cdcat.obj = res.FIXJ, alpha = att.J)
 res.FIXJ.sum.post$recovery$plotPCV + geom_hline(yintercept = class.J$PCV[K], color = "red")
 res.FIXJ.sum.post$recovery$plotPCA + geom_hline(yintercept = class.J$PCA, color = "red")
 
-####################################
-# Example 2. #
-# CD-CAT simulation for #
-# multiple GDINA objs and #
-# comparison of performance on a
-# validation sample #
-####################################
+######################################
+# Example 2.                         #
+# CD-CAT simulation for multiple     #
+# GDINA objs and comparison of       #
+# performance on a validation sample #
+######################################
 
-#--------Data --------#
+#----------------Data----------------#
 Q <- sim155complex$simQ
 K <- ncol(Q)
 parm <- sim155complex$simcatprob.parm
@@ -96,39 +112,26 @@ att.c <- sim155complex$simalpha.c
 dat.v <- sim155complex$simdat.v
 att.v <- sim155complex$simalpha.v
 
-#--------(multiple) Model estimation --------#
+#-----(multiple) Model estimation----#
 fitTRUE <- GDINA(dat = dat.c, Q = Q, catprob.parm = parm, control = list(maxitr = 0), verbose = 0)
 fitGDINA <- GDINA(dat = dat.c, Q = Q, verbose = 0)
 fitDINA <- GDINA(dat = dat.c, Q = Q, model = "DINA", verbose = 0)
 fitDINO <- GDINA(dat = dat.c, Q = Q, model = "DINO", verbose = 0)
 fitACDM <- GDINA(dat = dat.c, Q = Q, model = "ACDM", verbose = 0)
-LR2 <- modelcomp(GDINA.obj = fitGDINA, method = "LR",
-                LR.args = list(LR.approx = TRUE), models = c("DINA", "DINO","ACDM"))
-alpha.level <- 0.05
-model <- apply(LR2$pvalues, 1, function(x) {
- if (max(x, na.rm = TRUE) > alpha.level/(sum(rowSums(Q)>1)*3)) {
-   which.max(x)}
- else {
-   return(0)}})
-models <- rep(0, nrow(Q))
-models[which(rowSums(Q) != 1)] <- model
-models <- models
+LR2step <- LR_2step(fitGDINA)
+models <- LR2step$models.adj.pvalues
 fitLR2 <- GDINA(dat = dat.c, Q = Q, model = models, verbose = 0)
 
-#--------CD-CAT --------#
+#---------------CD-CAT---------------#
 fit.l <- list(fitTRUE, fitGDINA, fitDINA, fitDINO, fitACDM, fitLR2)
 res.FIXJ.l <- res.VARJ.l <- list()
 for(mm in 1:length(fit.l)) {
  fit <- fit.l[[mm]]
- res.FIXJ.l[[mm]] <- cdcat(dat = dat.v,
-                           GDINA.obj = fit,
-                         FIXED.LENGTH = TRUE)
- res.VARJ.l[[mm]] <- cdcat(dat = dat.v,
-                         GDINA.obj = fit,
-                           FIXED.LENGTH = FALSE)
+ res.FIXJ.l[[mm]] <- cdcat(fit = fit, dat = dat.v, FIXED.LENGTH = TRUE, n.cores = 4)
+ res.VARJ.l[[mm]] <- cdcat(fit = fit, dat = dat.v, FIXED.LENGTH = FALSE, n.cores = 4)
 }
 
-#--------Results --------#
+#---------------Results--------------#
 fitbest <- GDINA(dat = dat.v, Q = Q, catprob.parm = parm, control = list(maxitr = 1), verbose = 0)
 fitbest.acc <- personparm(fitbest, "MAP")[, -(K+1)]
 class.J <- ClassRate(att.v, fitbest.acc) # upper-limit for accuracy
@@ -142,9 +145,52 @@ res.VARJ.sum.post.comp$stats
 res.VARJ.sum.post.comp$plots
 res.VARJ.sum.post.comp$recovery
 
+######################################
+# Example 3.                         #
+# Nonparametric CD-CAT for           #
+# small-scale assessment             #
+######################################
+
+#-----------Data generation----------#
+Q <- sim180DINA$simQ
+K <- ncol(Q)
+N <- 50
+dat <- sim180DINA$simdat[1:N,]
+att <- sim180DINA$simalpha[1:N,]
+
+#--------Nonparametric CD-CAT--------#
+res.NPS <- cdcat(dat = dat, Q = Q, itemSelect = "NPS", MAXJ = 30,
+                NPS.args = list(gate = "AND", pseudo.prob = TRUE, w.type = 1, seed = 12345),
+                n.cores = 4)
+
+#---------------Results--------------#
+res.NPS$est[[1]] # estimates for the first examinee
+att.plot(res.NPS, i = 1) # plot for estimates for the first examinee
+# FIXJ summary
+res.NPS.sum.real <- cdcat.summary(cdcat.obj = res.NPS, alpha = att) # vs. real accuracy
+res.NPS.sum.real$recovery$plotPCV
+res.NPS.sum.real$recovery$plotPCA
+# Post-hoc CAT simulation
+fit <- AlphaNP(Y = dat, Q = Q, gate = "AND")
+att.J <- fit$alpha.est
+class.J <- ClassRate(att, att.J) # upper-limit for accuracy
+res.NPS.sum.post <- cdcat.summary(cdcat.obj = res.NPS, alpha = att.J)
+res.NPS.sum.post$recovery$plotPCV + geom_hline(yintercept = class.J$PCV[K], color = "firebrick3")
+res.NPS.sum.post$recovery$plotPCA + geom_hline(yintercept = class.J$PCA, color = "firebrick3")
+
 }
 \references{
-de la Torre, J., & Chiu, C. Y. (2016). General Method of Empirical Q-matrix Validation. \emph{Psychometrika, 81}, 253-273.
+Chang, Y.-P., Chiu, C.-Y., & Tsai, R.-C. (2019). Nonparametric CAT for CD in educational settings with small samples. \emph{Applied Psychological Measurement, 43}, 543-561.
+
+Cheng, Y. (2009). When cognitive diagnosis meets computerized adaptive testing: CD-CAT. \emph{Psychometrika, 74}, 619-632.
+
+de la Torre, J., & Chiu, C. Y. (2016). General method of empirical Q-matrix validation. \emph{Psychometrika, 81}, 253-273.
+
+Kang, H.-A., Zhang, S., & Chang, H.-H. (2017). Dual-objective item selection criteria in cognitive diagnostic computerized adaptive testing. \emph{Journal of Educational Measurement, 54}, 165-183.
 
 Kaplan, M., de la Torre, J., & Barrada, J. R. (2015). New item selection methods for cognitive diagnosis computerized adaptive testing. \emph{Applied Psychological Measurement, 39}, 167-188.
+
+Minchen, N., & de la Torre, J. (2016, July). \emph{The continuous G-DINA model and the Jensen-Shannon divergence}. Paper presented at the International Meeting of the Psychometric Society, Asheville, NC, United States.
+
+Yigit, H. D., Sorrel, M. A., de la Torre, J. (2018). Computerized adaptive testing for cognitively based multiple-choice data. \emph{Applied Psychological Measurement, 43}, 388-401.
 }

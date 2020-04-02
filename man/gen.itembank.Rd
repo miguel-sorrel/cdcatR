@@ -4,21 +4,28 @@
 \alias{gen.itembank}
 \title{Item bank generation}
 \usage{
-gen.itembank(Q = NULL, minJ.K = NULL, complexity = NULL, IQ, VAR,
-  model = NULL, ...)
+gen.itembank(
+  Q = NULL,
+  minJ.K = NULL,
+  complexity = NULL,
+  IQ,
+  VAR,
+  model = NULL,
+  ...
+)
 }
 \arguments{
-\item{Q}{Q-matrix.}
+\item{Q}{Q-matrix}
 
-\item{minJ.K}{Vector indicating the minimum number of items measuring each attribute.}
+\item{minJ.K}{Vector indicating the minimum number of items measuring each attribute}
 
-\item{complexity}{Vector indicating the maximum number of attributes being measured by an item in each column of Q. At this moment maximum is 4.}
+\item{complexity}{Vector indicating the maximum number of attributes being measured by an item in each row of Q. At this moment maximum is 4}
 
-\item{IQ}{Item discrimination (mean for the uniform distribution). IQ = \emph{P}(\strong{1}) - \emph{P}(\strong{0}) (Sorrel, Abad, Olea, de la Torre, and Barrada, 2017).}
+\item{IQ}{Item discrimination (mean for the uniform distribution). IQ = \emph{P}(\strong{1}) - \emph{P}(\strong{0}) (Sorrel, Abad, Olea, de la Torre, and Barrada, 2017)}
 
-\item{VAR}{Item discrimination (variance for the uniform distribution).}
+\item{VAR}{Item discrimination (variance for the uniform distribution)}
 
-\item{model}{Vector indicating the model-item correspondnce (0 = one-attribute item, 1 = DINA, 2 = DINO, 3 = A-CDM.}
+\item{model}{Vector indicating the model-item correspondence (0 = one-attribute item, 1 = DINA, 2 = DINO, 3 = A-CDM}
 }
 \value{
 \code{gen.itembank} returns an object of class \code{gen.Item.Bank}.
@@ -33,6 +40,7 @@ a uniform distribution with mean = \emph{IQ} and variance = \emph{VAR}.
 #        Example 1.                #
 #     Q and model are provided     #
 ####################################
+
 Q <- sim30GDINA$simQ
 model <- rep(1, each = nrow(Q))
 IQ <- .70   # P(1), IQ = Low item quality in Kaplan, de la Torre & Barrada (2015)
@@ -41,7 +49,7 @@ bank <- gen.itembank(Q = Q, IQ = IQ, VAR = VAR, model = model)
 
 ####################################
 #        Example 2.                #
-#   Q and model not are provided   #
+#   Q and model are not provided   #
 ####################################
 
 minJ.K  <- c(50, 50, 50)

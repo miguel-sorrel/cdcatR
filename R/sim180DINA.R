@@ -7,7 +7,7 @@
 #' \item{\code{simdat}}{Simulated responses of 500 examinees}
 #' \item{\code{simQ}}{Artificial Q-matrix}
 #' \item{\code{simcatprob.parm}}{Artificial item parameters (probability of success for each latent group). All items are DINA items}
-#' \item{\code{simalpha}}{Simulated attribute patterns of 500 examinees)}
+#' \item{\code{simalpha}}{Simulated attribute patterns of 500 examinees}
 #' }
 #'
 #'

@@ -4,12 +4,12 @@
 #' be measured and the q-vector complexity (e.g., number of attributes that a q-vector can measure). Item parameters are sampled from
 #' a uniform distribution with mean = \emph{IQ} and variance = \emph{VAR}.
 #'
-#' @param Q Q-matrix.
-#' @param minJ.K Vector indicating the minimum number of items measuring each attribute.
-#' @param complexity Vector indicating the maximum number of attributes being measured by an item in each column of Q. At this moment maximum is 4.
-#' @param IQ Item discrimination (mean for the uniform distribution). IQ = \emph{P}(\strong{1}) - \emph{P}(\strong{0}) (Sorrel, Abad, Olea, de la Torre, and Barrada, 2017).
-#' @param VAR Item discrimination (variance for the uniform distribution).
-#' @param model Vector indicating the model-item correspondnce (0 = one-attribute item, 1 = DINA, 2 = DINO, 3 = A-CDM.
+#' @param Q Q-matrix
+#' @param minJ.K Vector indicating the minimum number of items measuring each attribute
+#' @param complexity Vector indicating the maximum number of attributes being measured by an item in each row of Q. At this moment maximum is 4
+#' @param IQ Item discrimination (mean for the uniform distribution). IQ = \emph{P}(\strong{1}) - \emph{P}(\strong{0}) (Sorrel, Abad, Olea, de la Torre, and Barrada, 2017)
+#' @param VAR Item discrimination (variance for the uniform distribution)
+#' @param model Vector indicating the model-item correspondence (0 = one-attribute item, 1 = DINA, 2 = DINO, 3 = A-CDM
 #'
 #' @return \code{gen.itembank} returns an object of class \code{gen.Item.Bank}.
 #'
@@ -24,6 +24,7 @@
 #'#        Example 1.                #
 #'#     Q and model are provided     #
 #'####################################
+#'
 #' Q <- sim30GDINA$simQ
 #' model <- rep(1, each = nrow(Q))
 #' IQ <- .70   # P(1), IQ = Low item quality in Kaplan, de la Torre & Barrada (2015)
@@ -32,7 +33,7 @@
 #'
 #'####################################
 #'#        Example 2.                #
-#'#   Q and model not are provided   #
+#'#   Q and model are not provided   #
 #'####################################
 #'
 #' minJ.K  <- c(50, 50, 50)

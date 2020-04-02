@@ -4,30 +4,46 @@
 \alias{LR_2step}
 \title{Item-level model comparison using 2LR test}
 \usage{
-LR_2step(GDINA.obj, ...)
+LR_2step(fit, p.adjust.method = "holm", alpha.level = 0.05, ...)
 }
 \arguments{
-\item{GDINA.obj}{Calibrated item bank. An estimated model object of class GDINA}
+\item{fit}{Calibrated item bank with GDINA or CDM package}
+
+\item{p.adjust.method}{Correction method for p-values. Possible values include "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none". See p.adjust function from stats for additional details. Default is holm}
+
+\item{alpha.level}{Alpha level for decision. Default is 0.05}
 }
 \value{
-\code{LR2step} returns an object of class \code{LR2step}.
+\code{LR2step} returns an object of class \code{LR2step}
+\describe{
+\item{LR2}{LR2 statistics}
+\item{pvalues}{p-values associated with the wald statistics}
+\item{adj.pvalues}{adjusted p-values associated with the wald statistics}
+\item{df}{degrees of freedom}
+\item{models.adj.pvalues}{Models selected using the rule \emph{largestp} (Ma, Iaconangelo, & de la Torre, 2016). All statistics whose p-values are less than \code{alpha.level} are rejected. All statistics with p-value larger than \code{alpha.level} define the set of candidate reduced models. The G-DINA model is retained if all statistics are rejected. Whenever the set includes more than one model, the model with the largest p-value was selected as the best model for that item.}
+}
 }
 \description{
 This function evaluates whether the saturated G-DINA model can be replaced by reduced CDMs without significant loss in model data fit for each item using two-step likelihood ratio test (2LR). Sorrel, de la Torre, Abad, and Olea (2017) and Ma & de la Torre (2018) can be consulted for details.
 }
 \examples{
-N <- 500
+N <- 1000
 Q <- sim30GDINA$simQ
 J <- nrow(Q)
 gs <- data.frame(guess=rep(0.1,J),slip=rep(0.1,J))
-
-sim <- simGDINA(N,Q,gs.parm = gs,model = "DINA")
-resGDINA <- GDINA(dat = sim$dat, Q = sim$Q,
-                 model = "GDINA",verbose = F)
-LR2 <- LR_2step(GDINA.obj = resGDINA);round(LR2$LR2.p, 2)
+sim <- simGDINA(N, Q, gs.parm = gs, model = "DINA")
+resGDINA <- GDINA(dat = sim$dat, Q = sim$Q, model = "GDINA",verbose = F)
+resCDM <- gdina(data = sim$dat, q.matrix = sim$Q, rule = "GDINA", progress = F)
+LR2.GDINA <- LR_2step(fit = resGDINA)
+LR2.CDM <- LR_2step(fit = resCDM)
+LR2.GDINA$models.adj.pvalues
+LR2.CDM$models.adj.pvalues
 }
 \references{
 Ma, W. & de la Torre, J. (2018). Category-level model selection for the sequential G-DINA model. \emph{Journal of Educational and Behavorial Statistic, 44}, 45-77.
+
+Ma, W., Iaconangelo, C., & de la Torre, J. (2016). Model similarity, model selection and attribute classification.
+\emph{Applied Psychological Measurement, 40}, 200-217.
 
 Sorrel, M. A., de la Torre, J., Abad, F. J., & Olea, J. (2017). Two-step likelihood ratio test for item-level model comparison in cognitive diagnosis models. \emph{Methodology, 13}, 39-47.
 }

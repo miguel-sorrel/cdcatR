@@ -4,12 +4,14 @@
 \alias{att.plot}
 \title{Create plots for attribute mastery estimates}
 \usage{
-att.plot(cdcat.obj, i, ...)
+att.plot(cdcat.obj, i, k = NULL, ...)
 }
 \arguments{
-\item{cdcat.obj}{An object of class \code{cdcat}.}
+\item{cdcat.obj}{An object of class \code{cdcat}}
 
-\item{i}{examinee to be plotted.}
+\item{i}{Examinee to be plotted}
+
+\item{k}{Attribute/s to be plotted. Default is NULL, which plotts all attributes}
 }
 \value{
 \code{att.plot} creates a plot.

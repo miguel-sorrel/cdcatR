@@ -7,13 +7,13 @@
 cdcat.summary(cdcat.obj, alpha, ...)
 }
 \arguments{
-\item{cdcat.obj}{\code{cdcat} results.}
+\item{cdcat.obj}{\code{cdcat} results}
 
-\item{alpha}{N x K matrix with the attribute patterns to be compared to the \code{cdcat} results.}
+\item{alpha}{N x K matrix with the attribute patterns to be compared to the \code{cdcat} results}
 }
 \value{
 \code{cdcat.summary} returns an object of class \code{cdcat.summary}.
 }
 \description{
-This function provides classification accuracy (FIXED.LENGTH == TRUE) and/or CAT lenght FIXED.LENGTH == FALSE) results for cdcat object.
+This function provides classification accuracy (\code{FIXED.LENGTH == TRUE)} and/or CAT length (\code{FIXED.LENGTH == FALSE}) results for cdcat object.
 }
