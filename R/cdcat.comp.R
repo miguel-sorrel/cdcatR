@@ -10,7 +10,7 @@
 #'
 #' @export
 #'
-cdcat.comp <- function(cdcat.obj.l, alpha, label = NULL, ...){
+cdcat.comp <- function(cdcat.obj.l, alpha, label = NULL){
 
   if(!is.null(label)){
     if(length(label) != length(cdcat.obj.l)){stop("label and cdcat.obj.l must have the same length")}
@@ -44,19 +44,23 @@ cdcat.comp <- function(cdcat.obj.l, alpha, label = NULL, ...){
     datacomp <- as.data.frame(datacomp)
     colnames(datacomp) <- c("item.position", "pattern.recovery", "attribute.recovery", "model")
 
-    PCVplot <- ggplot(data = datacomp, aes(x=item.position, y=pattern.recovery, colour = model)) +
-      theme(panel.grid.minor.x = element_blank(), panel.grid.minor.y = element_blank()) +
-      scale_x_continuous("Until Item Position", labels = 1:MAXJ, breaks = 1:MAXJ) +
-      scale_y_continuous("Pattern Recovery", limits = c(0,1), labels = seq(from = 0, to = 1, by = 0.10),
+    PCVplot <- ggplot2::ggplot(data = datacomp,
+                               ggplot2::aes(x=item.position, y=pattern.recovery, colour = model)) +
+      ggplot2::theme(panel.grid.minor.x = ggplot2::element_blank(),
+                     panel.grid.minor.y = ggplot2::element_blank()) +
+      ggplot2::scale_x_continuous("Until Item Position", labels = 1:MAXJ, breaks = 1:MAXJ) +
+      ggplot2::scale_y_continuous("Pattern Recovery", limits = c(0,1), labels = seq(from = 0, to = 1, by = 0.10),
                          breaks = seq(from = 0, to = 1, by = 0.10)) +
-      geom_line() + geom_point()
+      ggplot2::geom_line() + ggplot2::geom_point()
 
-    PCAmplot <- ggplot(data = datacomp, aes(x=item.position, y=attribute.recovery, colour = model)) +
-      theme(panel.grid.minor.x = element_blank(), panel.grid.minor.y = element_blank()) +
-      scale_x_continuous("Until Item Position", labels = 1:MAXJ, breaks = 1:MAXJ) +
-      scale_y_continuous("Attribute Recovery", limits = c(0,1), labels = seq(from = 0, to = 1, by = 0.10),
+    PCAmplot <- ggplot2::ggplot(data = datacomp,
+                                ggplot2::aes(x=item.position, y=attribute.recovery, colour = model)) +
+      ggplot2::theme(panel.grid.minor.x = ggplot2::element_blank(),
+                     panel.grid.minor.y = ggplot2::element_blank()) +
+      ggplot2::scale_x_continuous("Until Item Position", labels = 1:MAXJ, breaks = 1:MAXJ) +
+      ggplot2::scale_y_continuous("Attribute Recovery", limits = c(0,1), labels = seq(from = 0, to = 1, by = 0.10),
                          breaks = seq(from = 0, to = 1, by = 0.10)) +
-      geom_line() + geom_point()
+      ggplot2::geom_line() + ggplot2::geom_point()
 
     res <- list("PCVcomp" = PCVplot, "PCAmcomp" = PCAmplot, "data" = datacomp)
     class(res) <- "cdcat.comp"
@@ -89,17 +93,17 @@ cdcat.comp <- function(cdcat.obj.l, alpha, label = NULL, ...){
     or <- order(res.stats[,"Mean"])
     res.stats <- res.stats[or, ]
     for (mm in 1:m) {
-      plots[or][mm][[1]] <- plots[or][mm][[1]] + theme(axis.ticks.x = element_blank())
+      plots[or][mm][[1]] <- plots[or][mm][[1]] + ggplot2::theme(axis.ticks.x = ggplot2::element_blank())
     }
-    title <- ggdraw() +
-      draw_label(
+    title <- cowplot::ggdraw() +
+      cowplot::draw_label(
         paste("Models from left to right:",
               paste(model[or], sep = "", collapse = ", "), collapse = ""),
         fontface = 'bold', size = 10,
         x = 0, hjust = 0) +
-      theme(plot.margin = margin(0, 0, 0, 7))
-    plot_row <- plot_grid(plotlist = plots[or], nrow = 1)
-    res.plots <- plot_grid(title, plot_row, ncol = 1, rel_heights = c(0.1, 1))
+      ggplot2::theme(plot.margin = ggplot2::margin(0, 0, 0, 7))
+    plot_row <- cowplot::plot_grid(plotlist = plots[or], nrow = 1)
+    res.plots <- cowplot::plot_grid(title, plot_row, ncol = 1, rel_heights = c(0.1, 1))
     res.recov <- matrix(unlist(recovery), nrow = m, byrow = TRUE)
     rownames(res.recov) <- model
     K <- ncol(cdcat.obj.l[[1]]$specifications$Q)

@@ -4,7 +4,7 @@
 \alias{cdcat.comp}
 \title{Comparison of multiple cdcat objects}
 \usage{
-cdcat.comp(cdcat.obj.l, alpha, label = NULL, ...)
+cdcat.comp(cdcat.obj.l, alpha, label = NULL)
 }
 \arguments{
 \item{cdcat.obj.l}{List of \code{cdcat} objects to be compared}

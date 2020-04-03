@@ -7,9 +7,10 @@ Authors@R: c(person(given = "Miguel A.",family = "Sorrel", role = c("aut", "cre"
 Description: This package holds functions for conducting CD-CAT applications.
 License: GPL-3
 LazyData: TRUE
-Depends: R (>= 3.4.0), GDINA (>= 2.2.0), ggplot2, cowplot, doParallel (>= 1.0.15), CDM (>= 7.4.19), snow, NPCD 
+Depends: R (>= 3.4.0)
+Imports: GDINA (>= 2.2.0), ggplot2 (>= 3.3.0), tibble, cowplot, doParallel (>= 1.0.15), foreach, CDM (>= 7.4.19), snow, NPCD
 URL: https://github.com/miguel-sorrel/cdcatR
-BugReports: miguel.sorrel@uam.es
+BugReports: https://github.com/miguel-sorrel/cdcatR/issues
 RoxygenNote: 7.1.0
 Encoding: UTF-8
 Author: Miguel A. Sorrel [aut, cre, cph],

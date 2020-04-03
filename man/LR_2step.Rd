@@ -4,7 +4,7 @@
 \alias{LR_2step}
 \title{Item-level model comparison using 2LR test}
 \usage{
-LR_2step(fit, p.adjust.method = "holm", alpha.level = 0.05, ...)
+LR_2step(fit, p.adjust.method = "holm", alpha.level = 0.05)
 }
 \arguments{
 \item{fit}{Calibrated item bank with GDINA or CDM package}
@@ -27,17 +27,14 @@ LR_2step(fit, p.adjust.method = "holm", alpha.level = 0.05, ...)
 This function evaluates whether the saturated G-DINA model can be replaced by reduced CDMs without significant loss in model data fit for each item using two-step likelihood ratio test (2LR). Sorrel, de la Torre, Abad, and Olea (2017) and Ma & de la Torre (2018) can be consulted for details.
 }
 \examples{
-N <- 1000
-Q <- sim30GDINA$simQ
-J <- nrow(Q)
-gs <- data.frame(guess=rep(0.1,J),slip=rep(0.1,J))
-sim <- simGDINA(N, Q, gs.parm = gs, model = "DINA")
-resGDINA <- GDINA(dat = sim$dat, Q = sim$Q, model = "GDINA",verbose = F)
-resCDM <- gdina(data = sim$dat, q.matrix = sim$Q, rule = "GDINA", progress = F)
+Q <- sim180DINA$simQ
+dat <- sim180DINA$simdat
+resGDINA <- GDINA::GDINA(dat = dat, Q = Q, model = "GDINA",verbose = FALSE)
+resCDM <- CDM::gdina(data = dat, q.matrix = Q, rule = "GDINA", progress = FALSE)
 LR2.GDINA <- LR_2step(fit = resGDINA)
 LR2.CDM <- LR_2step(fit = resCDM)
-LR2.GDINA$models.adj.pvalues
-LR2.CDM$models.adj.pvalues
+table(LR2.GDINA$models.adj.pvalues[which(rowSums(Q) != 1)])
+table(LR2.CDM$models.adj.pvalues[which(rowSums(Q) != 1)])
 }
 \references{
 Ma, W. & de la Torre, J. (2018). Category-level model selection for the sequential G-DINA model. \emph{Journal of Educational and Behavorial Statistic, 44}, 45-77.

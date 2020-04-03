@@ -16,8 +16,7 @@ cdcat(
   max.cut = 0.8,
   NPS.args = list(gate = "AND", pseudo.prob = T, w.type = 1, seed = NULL),
   n.cores = 2,
-  i.print = 250,
-  ...
+  i.print = 250
 )
 }
 \arguments{
@@ -67,8 +66,8 @@ dat <- sim180GDINA$simdat
 att <- sim180GDINA$simalpha
 
 #----------Model estimation----------#
-fit <- GDINA(dat = dat, Q = Q, verbose = 0) # GDINA package
-# fit <- gdina(data = dat, q.matrix = Q, progress = 0) # CDM package
+fit <- GDINA::GDINA(dat = dat, Q = Q, verbose = 0) # GDINA package
+#fit <- CDM::gdina(data = dat, q.matrix = Q, progress = 0) # CDM package
 
 #---------------CD-CAT---------------#
 res.FIXJ <- cdcat(fit = fit, dat = dat, FIXED.LENGTH = TRUE, n.cores = 4)
@@ -77,8 +76,8 @@ res.VARJ <- cdcat(fit = fit, dat = dat, FIXED.LENGTH = FALSE, n.cores = 4)
 #---------------Results--------------#
 res.FIXJ$est[[1]] # estimates for the first examinee (fixed-length)
 res.VARJ$est[[1]] # estimates for the first examinee (fixed-precision)
-att.plot(res.FIXJ, i = 1) # plot for estimates for the first examinee (fixed-length)
-att.plot(res.VARJ, i = 1) # plot for estimates for the first examinee (fixed-length)
+att.plot(cdcat.obj = res.FIXJ, i = 1) # plot for the first examinee (fixed-length)
+att.plot(cdcat.obj = res.VARJ, i = 1) # plot  for the first examinee (fixed-precision)
 # FIXJ summary
 res.FIXJ.sum.real <- cdcat.summary(cdcat.obj = res.FIXJ, alpha = att) # vs. real accuracy
 res.FIXJ.sum.real$recovery$plotPCV
@@ -89,12 +88,12 @@ res.VARJ.sum.post$CATlength$stats
 res.VARJ.sum.post$CATlength$plot
 res.VARJ.sum.post$recovery
 # Post-hoc CAT simulation (only if dat is fit$options$dat)
-att.J <- personparm(fit, "MAP")[, -(K+1)] # GDINA package
+att.J <- GDINA::personparm(fit, "MAP")[, -(K+1)] # GDINA package
 # att.J <- t(sapply(strsplit(as.character(fit$pattern$map.est), ""), as.numeric)) # CDM package
-class.J <- ClassRate(att, att.J) # upper-limit for accuracy
+class.J <- GDINA::ClassRate(att, att.J) # upper-limit for accuracy
 res.FIXJ.sum.post <- cdcat.summary(cdcat.obj = res.FIXJ, alpha = att.J)
-res.FIXJ.sum.post$recovery$plotPCV + geom_hline(yintercept = class.J$PCV[K], color = "red")
-res.FIXJ.sum.post$recovery$plotPCA + geom_hline(yintercept = class.J$PCA, color = "red")
+res.FIXJ.sum.post$recovery$plotPCV + ggplot2::geom_hline(yintercept = class.J$PCV[K], color = "red")
+res.FIXJ.sum.post$recovery$plotPCA + ggplot2::geom_hline(yintercept = class.J$PCA, color = "red")
 
 ######################################
 # Example 2.                         #
@@ -113,14 +112,16 @@ dat.v <- sim155complex$simdat.v
 att.v <- sim155complex$simalpha.v
 
 #-----(multiple) Model estimation----#
-fitTRUE <- GDINA(dat = dat.c, Q = Q, catprob.parm = parm, control = list(maxitr = 0), verbose = 0)
-fitGDINA <- GDINA(dat = dat.c, Q = Q, verbose = 0)
-fitDINA <- GDINA(dat = dat.c, Q = Q, model = "DINA", verbose = 0)
-fitDINO <- GDINA(dat = dat.c, Q = Q, model = "DINO", verbose = 0)
-fitACDM <- GDINA(dat = dat.c, Q = Q, model = "ACDM", verbose = 0)
+fitTRUE <- GDINA::GDINA(dat = dat.c, Q = Q, catprob.parm = parm,
+
+           control = list(maxitr = 0), verbose = 0)
+fitGDINA <- GDINA::GDINA(dat = dat.c, Q = Q, verbose = 0)
+fitDINA <- GDINA::GDINA(dat = dat.c, Q = Q, model = "DINA", verbose = 0)
+fitDINO <- GDINA::GDINA(dat = dat.c, Q = Q, model = "DINO", verbose = 0)
+fitACDM <- GDINA::GDINA(dat = dat.c, Q = Q, model = "ACDM", verbose = 0)
 LR2step <- LR_2step(fitGDINA)
 models <- LR2step$models.adj.pvalues
-fitLR2 <- GDINA(dat = dat.c, Q = Q, model = models, verbose = 0)
+fitLR2 <- GDINA::GDINA(dat = dat.c, Q = Q, model = models, verbose = 0)
 
 #---------------CD-CAT---------------#
 fit.l <- list(fitTRUE, fitGDINA, fitDINA, fitDINO, fitACDM, fitLR2)
@@ -132,13 +133,14 @@ for(mm in 1:length(fit.l)) {
 }
 
 #---------------Results--------------#
-fitbest <- GDINA(dat = dat.v, Q = Q, catprob.parm = parm, control = list(maxitr = 1), verbose = 0)
-fitbest.acc <- personparm(fitbest, "MAP")[, -(K+1)]
-class.J <- ClassRate(att.v, fitbest.acc) # upper-limit for accuracy
+fitbest <- GDINA::GDINA(dat = dat.v, Q = Q, catprob.parm = parm,
+          control = list(maxitr = 1), verbose = 0)
+fitbest.acc <- GDINA::personparm(fitbest, "MAP")[, -(K+1)]
+class.J <- GDINA::ClassRate(att.v, fitbest.acc) # upper-limit for accuracy
 # FIXJ comparison
 res.FIXJ.sum.post.comp <- cdcat.comp(cdcat.obj.l = res.FIXJ.l, alpha = att.v)
-res.FIXJ.sum.post.comp$PCVcomp + geom_hline(yintercept = class.J$PCV[K], color = "red")
-res.FIXJ.sum.post.comp$PCAmcomp + geom_hline(yintercept = class.J$PCA, color = "red")
+res.FIXJ.sum.post.comp$PCVcomp + ggplot2::geom_hline(yintercept = class.J$PCV[K], color = "red")
+res.FIXJ.sum.post.comp$PCAmcomp + ggplot2::geom_hline(yintercept = class.J$PCA, color = "red")
 # VARJ comparison
 res.VARJ.sum.post.comp <- cdcat.comp(cdcat.obj.l = res.VARJ.l, alpha = att.v)
 res.VARJ.sum.post.comp$stats
@@ -171,12 +173,14 @@ res.NPS.sum.real <- cdcat.summary(cdcat.obj = res.NPS, alpha = att) # vs. real a
 res.NPS.sum.real$recovery$plotPCV
 res.NPS.sum.real$recovery$plotPCA
 # Post-hoc CAT simulation
-fit <- AlphaNP(Y = dat, Q = Q, gate = "AND")
+fit <- NPCD::AlphaNP(Y = dat, Q = Q, gate = "AND")
 att.J <- fit$alpha.est
-class.J <- ClassRate(att, att.J) # upper-limit for accuracy
+class.J <- GDINA::ClassRate(att, att.J) # upper-limit for accuracy
 res.NPS.sum.post <- cdcat.summary(cdcat.obj = res.NPS, alpha = att.J)
-res.NPS.sum.post$recovery$plotPCV + geom_hline(yintercept = class.J$PCV[K], color = "firebrick3")
-res.NPS.sum.post$recovery$plotPCA + geom_hline(yintercept = class.J$PCA, color = "firebrick3")
+res.NPS.sum.post$recovery$plotPCV + ggplot2::geom_hline(yintercept = class.J$PCV[K],
+                                                       color = "firebrick3")
+res.NPS.sum.post$recovery$plotPCA + ggplot2::geom_hline(yintercept = class.J$PCA,
+                                                       color = "firebrick3")
 
 }
 \references{

@@ -1,17 +1,17 @@
 gen.Q <- function(minJ.K, complexity, ...){
   # dependencies: GDINA (attributepattern)
-  
+
   # minJ.K: Vector indicating the minimum number of items measuring each attribute
   # complexity: Vector indicating the maximum number of attributes being measured by an item in each column of Q
-  
+
   K <- length(minJ.K)
   J <- sum(minJ.K)
-  pattern <- attributepattern(K)[-1,]
+  pattern <- GDINA::attributepattern(K)[-1,]
   n.attributes <- apply(pattern,1,sum)
-  
+
   candidates <- list()
   Q <- NULL
-  
+
   for (k in 1:K) {
     candidates[[k]] <- which(n.attributes <= complexity[k] & (pattern[, k] == TRUE))
     if(length(candidates[[k]]) == 1){
@@ -20,22 +20,22 @@ gen.Q <- function(minJ.K, complexity, ...){
       J.K0 <- sample(x = c(candidates[[k]]), size = minJ.K[k], replace = TRUE)}
     J.K <- pattern[J.K0, ]
     Q <- rbind(Q, J.K)}
-  
+
   return(Q)
 }
 gen.att <- function(N, K, prior = NULL, ...){
   # dependencies: GDINA (attributepattern)
-  
+
   # N: Number of attribute patterns to be generated
   # K: Number of attributes
-  
+
   if (is.null(prior)) {
     prior<-rep(1/2^K,2^K)
   }
   prior
   att.gr <- sample(x = length(prior), size = N, replace = TRUE,
                    prob = prior)
-  att <- attributepattern(K)[att.gr, ]
+  att <- GDINA::attributepattern(K)[att.gr, ]
   return(att)
 }
 
@@ -103,7 +103,7 @@ NPC.eta <- function(q, l, gate){
 pseudoP <- function(NPCD.obj, inv.type, w.type){
   if(!(inv.type %in% c(0, "min"))){stop("inv.type = 0, 'min'")}
   if(!(w.type %in% 1:4)){stop("w.type = 1, 2, 3, 4")}
-  
+
   pattern <- NPCD.obj$pattern
   N <- nrow(NPCD.obj$alpha.est)
   K <- ncol(NPCD.obj$alpha.est)
@@ -111,7 +111,7 @@ pseudoP <- function(NPCD.obj, inv.type, w.type){
     N <- 1
     K <- length(NPCD.obj$alpha.est)
   }
-  
+
   pP <- matrix(NA, nrow = N, ncol = K, dimnames = list(paste0("N", 1:N), paste0("K", 1:K)))
   for(i in 1:N){
     dist.i <- NPCD.obj$loss.matrix[,i]

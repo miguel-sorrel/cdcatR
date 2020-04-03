@@ -10,7 +10,8 @@
 #'
 #' @export
 #'
-att.plot <- function(cdcat.obj, i, k = NULL, ...){
+att.plot <- function(cdcat.obj, i, k = NULL){
+
   Q <- cdcat.obj$specifications$Q
   K <- ncol(Q)
   MAXJ <- cdcat.obj$specifications$MAXJ
@@ -45,26 +46,29 @@ att.plot <- function(cdcat.obj, i, k = NULL, ...){
       est.k$color[which(est.k$est.k < 0.5 & est.k$upr < 0.5)] <- "firebrick3"
       est.k$color[which(est.k$est.k > 0.5 & est.k$lwr > 0.5)] <- "seagreen3"
 
-      plots[[k]] <- ggplot(data = est.k, aes(x = item.position, y = est.k)) +
-        theme_gray() +
-        scale_x_continuous("Until Item Position",
+      plots[[k]] <- ggplot2::ggplot(data = est.k,
+                                    ggplot2::aes(x = item.position, y = est.k)) +
+        ggplot2::theme_gray() +
+        ggplot2::scale_x_continuous("Until Item Position",
                            labels = 1:Ji,
                            breaks = 1:Ji) +
-        scale_y_continuous(
+        ggplot2::scale_y_continuous(
           paste("K", k, sep = ""),
           limits = c(0, 1),
           labels = seq(from = 0, to = 1, by = 0.25),
           breaks = seq(from = 0, to = 1, by = 0.25)
         ) +
-        geom_ribbon(
+        ggplot2::geom_ribbon(
           data = est.k,
-          aes(ymin = lwr, ymax = upr),
+          ggplot2::aes(ymin = lwr, ymax = upr),
           linetype = 2,
           alpha = 0.3
         ) +
-        geom_line() +
-        geom_point(shape = 21, color = "black", fill = est.k$color, size = 2) +
-        theme(legend.position = "none", panel.grid.minor.x = element_blank(), panel.grid.minor.y = element_blank())
+        ggplot2::geom_line() +
+        ggplot2::geom_point(shape = 21, color = "black", fill = est.k$color, size = 2) +
+        ggplot2::theme(legend.position = "none",
+                       panel.grid.minor.x = ggplot2::element_blank(),
+                       panel.grid.minor.y = ggplot2::element_blank())
     }
   } else if(cdcat.obj$specifications$itemSelect == "NPS"){
     est.pre <- lapply(cdcat.obj$est, '[[', 1)[[i]]
@@ -87,12 +91,13 @@ att.plot <- function(cdcat.obj, i, k = NULL, ...){
         est.k$color[which(est.k$est.k == 1)] <- "seagreen3"
       }
 
-      plots[[k]] <- ggplot(data = est.k, aes(x = item.position)) +
-        theme_gray() +
-        scale_x_continuous("Until Item Position",
+      plots[[k]] <- ggplot2::ggplot(data = est.k,
+                                    ggplot2::aes(x = item.position)) +
+        ggplot2::theme_gray() +
+        ggplot2::scale_x_continuous("Until Item Position",
                            labels = K:Ji,
                            breaks = K:Ji) +
-        scale_y_continuous(
+        ggplot2::scale_y_continuous(
           paste("K", k, sep = ""),
           limits = c(0, 1),
           labels = seq(from = 0, to = 1, by = 0.5),
@@ -101,15 +106,16 @@ att.plot <- function(cdcat.obj, i, k = NULL, ...){
 
       if(cdcat.obj$specifications$NPS.args$pseudo.prob){
         plots[[k]] <- plots[[k]] +
-          geom_line(aes(y = pP.k), color = "gray60", linetype = "longdash")
+          ggplot2::geom_line(ggplot2::aes(y = pP.k), color = "gray60", linetype = "longdash")
       }
 
       plots[[k]] <- plots[[k]] +
-        geom_line(aes(y = est.k)) +
-        geom_point(aes(y = est.k), shape = 21, color = "black", fill = est.k$color, size = 2) +
-        theme(legend.position = "none", panel.grid.minor = element_blank())
+        ggplot2::geom_line(ggplot2::aes(y = est.k)) +
+        ggplot2::geom_point(ggplot2::aes(y = est.k), shape = 21, color = "black", fill = est.k$color, size = 2) +
+        ggplot2::theme(legend.position = "none", panel.grid.minor = ggplot2::element_blank())
     }
   }
 
-  plot_grid(plotlist = plots[do.k], nrow = length(do.k))
+  cowplot::plot_grid(plotlist = plots[do.k],
+                     nrow = length(do.k))
 }

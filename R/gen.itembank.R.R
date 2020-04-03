@@ -25,7 +25,7 @@
 #'#     Q and model are provided     #
 #'####################################
 #'
-#' Q <- sim30GDINA$simQ
+#' Q <- GDINA::sim30GDINA$simQ
 #' model <- rep(1, each = nrow(Q))
 #' IQ <- .70   # P(1), IQ = Low item quality in Kaplan, de la Torre & Barrada (2015)
 #' VAR <- 0.10 # High variance in Kaplan et al. (2015)
@@ -44,7 +44,7 @@
 #'
 #' @export
 #'
-gen.itembank <- function (Q = NULL, minJ.K = NULL, complexity = NULL, IQ, VAR, model = NULL, ...)
+gen.itembank <- function (Q = NULL, minJ.K = NULL, complexity = NULL, IQ, VAR, model = NULL)
   {
 
   if((is.null(Q)) & ((is.null(minJ.K)) | (is.null(minJ.K)))) {

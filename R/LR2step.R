@@ -24,23 +24,19 @@
 #' Sorrel, M. A., de la Torre, J., Abad, F. J., & Olea, J. (2017). Two-step likelihood ratio test for item-level model comparison in cognitive diagnosis models. \emph{Methodology, 13}, 39-47.
 #'
 #' @examples
-#' N <- 1000
-#' Q <- sim30GDINA$simQ
-#' J <- nrow(Q)
-#' gs <- data.frame(guess=rep(0.1,J),slip=rep(0.1,J))
-#' sim <- simGDINA(N, Q, gs.parm = gs, model = "DINA")
-#' resGDINA <- GDINA(dat = sim$dat, Q = sim$Q, model = "GDINA",verbose = F)
-#' resCDM <- gdina(data = sim$dat, q.matrix = sim$Q, rule = "GDINA", progress = F)
+#' Q <- sim180DINA$simQ
+#' dat <- sim180DINA$simdat
+#' resGDINA <- GDINA::GDINA(dat = dat, Q = Q, model = "GDINA",verbose = FALSE)
+#' resCDM <- CDM::gdina(data = dat, q.matrix = Q, rule = "GDINA", progress = FALSE)
 #' LR2.GDINA <- LR_2step(fit = resGDINA)
 #' LR2.CDM <- LR_2step(fit = resCDM)
-#' LR2.GDINA$models.adj.pvalues
-#' LR2.CDM$models.adj.pvalues
-
+#' table(LR2.GDINA$models.adj.pvalues[which(rowSums(Q) != 1)])
+#' table(LR2.CDM$models.adj.pvalues[which(rowSums(Q) != 1)])
 #
 #' @export
 #'
 
-LR_2step <- function(fit, p.adjust.method = "holm", alpha.level = 0.05,...){
+LR_2step <- function(fit, p.adjust.method = "holm", alpha.level = 0.05){
   ## GDINA likelihood is computed from the fit estimates
   # Notes from this function: (ui %*% theta - ci) >= 0
 
@@ -80,13 +76,13 @@ LR_2step <- function(fit, p.adjust.method = "holm", alpha.level = 0.05,...){
   if(!is.null(est)){
     if(!is.null(est$extra$call)){ # package GDINA
       Q <- est$options$Q
-      attpat <- attributepattern(ncol(Q))
+      attpat <- GDINA::attributepattern(ncol(Q))
       Rlj <- est$technicals$expectedCorrect
       Nlj <- est$technicals$expectedTotal
       catprob.parm <- est$catprob.parm
     } else { # package CDM
       Q <- est$q.matrix
-      attpat <- attributepattern(ncol(Q))
+      attpat <- GDINA::attributepattern(ncol(Q))
       attpat.s <- apply(attpat, 1, paste, collapse = "")
       RLj <- est$control$R.lj
       RLj <- RLj[,match(attpat.s, colnames(RLj))]
@@ -97,7 +93,7 @@ LR_2step <- function(fit, p.adjust.method = "holm", alpha.level = 0.05,...){
       for(j in 1:nrow(Q)){
         kj <- which(Q[j,] == 1)
         tmp <- factor(apply(attpat[,kj, drop = F], 1, paste, collapse = ""))
-        tmp <- factor(tmp, levels = apply(unique(attributepattern(length(kj))), 1, paste, collapse = ""))
+        tmp <- factor(tmp, levels = apply(unique(GDINA::attributepattern(length(kj))), 1, paste, collapse = ""))
         for(l in 1:(2^length(kj))){
           Rlj[j,l] <- sum(RLj[j, which(as.numeric(tmp) == l)])
           Nlj[j,l] <- sum(NLj[j, which(as.numeric(tmp) == l)])
@@ -127,7 +123,7 @@ LR_2step <- function(fit, p.adjust.method = "holm", alpha.level = 0.05,...){
     Kj <- length(pars.jj)
     RNjjob <- rbind(Rlj[jj, 1:Kj], Nlj[jj, 1:Kj], Nlj[jj, 1:Kj] - Rlj[jj, 1:Kj])
     classes <- 2^Kjs[jj]
-    posible.patterns <- attributepattern(Kjj)
+    posible.patterns <- GDINA::attributepattern(Kjj)
 
     par.DINA <- constrOptim(theta = c(0.1, 0.1), f = make.Lik.DINA.k, grad = NULL,
                             ui = rbind(c(1, 0), c(0, 1), c(1, 1), c(-1, 0), c(0, -1), c(-1, -1)),

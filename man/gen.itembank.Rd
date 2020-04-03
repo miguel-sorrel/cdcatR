@@ -4,15 +4,7 @@
 \alias{gen.itembank}
 \title{Item bank generation}
 \usage{
-gen.itembank(
-  Q = NULL,
-  minJ.K = NULL,
-  complexity = NULL,
-  IQ,
-  VAR,
-  model = NULL,
-  ...
-)
+gen.itembank(Q = NULL, minJ.K = NULL, complexity = NULL, IQ, VAR, model = NULL)
 }
 \arguments{
 \item{Q}{Q-matrix}
@@ -41,7 +33,7 @@ a uniform distribution with mean = \emph{IQ} and variance = \emph{VAR}.
 #     Q and model are provided     #
 ####################################
 
-Q <- sim30GDINA$simQ
+Q <- GDINA::sim30GDINA$simQ
 model <- rep(1, each = nrow(Q))
 IQ <- .70   # P(1), IQ = Low item quality in Kaplan, de la Torre & Barrada (2015)
 VAR <- 0.10 # High variance in Kaplan et al. (2015)

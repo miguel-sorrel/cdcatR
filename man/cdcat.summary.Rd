@@ -4,7 +4,7 @@
 \alias{cdcat.summary}
 \title{Summary information for a cdcat.object}
 \usage{
-cdcat.summary(cdcat.obj, alpha, ...)
+cdcat.summary(cdcat.obj, alpha)
 }
 \arguments{
 \item{cdcat.obj}{\code{cdcat} results}

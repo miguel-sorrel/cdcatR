@@ -36,6 +36,8 @@
 #'
 #' Yigit, H. D., Sorrel, M. A., de la Torre, J. (2018). Computerized adaptive testing for cognitively based multiple-choice data. \emph{Applied Psychological Measurement, 43}, 388-401.
 #'
+#' @import foreach
+#'
 #' @examples
 #'######################################
 #'# Example 1.                         #
@@ -49,8 +51,8 @@
 #'att <- sim180GDINA$simalpha
 #'
 #'#----------Model estimation----------#
-#'fit <- GDINA(dat = dat, Q = Q, verbose = 0) # GDINA package
-#'# fit <- gdina(data = dat, q.matrix = Q, progress = 0) # CDM package
+#'fit <- GDINA::GDINA(dat = dat, Q = Q, verbose = 0) # GDINA package
+#'#fit <- CDM::gdina(data = dat, q.matrix = Q, progress = 0) # CDM package
 #'
 #'#---------------CD-CAT---------------#
 #'res.FIXJ <- cdcat(fit = fit, dat = dat, FIXED.LENGTH = TRUE, n.cores = 4)
@@ -59,8 +61,8 @@
 #'#---------------Results--------------#
 #'res.FIXJ$est[[1]] # estimates for the first examinee (fixed-length)
 #'res.VARJ$est[[1]] # estimates for the first examinee (fixed-precision)
-#'att.plot(res.FIXJ, i = 1) # plot for estimates for the first examinee (fixed-length)
-#'att.plot(res.VARJ, i = 1) # plot for estimates for the first examinee (fixed-length)
+#'att.plot(cdcat.obj = res.FIXJ, i = 1) # plot for the first examinee (fixed-length)
+#'att.plot(cdcat.obj = res.VARJ, i = 1) # plot  for the first examinee (fixed-precision)
 #'# FIXJ summary
 #'res.FIXJ.sum.real <- cdcat.summary(cdcat.obj = res.FIXJ, alpha = att) # vs. real accuracy
 #'res.FIXJ.sum.real$recovery$plotPCV
@@ -71,12 +73,12 @@
 #'res.VARJ.sum.post$CATlength$plot
 #'res.VARJ.sum.post$recovery
 #'# Post-hoc CAT simulation (only if dat is fit$options$dat)
-#'att.J <- personparm(fit, "MAP")[, -(K+1)] # GDINA package
+#'att.J <- GDINA::personparm(fit, "MAP")[, -(K+1)] # GDINA package
 #'# att.J <- t(sapply(strsplit(as.character(fit$pattern$map.est), ""), as.numeric)) # CDM package
-#'class.J <- ClassRate(att, att.J) # upper-limit for accuracy
+#'class.J <- GDINA::ClassRate(att, att.J) # upper-limit for accuracy
 #'res.FIXJ.sum.post <- cdcat.summary(cdcat.obj = res.FIXJ, alpha = att.J)
-#'res.FIXJ.sum.post$recovery$plotPCV + geom_hline(yintercept = class.J$PCV[K], color = "red")
-#'res.FIXJ.sum.post$recovery$plotPCA + geom_hline(yintercept = class.J$PCA, color = "red")
+#'res.FIXJ.sum.post$recovery$plotPCV + ggplot2::geom_hline(yintercept = class.J$PCV[K], color = "red")
+#'res.FIXJ.sum.post$recovery$plotPCA + ggplot2::geom_hline(yintercept = class.J$PCA, color = "red")
 #'
 #'######################################
 #'# Example 2.                         #
@@ -95,14 +97,16 @@
 #'att.v <- sim155complex$simalpha.v
 #'
 #'#-----(multiple) Model estimation----#
-#'fitTRUE <- GDINA(dat = dat.c, Q = Q, catprob.parm = parm, control = list(maxitr = 0), verbose = 0)
-#'fitGDINA <- GDINA(dat = dat.c, Q = Q, verbose = 0)
-#'fitDINA <- GDINA(dat = dat.c, Q = Q, model = "DINA", verbose = 0)
-#'fitDINO <- GDINA(dat = dat.c, Q = Q, model = "DINO", verbose = 0)
-#'fitACDM <- GDINA(dat = dat.c, Q = Q, model = "ACDM", verbose = 0)
+#'fitTRUE <- GDINA::GDINA(dat = dat.c, Q = Q, catprob.parm = parm,
+#'
+#'            control = list(maxitr = 0), verbose = 0)
+#'fitGDINA <- GDINA::GDINA(dat = dat.c, Q = Q, verbose = 0)
+#'fitDINA <- GDINA::GDINA(dat = dat.c, Q = Q, model = "DINA", verbose = 0)
+#'fitDINO <- GDINA::GDINA(dat = dat.c, Q = Q, model = "DINO", verbose = 0)
+#'fitACDM <- GDINA::GDINA(dat = dat.c, Q = Q, model = "ACDM", verbose = 0)
 #'LR2step <- LR_2step(fitGDINA)
 #'models <- LR2step$models.adj.pvalues
-#'fitLR2 <- GDINA(dat = dat.c, Q = Q, model = models, verbose = 0)
+#'fitLR2 <- GDINA::GDINA(dat = dat.c, Q = Q, model = models, verbose = 0)
 #'
 #'#---------------CD-CAT---------------#
 #'fit.l <- list(fitTRUE, fitGDINA, fitDINA, fitDINO, fitACDM, fitLR2)
@@ -114,13 +118,14 @@
 #'}
 #'
 #'#---------------Results--------------#
-#'fitbest <- GDINA(dat = dat.v, Q = Q, catprob.parm = parm, control = list(maxitr = 1), verbose = 0)
-#'fitbest.acc <- personparm(fitbest, "MAP")[, -(K+1)]
-#'class.J <- ClassRate(att.v, fitbest.acc) # upper-limit for accuracy
+#'fitbest <- GDINA::GDINA(dat = dat.v, Q = Q, catprob.parm = parm,
+#'           control = list(maxitr = 1), verbose = 0)
+#'fitbest.acc <- GDINA::personparm(fitbest, "MAP")[, -(K+1)]
+#'class.J <- GDINA::ClassRate(att.v, fitbest.acc) # upper-limit for accuracy
 #'# FIXJ comparison
 #'res.FIXJ.sum.post.comp <- cdcat.comp(cdcat.obj.l = res.FIXJ.l, alpha = att.v)
-#'res.FIXJ.sum.post.comp$PCVcomp + geom_hline(yintercept = class.J$PCV[K], color = "red")
-#'res.FIXJ.sum.post.comp$PCAmcomp + geom_hline(yintercept = class.J$PCA, color = "red")
+#'res.FIXJ.sum.post.comp$PCVcomp + ggplot2::geom_hline(yintercept = class.J$PCV[K], color = "red")
+#'res.FIXJ.sum.post.comp$PCAmcomp + ggplot2::geom_hline(yintercept = class.J$PCA, color = "red")
 #'# VARJ comparison
 #'res.VARJ.sum.post.comp <- cdcat.comp(cdcat.obj.l = res.VARJ.l, alpha = att.v)
 #'res.VARJ.sum.post.comp$stats
@@ -153,17 +158,21 @@
 #'res.NPS.sum.real$recovery$plotPCV
 #'res.NPS.sum.real$recovery$plotPCA
 #'# Post-hoc CAT simulation
-#'fit <- AlphaNP(Y = dat, Q = Q, gate = "AND")
+#'fit <- NPCD::AlphaNP(Y = dat, Q = Q, gate = "AND")
 #'att.J <- fit$alpha.est
-#'class.J <- ClassRate(att, att.J) # upper-limit for accuracy
+#'class.J <- GDINA::ClassRate(att, att.J) # upper-limit for accuracy
 #'res.NPS.sum.post <- cdcat.summary(cdcat.obj = res.NPS, alpha = att.J)
-#'res.NPS.sum.post$recovery$plotPCV + geom_hline(yintercept = class.J$PCV[K], color = "firebrick3")
-#'res.NPS.sum.post$recovery$plotPCA + geom_hline(yintercept = class.J$PCA, color = "firebrick3")
+#'res.NPS.sum.post$recovery$plotPCV + ggplot2::geom_hline(yintercept = class.J$PCV[K],
+#'                                                        color = "firebrick3")
+#'res.NPS.sum.post$recovery$plotPCA + ggplot2::geom_hline(yintercept = class.J$PCA,
+#'                                                        color = "firebrick3")
 #'
 #' @export
 #'
 cdcat <- function(fit = NULL, dat = NULL, Q = NULL, itemSelect = "GDI", MAXJ = 20, FIXED.LENGTH = TRUE, att.prior = NULL, post.initial = NULL, max.cut = 0.80,
-                  NPS.args = list(gate = "AND", pseudo.prob = T, w.type = 1, seed = NULL), n.cores = 2, i.print = 250, ...){
+                  NPS.args = list(gate = "AND", pseudo.prob = T, w.type = 1, seed = NULL), n.cores = 2, i.print = 250){
+
+  # `%dopar%` <- foreach::`%dopar%` # define a local dopar
 
   #-------------------------
   # Gather data and objects
@@ -180,12 +189,12 @@ cdcat <- function(fit = NULL, dat = NULL, Q = NULL, itemSelect = "GDI", MAXJ = 2
       model <- ifelse(length(unique(est$rule)) == 1, unique(est$rule), "Combination")
       if(is.null(dat)){X <- est$data} else {X <- dat}
       if(is.null(Q)){Q <- est$q.matrix}
-      LC.prob <- matrix(NA, nrow = nrow(Q), ncol = 2^ncol(Q), dimnames = list(paste("Item", 1:nrow(Q)),apply(attributepattern(ncol(Q)), 1, paste, collapse = "")))
+      LC.prob <- matrix(NA, nrow = nrow(Q), ncol = 2^ncol(Q), dimnames = list(paste("Item", 1:nrow(Q)),apply(GDINA::attributepattern(ncol(Q)), 1, paste, collapse = "")))
       for(j in 1:nrow(Q)){
         kj <- which(Q[j,] == 1)
         prob.j.l <- est$probitem[est$probitem$itemno == j,]$prob
-        tmp <- factor(apply(attributepattern(ncol(Q))[,kj, drop = F], 1, paste, collapse = ""))
-        tmp <- factor(tmp, levels = apply(unique(attributepattern(length(kj))), 1, paste, collapse = ""))
+        tmp <- factor(apply(GDINA::attributepattern(ncol(Q))[,kj, drop = F], 1, paste, collapse = ""))
+        tmp <- factor(tmp, levels = apply(unique(GDINA::attributepattern(length(kj))), 1, paste, collapse = ""))
         for(l in 1:length(prob.j.l)){LC.prob[j, which(as.numeric(tmp) == l)] <- prob.j.l[l]}
       }
     }
@@ -199,12 +208,12 @@ cdcat <- function(fit = NULL, dat = NULL, Q = NULL, itemSelect = "GDI", MAXJ = 2
   J <- nrow(Q)
   K <- ncol(Q)
   L <- 2^K
-  pattern <- attributepattern(K)
-  Lclass <- apply(attributepattern(K), MARGIN = 1,FUN = function(x){paste(x,collapse = "")})
+  pattern <- GDINA::attributepattern(K)
+  Lclass <- apply(GDINA::attributepattern(K), MARGIN = 1,FUN = function(x){paste(x,collapse = "")})
   if(is.null(att.prior)){att.prior <- rep(1/L, L)}
   if(is.null(post.initial)){post.initial <- matrix(data = rep(rep(1/L, L), N), nrow = N)}
-  cl <- makeCluster(n.cores, type = "SOCK")
-  registerDoParallel(cl, cores = n.cores)
+  cl <- parallel::makeCluster(n.cores, type = "SOCK")
+  doParallel::registerDoParallel(cl, cores = n.cores)
 
   #----------------------------
   # Warning end error messages
@@ -220,7 +229,7 @@ cdcat <- function(fit = NULL, dat = NULL, Q = NULL, itemSelect = "GDI", MAXJ = 2
   } else {
     if(is.null(fit)){stop("fit required when itemSelect != 'NPS'")}
   }
-  if(n.cores > detectCores()){stop("n.cores cannot be higher than the number of cores in the CPU")}
+  if(n.cores > parallel::detectCores()){stop("n.cores cannot be higher than the number of cores in the CPU")}
 
   #-----------------------
   # CD-CAT implementation
@@ -234,7 +243,7 @@ cdcat <- function(fit = NULL, dat = NULL, Q = NULL, itemSelect = "GDI", MAXJ = 2
     # Parametric CD-CAT
     #-------------------
 
-    out <- foreach(i = 1:N, .export = c("GDI.M", "H", "JSD.DICO.M", "PWKL.M", "MPWKL.M"), .inorder = T) %dopar% {
+    out <- foreach::foreach(i = 1:N, .export = c("GDI.M", "H", "JSD.DICO.M", "PWKL.M", "MPWKL.M"), .inorder = T) %dopar% {
       try({
         if(i %% i.print == 0){cat(i)}
 
@@ -319,7 +328,7 @@ cdcat <- function(fit = NULL, dat = NULL, Q = NULL, itemSelect = "GDI", MAXJ = 2
     if(NPS.args$gate == "AND"){gate <- rep("AND", J)}
     if(NPS.args$gate == "OR"){gate <- rep("OR", J)}
 
-    out <- foreach(i = 1:N, .packages = "NPCD", .export = c("pseudoP", "NPC.eta"), .inorder = T) %dopar% {
+    out <- foreach::foreach(i = 1:N, .packages = "NPCD", .export = c("pseudoP", "NPC.eta"), .inorder = T) %dopar% {
       try({
         if(i %% i.print == 0){cat(i)}
         if(!is.null(NPS.args$seed)){set.seed(NPS.args$seed + i)}
@@ -394,7 +403,7 @@ cdcat <- function(fit = NULL, dat = NULL, Q = NULL, itemSelect = "GDI", MAXJ = 2
 
         # Step 6: Estimate the examinee's attribute profile (NPC method) and the second most plausible attribute profile
         # assign(paste0("a.", k), as.double(NPC(y, Qy, gatey)$HD))
-        alphanp <- AlphaNP(t(as.matrix(y)), Qy, gatey[1])
+        alphanp <- NPCD::AlphaNP(t(as.matrix(y)), Qy, gatey[1])
         # assign(paste0("a.", k), alphanp$alpha.est)
         # a2 <- names(sort(NPC(y, Qy, gatey)$HD.l)[m])
         pat.dist <- cbind(alphanp$pattern, alphanp$loss.matrix)
@@ -446,7 +455,7 @@ cdcat <- function(fit = NULL, dat = NULL, Q = NULL, itemSelect = "GDI", MAXJ = 2
             if(is.null(hit)){
               m <- m + 1
               # a2 <- names(sort(NPC(y, Qy, gatey)$HD.l)[m])
-              alphanp <- AlphaNP(t(as.matrix(y)), Qy, gatey[1])
+              alphanp <- NPCD::AlphaNP(t(as.matrix(y)), Qy, gatey[1])
               pat.dist <- cbind(alphanp$pattern, alphanp$loss.matrix)
               if(K > 1){random.order <- sample(1:K, K, F)}
               for(k in random.order){pat.dist <- pat.dist[order(pat.dist[,k]),]}
@@ -457,7 +466,7 @@ cdcat <- function(fit = NULL, dat = NULL, Q = NULL, itemSelect = "GDI", MAXJ = 2
 
           # Step 11: Estimate the examinee's attribute profile (NPC method) and the second most plausible attribute profile
           # assign(paste0("a.", k), as.double(NPC(y, Qy, gatey)$HD))
-          alphanp <- AlphaNP(t(as.matrix(y)), Qy, gatey[1])
+          alphanp <- NPCD::AlphaNP(t(as.matrix(y)), Qy, gatey[1])
           # assign(paste0("a.", t), alphanp$alpha.est)
           # a2 <- names(sort(NPC(y, Qy, gatey)$HD.l)[m])
           pat.dist <- cbind(alphanp$pattern, alphanp$loss.matrix)
@@ -503,7 +512,7 @@ cdcat <- function(fit = NULL, dat = NULL, Q = NULL, itemSelect = "GDI", MAXJ = 2
     } # end nonparametric CD-CAT for all examinees
   } # end CD-CAT
 
-  stopCluster(cl)
+  parallel::stopCluster(cl)
   res <- list()
   res$est <- out
   res$specifications <- list("fit" = fit, "dat" = dat, "Q" = Q, "model" = model,

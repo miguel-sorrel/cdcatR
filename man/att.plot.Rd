@@ -4,7 +4,7 @@
 \alias{att.plot}
 \title{Create plots for attribute mastery estimates}
 \usage{
-att.plot(cdcat.obj, i, k = NULL, ...)
+att.plot(cdcat.obj, i, k = NULL)
 }
 \arguments{
 \item{cdcat.obj}{An object of class \code{cdcat}}
