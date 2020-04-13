@@ -11,11 +11,11 @@ cdcat.comp(cdcat.obj.l, alpha, label = NULL)
 
 \item{alpha}{N x K matrix with the attribute patterns to be compared to the \code{cdcat} results}
 
-\item{label}{labels for the \code{cdcat} objects. If NULL (by default), the models are used as label}
+\item{label}{labels for the \code{cdcat} objects. If NULL (by default), the models are used as labels}
 }
 \value{
 \code{cdcat.comp} returns an object of class \code{cdcat.comp}.
 }
 \description{
-This function compares different \code{cdcat} objects in terms of classification accuracy (\code{FIXED.LENGTH == TRUE}) and/or CAT lenght \code{FIXED.LENGTH == FALSE}).
+This function compares different \code{cdcat} objects in terms of classification accuracy (\code{FIXED.LENGTH == TRUE}) and/or CAT lenght (\code{FIXED.LENGTH == FALSE}).
 }

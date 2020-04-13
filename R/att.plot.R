@@ -1,10 +1,13 @@
-#' Create plots for attribute mastery estimates
+#' Plots for attribute mastery estimates
 #'
-#' Create plots for attribute mastery estimates (\emph{X}: item position, \emph{Y}: mastery probability).
+#' @description This function generates a plot monitoring the attribute mastery estimates (\emph{X}: item position, \emph{Y}: mastery probability).
+#' If a parametric CD-CAT has been conducted, posterior probabilites (with confident intervals) of mastering each attribute are plotted.
+#' If a nonparametric CD-CAT has been conducted (and pseudo-probabilites have been computed), both nonparametric classification and pseudo-posterior probabilites (with confident intervals) of mastering each attribute are plotted.
+#' Colors are used in the plots to indicate mastery (green), non-mastery (red), or uncertainty (blue).
 #'
 #' @param cdcat.obj An object of class \code{cdcat}
 #' @param i Examinee to be plotted
-#' @param k Attribute/s to be plotted. Default is NULL, which plotts all attributes
+#' @param k Attribute/s to be plotted. Default is NULL, which plots all attributes
 #'
 #' @return \code{att.plot} creates a plot.
 #'
@@ -46,12 +49,11 @@ att.plot <- function(cdcat.obj, i, k = NULL){
       est.k$color[which(est.k$est.k < 0.5 & est.k$upr < 0.5)] <- "firebrick3"
       est.k$color[which(est.k$est.k > 0.5 & est.k$lwr > 0.5)] <- "seagreen3"
 
-      plots[[k]] <- ggplot2::ggplot(data = est.k,
-                                    ggplot2::aes(x = item.position, y = est.k)) +
+      plots[[k]] <- ggplot2::ggplot(data = est.k, ggplot2::aes(x = item.position, y = est.k)) +
         ggplot2::theme_gray() +
         ggplot2::scale_x_continuous("Until Item Position",
-                           labels = 1:Ji,
-                           breaks = 1:Ji) +
+                                    labels = 1:Ji,
+                                    breaks = 1:Ji) +
         ggplot2::scale_y_continuous(
           paste("K", k, sep = ""),
           limits = c(0, 1),
@@ -62,7 +64,7 @@ att.plot <- function(cdcat.obj, i, k = NULL){
           data = est.k,
           ggplot2::aes(ymin = lwr, ymax = upr),
           linetype = 2,
-          alpha = 0.3
+          alpha = 0.2
         ) +
         ggplot2::geom_line() +
         ggplot2::geom_point(shape = 21, color = "black", fill = est.k$color, size = 2) +
@@ -75,7 +77,11 @@ att.plot <- function(cdcat.obj, i, k = NULL){
     est <- est.pre[K:nrow(est.pre), 4]
     est <- t(as.data.frame(lapply(strsplit(est, ""), as.numeric)))
     rownames(est) <- K:nrow(est.pre); colnames(est) <- paste0("K", 1:K)
-    if(cdcat.obj$specifications$NPS.args$pseudo.prob){est <- cbind(est, est.pre[K:nrow(est.pre), 9:(8 + K)])}
+    if(cdcat.obj$specifications$NPS.args$pseudo.prob){
+      est <- cbind(est, est.pre[K:nrow(est.pre), 9:(8 + K)])
+      est <- cbind(est, sqrt(est[, (K + 1):(2*K)] * (1 - est[, (K + 1):(2*K)])))
+      colnames(est) <- c(paste("K", 1:K, sep = ""), paste("pP.K", 1:K, sep = ""), paste("SE.pP.K", 1:K, sep = ""))
+    }
 
     Ji <- K - 1 + nrow(est)
 
@@ -84,19 +90,22 @@ att.plot <- function(cdcat.obj, i, k = NULL){
       est.k$color <- "steelblue3"
       if(cdcat.obj$specifications$NPS.args$pseudo.prob){
         est.k$pP.k <- est[, K + k]
-        est.k$color[which(est.k$est.k == 0 & est.k$pP.k < 0.5)] <- "firebrick3"
-        est.k$color[which(est.k$est.k == 1 & est.k$pP.k > 0.5)] <- "seagreen3"
+        est.k$lwr <- est[, K + k] - 1.96 * est[, (2*K + k)]
+        est.k$upr <- est[, K + k] + 1.96 * est[, (2*K + k)]
+        est.k$lwr[est.k$lwr <= 0] <- 0
+        est.k$upr[est.k$upr >= 1] <- 1
+        est.k$color[which(est.k$est.k == 0 & est.k$upr < 0.5)] <- "firebrick3"
+        est.k$color[which(est.k$est.k == 1 & est.k$lwr > 0.5)] <- "seagreen3"
       } else {
         est.k$color[which(est.k$est.k == 0)] <- "firebrick3"
         est.k$color[which(est.k$est.k == 1)] <- "seagreen3"
       }
 
-      plots[[k]] <- ggplot2::ggplot(data = est.k,
-                                    ggplot2::aes(x = item.position)) +
+      plots[[k]] <- ggplot2::ggplot(data = est.k, ggplot2::aes(x = item.position)) +
         ggplot2::theme_gray() +
         ggplot2::scale_x_continuous("Until Item Position",
-                           labels = K:Ji,
-                           breaks = K:Ji) +
+                                    labels = K:Ji,
+                                    breaks = K:Ji) +
         ggplot2::scale_y_continuous(
           paste("K", k, sep = ""),
           limits = c(0, 1),
@@ -106,7 +115,13 @@ att.plot <- function(cdcat.obj, i, k = NULL){
 
       if(cdcat.obj$specifications$NPS.args$pseudo.prob){
         plots[[k]] <- plots[[k]] +
-          ggplot2::geom_line(ggplot2::aes(y = pP.k), color = "gray60", linetype = "longdash")
+          ggplot2::geom_line(ggplot2::aes(y = pP.k), color = "gray30", linetype = "longdash") +
+          ggplot2::geom_ribbon(
+            data = est.k,
+            ggplot2::aes(ymin = lwr, ymax = upr),
+            linetype = 2,
+            alpha = 0.2
+          )
       }
 
       plots[[k]] <- plots[[k]] +
@@ -116,6 +131,5 @@ att.plot <- function(cdcat.obj, i, k = NULL){
     }
   }
 
-  cowplot::plot_grid(plotlist = plots[do.k],
-                     nrow = length(do.k))
+  cowplot::plot_grid(plotlist = plots[do.k], nrow = length(do.k))
 }

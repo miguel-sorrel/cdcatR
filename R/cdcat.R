@@ -3,7 +3,8 @@
 #' @description \code{cdcat} conducts a CD-CAT application for a given dataset. Different item selection rules can be used: the general discrimination index
 #' (GDI; de la Torre & Chiu, 2016; Kaplan et al., 2015), the Jensen-Shannon divergence index (JSD; Kang et al., 2017; Minchen & de la Torre, 2016;
 #' Yigit et al., 2018), the posterior-weighted Kullback-Leibler index (PWKL; Cheng, 2009), the modified PWKL index (MPWKL; Kaplan et al., 2015), the nonparametric
-#' item selection method (NPS; Chang et al., 2018), or random selection. Fixed length or fixed precision CD-CAT can be applied.
+#' item selection method (NPS; Chang et al., 2018), or random selection. Fixed length or fixed precision CD-CAT can be applied. Fixed precision CD-CAT with
+#' NPS is available, by using the pseudo-posterior probability of each student mastering each attribute (experimental).
 #'
 #' @param fit Calibrated item bank with the GDINA or CDM package
 #' @param dat Dataset to be analyzed. If \code{is.null(dat)} it takes data from the fit object (i.e., post-hoc simulation)
@@ -13,13 +14,17 @@
 #' @param FIXED.LENGTH Fixed CAT-length (TRUE) or fixed-precision (FALSE). Default is TRUE
 #' @param att.prior Prior distribution for MAP/EAP estimates
 #' @param post.initial Prior distribution for \code{itemSelect}
-#' @param max.cut Cutoff for fixed-precision (posterior pattern > max.cut). Default is .80
-#' @param NPS.args A list of options when \code{itemSelect = "NPS"}
+#' @param max.cut Cutoff for fixed-precision (posterior pattern > max.cut). When \code{itemSelect = "NPS"} this is evaluated at the attribute level using the pseudo-posterior probabilities for each attribute (\emph{K} posterior probabilities > max.cut). Default is .80. A higher cutoff is recommended when \code{itemSelect = "NPS"}
+#' @param NPS.args A list of options when \code{itemSelect = "NPS"}. \code{gate} = "AND" or "OR", depending on whether a conjunctive o disjunctive nonparametric CDM is used. \code{pseudo.prob} = pseudo-posterior probability of each examinee mastering each attribute (experimental). \code{w.type} = weight type used for computing the pseudo-posterior probability (experimental). \code{seed} = NPS has a random component, so a seed is required for consistent results.
 #' @param n.cores Number of cores to be used during parallelization. Default is 2
 #' @param i.print Print examinee information. Default is 250
 #'
 #' @return \code{cdcat} returns an object of class \code{cdcat}.
-#'
+#' \describe{
+#' \item{est}{A list of that contains for each examinee the mastery probability estimates at each step of the CAT \code{est.cat} and the items applied \code{item.usage}}
+#' \item{specifications}{A list of that contains all the specifications}
+#' }
+
 #' @references
 #'
 #' Chang, Y.-P., Chiu, C.-Y., & Tsai, R.-C. (2019). Nonparametric CAT for CD in educational settings with small samples. \emph{Applied Psychological Measurement, 43}, 543-561.
@@ -37,6 +42,7 @@
 #' Yigit, H. D., Sorrel, M. A., de la Torre, J. (2018). Computerized adaptive testing for cognitively based multiple-choice data. \emph{Applied Psychological Measurement, 43}, 388-401.
 #'
 #' @import foreach
+#' @import stats
 #'
 #' @examples
 #'######################################
@@ -104,7 +110,7 @@
 #'fitDINA <- GDINA::GDINA(dat = dat.c, Q = Q, model = "DINA", verbose = 0)
 #'fitDINO <- GDINA::GDINA(dat = dat.c, Q = Q, model = "DINO", verbose = 0)
 #'fitACDM <- GDINA::GDINA(dat = dat.c, Q = Q, model = "ACDM", verbose = 0)
-#'LR2step <- LR_2step(fitGDINA)
+#'LR2step <- LR.2step(fitGDINA)
 #'models <- LR2step$models.adj.pvalues
 #'fitLR2 <- GDINA::GDINA(dat = dat.c, Q = Q, model = models, verbose = 0)
 #'
@@ -146,31 +152,41 @@
 #'att <- sim180DINA$simalpha[1:N,]
 #'
 #'#--------Nonparametric CD-CAT--------#
-#'res.NPS <- cdcat(dat = dat, Q = Q, itemSelect = "NPS", MAXJ = 30,
-#'                 NPS.args = list(gate = "AND", pseudo.prob = TRUE, w.type = 1, seed = 12345),
-#'                 n.cores = 4)
+#'res.NPS.FIXJ <- cdcat(dat = dat, Q = Q, itemSelect = "NPS", FIXED.LENGTH = TRUE,
+#'                      NPS.args = list(gate = "AND", pseudo.prob = TRUE, w.type = 1, seed = 12345),
+#'                      n.cores = 4)
+#'res.NPS.VARJ <- cdcat(dat = dat, Q = Q, itemSelect = "NPS", FIXED.LENGTH = FALSE, max.cut = 0.95,
+#'                      NPS.args = list(gate = "AND", pseudo.prob = TRUE, w.type = 1, seed = 12345),
+#'                      n.cores = 4)
 #'
 #'#---------------Results--------------#
-#'res.NPS$est[[1]] # estimates for the first examinee
-#'att.plot(res.NPS, i = 1) # plot for estimates for the first examinee
+#'res.NPS.FIXJ$est[[1]] # estimates for the first examinee (fixed-length)
+#'res.NPS.VARJ$est[[1]] # estimates for the first examinee (fixed-precision)
+#'att.plot(res.NPS.FIXJ, i = 1) # plot for estimates for the first examinee (fixed-length)
+#'att.plot(res.NPS.VARJ, i = 1) # plot for estimates for the first examinee (fixed-precision)
 #'# FIXJ summary
-#'res.NPS.sum.real <- cdcat.summary(cdcat.obj = res.NPS, alpha = att) # vs. real accuracy
-#'res.NPS.sum.real$recovery$plotPCV
-#'res.NPS.sum.real$recovery$plotPCA
+#'res.NPS.FIXJ.sum.real <- cdcat.summary(cdcat.obj = res.NPS.FIXJ, alpha = att) # vs. real accuracy
+#'res.NPS.FIXJ.sum.real$recovery$plotPCV
+#'res.NPS.FIXJ.sum.real$recovery$plotPCA
+#'# VARJ summary
+#'res.NPS.VARJ.sum.post <- cdcat.summary(cdcat.obj = res.NPS.VARJ, alpha = att)
+#'res.NPS.VARJ.sum.post$CATlength$stats
+#'res.NPS.VARJ.sum.post$CATlength$plot
+#'res.NPS.VARJ.sum.post$recovery
 #'# Post-hoc CAT simulation
 #'fit <- NPCD::AlphaNP(Y = dat, Q = Q, gate = "AND")
 #'att.J <- fit$alpha.est
 #'class.J <- GDINA::ClassRate(att, att.J) # upper-limit for accuracy
-#'res.NPS.sum.post <- cdcat.summary(cdcat.obj = res.NPS, alpha = att.J)
-#'res.NPS.sum.post$recovery$plotPCV + ggplot2::geom_hline(yintercept = class.J$PCV[K],
-#'                                                        color = "firebrick3")
-#'res.NPS.sum.post$recovery$plotPCA + ggplot2::geom_hline(yintercept = class.J$PCA,
-#'                                                        color = "firebrick3")
+#'res.NPS.FIXJ.sum.post <- cdcat.summary(cdcat.obj = res.NPS.FIXJ, alpha = att.J)
+#'res.NPS.FIXJ.sum.post$recovery$plotPCV + ggplot2::geom_hline(yintercept = class.J$PCV[K],
+#'                                                             color = "firebrick3")
+#'res.NPS.FIXJ.sum.post$recovery$plotPCA + ggplot2::geom_hline(yintercept = class.J$PCA,
+#'                                                             color = "firebrick3")
 #'
 #' @export
 #'
 cdcat <- function(fit = NULL, dat = NULL, Q = NULL, itemSelect = "GDI", MAXJ = 20, FIXED.LENGTH = TRUE, att.prior = NULL, post.initial = NULL, max.cut = 0.80,
-                  NPS.args = list(gate = "AND", pseudo.prob = T, w.type = 1, seed = NULL), n.cores = 2, i.print = 250){
+                  NPS.args = list(gate = NULL, pseudo.prob = T, w.type = 1, seed = NULL), n.cores = 2, i.print = 250){
 
   # `%dopar%` <- foreach::`%dopar%` # define a local dopar
 
@@ -223,9 +239,13 @@ cdcat <- function(fit = NULL, dat = NULL, Q = NULL, itemSelect = "GDI", MAXJ = 2
   if(itemSelect == "NPS"){
     if(is.null(dat)){stop("dat required when itemSelect == 'NPS'")}
     if(is.null(Q)){stop("Q required when itemSelect == 'NPS'")}
-    if(!FIXED.LENGTH){warning("FIXED.LENGHT = FALSE is not available with itemSelect == 'NPS'. FIXED.LENGHT = TRUE applied instead")}
-    if(!(NPS.args$gate %in% c("AND", "OR"))){stop("gate == 'AND' or gate == 'OR' required in NPS.args")}
+    if(is.null(NPS.args$gate)){
+      stop("gate == 'AND' or gate == 'OR' required in NPS.args")
+    } else {
+      if(!(NPS.args$gate %in% c("AND", "OR"))){stop("gate == 'AND' or gate == 'OR' required in NPS.args")}
+    }
     if(!(NPS.args$pseudo.prob %in% c(TRUE, FALSE))){stop("pseudo.prob == TRUE or pseudo.prob == FALSE required in NPS.args")}
+    if(!FIXED.LENGTH & !NPS.args$pseudo.prob){warning("FIXED.LENGHT = FALSE is not available with itemSelect == 'NPS' if NPS.args$pseudo.prob == FALSE. NPS.args$pseudo.prob = TRUE applied instead")}
   } else {
     if(is.null(fit)){stop("fit required when itemSelect != 'NPS'")}
   }
@@ -243,7 +263,7 @@ cdcat <- function(fit = NULL, dat = NULL, Q = NULL, itemSelect = "GDI", MAXJ = 2
     # Parametric CD-CAT
     #-------------------
 
-    out <- foreach::foreach(i = 1:N, .export = c("GDI.M", "H", "JSD.DICO.M", "PWKL.M", "MPWKL.M"), .inorder = T) %dopar% {
+    out <- foreach(i = 1:N, .export = c("GDI.M", "H", "JSD.DICO.M", "PWKL.M", "MPWKL.M"), .inorder = T) %dopar% {
       try({
         if(i %% i.print == 0){cat(i)}
 
@@ -327,8 +347,9 @@ cdcat <- function(fit = NULL, dat = NULL, Q = NULL, itemSelect = "GDI", MAXJ = 2
     resp.pat <- list() # Examinees' response pattern
     if(NPS.args$gate == "AND"){gate <- rep("AND", J)}
     if(NPS.args$gate == "OR"){gate <- rep("OR", J)}
+    if(!FIXED.LENGTH & !NPS.args$pseudo.prob){NPS.args$pseudo.prob <- TRUE}
 
-    out <- foreach::foreach(i = 1:N, .packages = "NPCD", .export = c("pseudoP", "NPC.eta"), .inorder = T) %dopar% {
+    out <- foreach(i = 1:N, .packages = "NPCD", .export = c("pseudoP", "NPC.eta"), .inorder = T) %dopar% {
       try({
         if(i %% i.print == 0){cat(i)}
         if(!is.null(NPS.args$seed)){set.seed(NPS.args$seed + i)}
@@ -490,6 +511,14 @@ cdcat <- function(fit = NULL, dat = NULL, Q = NULL, itemSelect = "GDI", MAXJ = 2
                                       paste(get(paste0("a2.", t)), collapse = ""), pat.dist[order(pat.dist[,K + 1]),][2, K + 1],
                                       pat.dist[order(pat.dist[,K + 1]),][2, K + 1] - pat.dist[order(pat.dist[,K + 1]),][1, K + 1],
                                       round(pP.k, 5)))
+            }
+          }
+
+          if(NPS.args$pseudo.prob){ # if FIXED.LENGTH == FALSE
+            if(!FIXED.LENGTH){
+              cut.pP.k <- pP.k
+              cut.pP.k[cut.pP.k < 0.5] <- 1 - cut.pP.k[cut.pP.k < 0.5]
+              if(all(cut.pP.k > max.cut)){break}
             }
           }
 

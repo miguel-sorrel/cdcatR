@@ -13,9 +13,9 @@ gen.itembank(Q = NULL, minJ.K = NULL, complexity = NULL, IQ, VAR, model = NULL)
 
 \item{complexity}{Vector indicating the maximum number of attributes being measured by an item in each row of Q. At this moment maximum is 4}
 
-\item{IQ}{Item discrimination (mean for the uniform distribution). IQ = \emph{P}(\strong{1}) - \emph{P}(\strong{0}) (Sorrel, Abad, Olea, de la Torre, and Barrada, 2017)}
+\item{IQ}{Item discrimination (mean for the uniform distribution). IQ = \emph{P}(\strong{1}) - \emph{P}(\strong{0}) (Sorrel et al., 2017)}
 
-\item{VAR}{Item discrimination (variance for the uniform distribution)}
+\item{VAR}{Item discrimination (variance for the uniform distribution) (Kaplan et al., 2015)}
 
 \item{model}{Vector indicating the model-item correspondence (0 = one-attribute item, 1 = DINA, 2 = DINO, 3 = A-CDM}
 }

@@ -10,9 +10,9 @@ A list with components:
 \item{\code{simQ}}{Artificial Q-matrix. Q-matrix structure is simple (items measure up to three attributes and 35 of them are one-attribute items)}
 \item{\code{simcatprob.parm}}{Artificial item parameters (probability of success for each latent group). Items 1-60 are DINA items, items 61-120 are DINO items, and items 121-180 are A-CDM items}
 \item{\code{simdat.c}}{Calibration sample dataset. Simulated responses of 500 examinees}
-\item{\code{simalpha.c}}{Calibration sample alpha patterns. Simulated attribute patterns of 500 examinees)}
+\item{\code{simalpha.c}}{Calibration sample alpha patterns. Simulated attribute patterns of 500 examinees}
 \item{\code{simdat.v}}{Validation sample dataset. Simulated responses of 500 examinees}
-\item{\code{simalpha.v}}{Validation sample alpha patterns. Simulated attribute patterns of 500 examinees)}
+\item{\code{simalpha.v}}{Validation sample alpha patterns. Simulated attribute patterns of 500 examinees}
 }
 }
 \usage{

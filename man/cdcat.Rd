@@ -14,7 +14,7 @@ cdcat(
   att.prior = NULL,
   post.initial = NULL,
   max.cut = 0.8,
-  NPS.args = list(gate = "AND", pseudo.prob = T, w.type = 1, seed = NULL),
+  NPS.args = list(gate = NULL, pseudo.prob = T, w.type = 1, seed = NULL),
   n.cores = 2,
   i.print = 250
 )
@@ -36,9 +36,9 @@ cdcat(
 
 \item{post.initial}{Prior distribution for \code{itemSelect}}
 
-\item{max.cut}{Cutoff for fixed-precision (posterior pattern > max.cut). Default is .80}
+\item{max.cut}{Cutoff for fixed-precision (posterior pattern > max.cut). When \code{itemSelect = "NPS"} this is evaluated at the attribute level using the pseudo-posterior probabilities for each attribute (\emph{K} posterior probabilities > max.cut). Default is .80. A higher cutoff is recommended when \code{itemSelect = "NPS"}}
 
-\item{NPS.args}{A list of options when \code{itemSelect = "NPS"}}
+\item{NPS.args}{A list of options when \code{itemSelect = "NPS"}. \code{gate} = "AND" or "OR", depending on whether a conjunctive o disjunctive nonparametric CDM is used. \code{pseudo.prob} = pseudo-posterior probability of each examinee mastering each attribute (experimental). \code{w.type} = weight type used for computing the pseudo-posterior probability (experimental). \code{seed} = NPS has a random component, so a seed is required for consistent results.}
 
 \item{n.cores}{Number of cores to be used during parallelization. Default is 2}
 
@@ -46,12 +46,17 @@ cdcat(
 }
 \value{
 \code{cdcat} returns an object of class \code{cdcat}.
+\describe{
+\item{est}{A list of that contains for each examinee the mastery probability estimates at each step of the CAT \code{est.cat} and the items applied \code{item.usage}}
+\item{specifications}{A list of that contains all the specifications}
+}
 }
 \description{
 \code{cdcat} conducts a CD-CAT application for a given dataset. Different item selection rules can be used: the general discrimination index
 (GDI; de la Torre & Chiu, 2016; Kaplan et al., 2015), the Jensen-Shannon divergence index (JSD; Kang et al., 2017; Minchen & de la Torre, 2016;
 Yigit et al., 2018), the posterior-weighted Kullback-Leibler index (PWKL; Cheng, 2009), the modified PWKL index (MPWKL; Kaplan et al., 2015), the nonparametric
-item selection method (NPS; Chang et al., 2018), or random selection. Fixed length or fixed precision CD-CAT can be applied.
+item selection method (NPS; Chang et al., 2018), or random selection. Fixed length or fixed precision CD-CAT can be applied. Fixed precision CD-CAT with
+NPS is available, by using the pseudo-posterior probability of each student mastering each attribute (experimental).
 }
 \examples{
 ######################################
@@ -119,7 +124,7 @@ fitGDINA <- GDINA::GDINA(dat = dat.c, Q = Q, verbose = 0)
 fitDINA <- GDINA::GDINA(dat = dat.c, Q = Q, model = "DINA", verbose = 0)
 fitDINO <- GDINA::GDINA(dat = dat.c, Q = Q, model = "DINO", verbose = 0)
 fitACDM <- GDINA::GDINA(dat = dat.c, Q = Q, model = "ACDM", verbose = 0)
-LR2step <- LR_2step(fitGDINA)
+LR2step <- LR.2step(fitGDINA)
 models <- LR2step$models.adj.pvalues
 fitLR2 <- GDINA::GDINA(dat = dat.c, Q = Q, model = models, verbose = 0)
 
@@ -161,26 +166,36 @@ dat <- sim180DINA$simdat[1:N,]
 att <- sim180DINA$simalpha[1:N,]
 
 #--------Nonparametric CD-CAT--------#
-res.NPS <- cdcat(dat = dat, Q = Q, itemSelect = "NPS", MAXJ = 30,
-                NPS.args = list(gate = "AND", pseudo.prob = TRUE, w.type = 1, seed = 12345),
-                n.cores = 4)
+res.NPS.FIXJ <- cdcat(dat = dat, Q = Q, itemSelect = "NPS", FIXED.LENGTH = TRUE,
+                     NPS.args = list(gate = "AND", pseudo.prob = TRUE, w.type = 1, seed = 12345),
+                     n.cores = 4)
+res.NPS.VARJ <- cdcat(dat = dat, Q = Q, itemSelect = "NPS", FIXED.LENGTH = FALSE, max.cut = 0.95,
+                     NPS.args = list(gate = "AND", pseudo.prob = TRUE, w.type = 1, seed = 12345),
+                     n.cores = 4)
 
 #---------------Results--------------#
-res.NPS$est[[1]] # estimates for the first examinee
-att.plot(res.NPS, i = 1) # plot for estimates for the first examinee
+res.NPS.FIXJ$est[[1]] # estimates for the first examinee (fixed-length)
+res.NPS.VARJ$est[[1]] # estimates for the first examinee (fixed-precision)
+att.plot(res.NPS.FIXJ, i = 1) # plot for estimates for the first examinee (fixed-length)
+att.plot(res.NPS.VARJ, i = 1) # plot for estimates for the first examinee (fixed-precision)
 # FIXJ summary
-res.NPS.sum.real <- cdcat.summary(cdcat.obj = res.NPS, alpha = att) # vs. real accuracy
-res.NPS.sum.real$recovery$plotPCV
-res.NPS.sum.real$recovery$plotPCA
+res.NPS.FIXJ.sum.real <- cdcat.summary(cdcat.obj = res.NPS.FIXJ, alpha = att) # vs. real accuracy
+res.NPS.FIXJ.sum.real$recovery$plotPCV
+res.NPS.FIXJ.sum.real$recovery$plotPCA
+# VARJ summary
+res.NPS.VARJ.sum.post <- cdcat.summary(cdcat.obj = res.NPS.VARJ, alpha = att)
+res.NPS.VARJ.sum.post$CATlength$stats
+res.NPS.VARJ.sum.post$CATlength$plot
+res.NPS.VARJ.sum.post$recovery
 # Post-hoc CAT simulation
 fit <- NPCD::AlphaNP(Y = dat, Q = Q, gate = "AND")
 att.J <- fit$alpha.est
 class.J <- GDINA::ClassRate(att, att.J) # upper-limit for accuracy
-res.NPS.sum.post <- cdcat.summary(cdcat.obj = res.NPS, alpha = att.J)
-res.NPS.sum.post$recovery$plotPCV + ggplot2::geom_hline(yintercept = class.J$PCV[K],
-                                                       color = "firebrick3")
-res.NPS.sum.post$recovery$plotPCA + ggplot2::geom_hline(yintercept = class.J$PCA,
-                                                       color = "firebrick3")
+res.NPS.FIXJ.sum.post <- cdcat.summary(cdcat.obj = res.NPS.FIXJ, alpha = att.J)
+res.NPS.FIXJ.sum.post$recovery$plotPCV + ggplot2::geom_hline(yintercept = class.J$PCV[K],
+                                                            color = "firebrick3")
+res.NPS.FIXJ.sum.post$recovery$plotPCA + ggplot2::geom_hline(yintercept = class.J$PCA,
+                                                            color = "firebrick3")
 
 }
 \references{

@@ -7,8 +7,8 @@
 #' @param Q Q-matrix
 #' @param minJ.K Vector indicating the minimum number of items measuring each attribute
 #' @param complexity Vector indicating the maximum number of attributes being measured by an item in each row of Q. At this moment maximum is 4
-#' @param IQ Item discrimination (mean for the uniform distribution). IQ = \emph{P}(\strong{1}) - \emph{P}(\strong{0}) (Sorrel, Abad, Olea, de la Torre, and Barrada, 2017)
-#' @param VAR Item discrimination (variance for the uniform distribution)
+#' @param IQ Item discrimination (mean for the uniform distribution). IQ = \emph{P}(\strong{1}) - \emph{P}(\strong{0}) (Sorrel et al., 2017)
+#' @param VAR Item discrimination (variance for the uniform distribution) (Kaplan et al., 2015)
 #' @param model Vector indicating the model-item correspondence (0 = one-attribute item, 1 = DINA, 2 = DINO, 3 = A-CDM
 #'
 #' @return \code{gen.itembank} returns an object of class \code{gen.Item.Bank}.
@@ -18,6 +18,8 @@
 #' Kaplan, M., de la Torre, J., & Barrada, J. R. (2015). New item selection methods for cognitive diagnosis computerized adaptive testing. \emph{Applied Psychological Measurement, 39}, 167-188.
 #'
 #' Sorrel, M. A., Abad, F. J., Olea, J., de la Torre, J., & Barrada, J. R. (2017). Inferential item-fit evaluation in cognitive diagnosis modeling. \emph{Applied Psychological Measurement, 41}, 614-631.
+#'
+#' @import stats
 #'
 #' @examples
 #'####################################

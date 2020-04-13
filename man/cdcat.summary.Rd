@@ -2,12 +2,12 @@
 % Please edit documentation in R/cdcat.summary.R
 \name{cdcat.summary}
 \alias{cdcat.summary}
-\title{Summary information for a cdcat.object}
+\title{Summary information for a \code{cdcat} object}
 \usage{
 cdcat.summary(cdcat.obj, alpha)
 }
 \arguments{
-\item{cdcat.obj}{\code{cdcat} results}
+\item{cdcat.obj}{An object of class \code{cdcat}}
 
 \item{alpha}{N x K matrix with the attribute patterns to be compared to the \code{cdcat} results}
 }

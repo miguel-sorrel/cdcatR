@@ -2,7 +2,7 @@
 % Please edit documentation in R/att.plot.R
 \name{att.plot}
 \alias{att.plot}
-\title{Create plots for attribute mastery estimates}
+\title{Plots for attribute mastery estimates}
 \usage{
 att.plot(cdcat.obj, i, k = NULL)
 }
@@ -11,11 +11,14 @@ att.plot(cdcat.obj, i, k = NULL)
 
 \item{i}{Examinee to be plotted}
 
-\item{k}{Attribute/s to be plotted. Default is NULL, which plotts all attributes}
+\item{k}{Attribute/s to be plotted. Default is NULL, which plots all attributes}
 }
 \value{
 \code{att.plot} creates a plot.
 }
 \description{
-Create plots for attribute mastery estimates (\emph{X}: item position, \emph{Y}: mastery probability).
+This function generates a plot monitoring the attribute mastery estimates (\emph{X}: item position, \emph{Y}: mastery probability).
+If a parametric CD-CAT has been conducted, posterior probabilites (with confident intervals) of mastering each attribute are plotted.
+If a nonparametric CD-CAT has been conducted (and pseudo-probabilites have been computed), both nonparametric classification and pseudo-posterior probabilites (with confident intervals) of mastering each attribute are plotted.
+Colors are used in the plots to indicate mastery (green), non-mastery (red), or uncertainty (blue).
 }

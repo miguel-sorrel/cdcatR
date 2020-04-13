@@ -148,7 +148,7 @@ pseudoP <- function(NPCD.obj, inv.type, w.type){
       )
       names(w) <- min.dist:max.dist
       w <- w[names(w) %in% names(prop.dist.ik)]
-      pP.ik <- c(pP.ik, weighted.mean(prop.dist.ik, w))
+      pP.ik <- c(pP.ik, stats::weighted.mean(prop.dist.ik, w))
     }
     pP[i,] <- pP.ik
   }

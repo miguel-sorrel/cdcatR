@@ -1,10 +1,10 @@
 #' Comparison of multiple cdcat objects
 #'
-#' This function compares different \code{cdcat} objects in terms of classification accuracy (\code{FIXED.LENGTH == TRUE}) and/or CAT lenght \code{FIXED.LENGTH == FALSE}).
+#' This function compares different \code{cdcat} objects in terms of classification accuracy (\code{FIXED.LENGTH == TRUE}) and/or CAT lenght (\code{FIXED.LENGTH == FALSE}).
 #'
 #' @param cdcat.obj.l List of \code{cdcat} objects to be compared
 #' @param alpha N x K matrix with the attribute patterns to be compared to the \code{cdcat} results
-#' @param label labels for the \code{cdcat} objects. If NULL (by default), the models are used as label
+#' @param label labels for the \code{cdcat} objects. If NULL (by default), the models are used as labels
 #'
 #' @return \code{cdcat.comp} returns an object of class \code{cdcat.comp}.
 #'
