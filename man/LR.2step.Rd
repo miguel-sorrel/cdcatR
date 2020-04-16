@@ -14,7 +14,7 @@ LR.2step(fit, p.adjust.method = "holm", alpha.level = 0.05)
 \item{alpha.level}{Alpha level for decision. Default is 0.05}
 }
 \value{
-\code{LR2step} returns an object of class \code{LR2step}
+\code{LR2.step} returns an object of class \code{LR2.step}
 \describe{
 \item{LR2}{LR2 statistics}
 \item{pvalues}{p-values associated with the wald statistics}
@@ -28,13 +28,16 @@ This function evaluates whether the saturated G-DINA model can be replaced by re
 }
 \examples{
 Q <- sim180DINA$simQ
-dat <- sim180DINA$simdat
+dat <- sim180DINA$simdat.c
 resGDINA <- GDINA::GDINA(dat = dat, Q = Q, model = "GDINA",verbose = FALSE)
 resCDM <- CDM::gdina(data = dat, q.matrix = Q, rule = "GDINA", progress = FALSE)
 LR2.GDINA <- LR.2step(fit = resGDINA)
 LR2.CDM <- LR.2step(fit = resCDM)
-table(LR2.GDINA$models.adj.pvalues[which(rowSums(Q) != 1)])
-table(LR2.CDM$models.adj.pvalues[which(rowSums(Q) != 1)])
+mean(LR2.GDINA$models.adj.pvalues[which(rowSums(Q) != 1)] ==
+      sim180DINA$specifications$model[which(rowSums(Q) != 1)])
+mean(LR2.CDM$models.adj.pvalues[which(rowSums(Q) != 1)] ==
+      sim180DINA$specifications$model[which(rowSums(Q) != 1)])
+
 }
 \references{
 Ma, W. & de la Torre, J. (2018). Category-level model selection for the sequential G-DINA model. \emph{Journal of Educational and Behavorial Statistic, 44}, 45-77.

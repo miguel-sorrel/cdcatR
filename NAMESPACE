@@ -3,7 +3,6 @@
 export(LR.2step)
 export(att.plot)
 export(cdcat)
-export(cdcat.comp)
 export(cdcat.summary)
 export(gen.itembank)
 import(foreach)

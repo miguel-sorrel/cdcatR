@@ -5,7 +5,7 @@
 #' @param fit Calibrated item bank with GDINA or CDM package
 #' @param p.adjust.method Correction method for p-values. Possible values include "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none". See p.adjust function from stats for additional details. Default is holm
 #' @param alpha.level Alpha level for decision. Default is 0.05
-#' @return \code{LR2step} returns an object of class \code{LR2step}
+#' @return \code{LR2.step} returns an object of class \code{LR2.step}
 #' \describe{
 #' \item{LR2}{LR2 statistics}
 #' \item{pvalues}{p-values associated with the wald statistics}
@@ -26,15 +26,17 @@
 #' @import stats
 #'
 #' @examples
-#' Q <- sim180DINA$simQ
-#' dat <- sim180DINA$simdat
-#' resGDINA <- GDINA::GDINA(dat = dat, Q = Q, model = "GDINA",verbose = FALSE)
-#' resCDM <- CDM::gdina(data = dat, q.matrix = Q, rule = "GDINA", progress = FALSE)
-#' LR2.GDINA <- LR.2step(fit = resGDINA)
-#' LR2.CDM <- LR.2step(fit = resCDM)
-#' table(LR2.GDINA$models.adj.pvalues[which(rowSums(Q) != 1)])
-#' table(LR2.CDM$models.adj.pvalues[which(rowSums(Q) != 1)])
-#
+#'Q <- sim180DINA$simQ
+#'dat <- sim180DINA$simdat.c
+#'resGDINA <- GDINA::GDINA(dat = dat, Q = Q, model = "GDINA",verbose = FALSE)
+#'resCDM <- CDM::gdina(data = dat, q.matrix = Q, rule = "GDINA", progress = FALSE)
+#'LR2.GDINA <- LR.2step(fit = resGDINA)
+#'LR2.CDM <- LR.2step(fit = resCDM)
+#'mean(LR2.GDINA$models.adj.pvalues[which(rowSums(Q) != 1)] ==
+#'       sim180DINA$specifications$model[which(rowSums(Q) != 1)])
+#'mean(LR2.CDM$models.adj.pvalues[which(rowSums(Q) != 1)] ==
+#'       sim180DINA$specifications$model[which(rowSums(Q) != 1)])
+#'
 #' @export
 #'
 
@@ -161,10 +163,19 @@ LR.2step <- function(fit, p.adjust.method = "holm", alpha.level = 0.05){
     }
   }
 
+  if((sum(na.omit(LR2[, -1] == -Inf)) > 0) | (sum(is.nan(LR2[, -1])) > 0)) {
+  prob.items <- apply(LR2[, -1], 2, function(x) {which(x == -Inf)})[, 1]
+    warning(c("2LR statistic couldn't be computed for items ", paste(prob.items, collapse = ", "),
+              ". G-DINA was retained for those items"))
+  }
+
+  LR2[, -1][which(LR2[, -1] == -Inf)] <- -9999
+  LR2[, -1][is.nan(LR2[, -1])] <- -9999
+  LR2.p[, -1][is.nan(LR2.p[, -1])] <- 0
+
   LR2 <- na.omit(LR2)[, -1]
   LR2.p <- na.omit(LR2.p)[, -1]
   df <- na.omit(df)[, -1]
-
   LR2.adjp <- LR2.p
   LR2.adjp <- matrix(p.adjust(LR2.adjp, method = p.adjust.method), ncol = ncol(LR2.p), nrow = nrow(LR2.p))
 

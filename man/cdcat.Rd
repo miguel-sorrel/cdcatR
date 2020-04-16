@@ -38,7 +38,7 @@ cdcat(
 
 \item{max.cut}{Cutoff for fixed-precision (posterior pattern > max.cut). When \code{itemSelect = "NPS"} this is evaluated at the attribute level using the pseudo-posterior probabilities for each attribute (\emph{K} posterior probabilities > max.cut). Default is .80. A higher cutoff is recommended when \code{itemSelect = "NPS"}}
 
-\item{NPS.args}{A list of options when \code{itemSelect = "NPS"}. \code{gate} = "AND" or "OR", depending on whether a conjunctive o disjunctive nonparametric CDM is used. \code{pseudo.prob} = pseudo-posterior probability of each examinee mastering each attribute (experimental). \code{w.type} = weight type used for computing the pseudo-posterior probability (experimental). \code{seed} = NPS has a random component, so a seed is required for consistent results.}
+\item{NPS.args}{A list of options when \code{itemSelect = "NPS"}. \code{gate} = "AND" or "OR", depending on whether a conjunctive o disjunctive nonparametric CDM is used. \code{pseudo.prob} = pseudo-posterior probability of each examinee mastering each attribute (experimental). \code{w.type} = weight type used for computing the pseudo-posterior probability (experimental): 1 = Power-of-2 weight; 2 = Exponential weight. \code{seed} = NPS has a random component, so a seed is required for consistent results.}
 
 \item{n.cores}{Number of cores to be used during parallelization. Default is 2}
 
@@ -47,7 +47,7 @@ cdcat(
 \value{
 \code{cdcat} returns an object of class \code{cdcat}.
 \describe{
-\item{est}{A list of that contains for each examinee the mastery probability estimates at each step of the CAT \code{est.cat} and the items applied \code{item.usage}}
+\item{est}{A list of that contains for each examinee the mastery probability estimates at each step of the CAT (\code{est.cat}) and the items applied (\code{item.usage})}
 \item{specifications}{A list of that contains all the specifications}
 }
 }
@@ -67,8 +67,8 @@ NPS is available, by using the pseudo-posterior probability of each student mast
 #-----------Data generation----------#
 Q <- sim180GDINA$simQ
 K <- ncol(Q)
-dat <- sim180GDINA$simdat
-att <- sim180GDINA$simalpha
+dat <- sim180GDINA$simdat.c
+att <- sim180GDINA$simalpha.c
 
 #----------Model estimation----------#
 fit <- GDINA::GDINA(dat = dat, Q = Q, verbose = 0) # GDINA package
@@ -108,13 +108,13 @@ res.FIXJ.sum.post$recovery$plotPCA + ggplot2::geom_hline(yintercept = class.J$PC
 ######################################
 
 #----------------Data----------------#
-Q <- sim155complex$simQ
+Q <- sim180combination$simQ
 K <- ncol(Q)
-parm <- sim155complex$simcatprob.parm
-dat.c <- sim155complex$simdat.c
-att.c <- sim155complex$simalpha.c
-dat.v <- sim155complex$simdat.v
-att.v <- sim155complex$simalpha.v
+parm <- sim180combination$simcatprob.parm
+dat.c <- sim180combination$simdat.c
+att.c <- sim180combination$simalpha.c
+dat.v <- sim180combination$simdat.v
+att.v <- sim180combination$simalpha.v
 
 #-----(multiple) Model estimation----#
 fitTRUE <- GDINA::GDINA(dat = dat.c, Q = Q, catprob.parm = parm,
@@ -143,14 +143,14 @@ fitbest <- GDINA::GDINA(dat = dat.v, Q = Q, catprob.parm = parm,
 fitbest.acc <- GDINA::personparm(fitbest, "MAP")[, -(K+1)]
 class.J <- GDINA::ClassRate(att.v, fitbest.acc) # upper-limit for accuracy
 # FIXJ comparison
-res.FIXJ.sum.post.comp <- cdcat.comp(cdcat.obj.l = res.FIXJ.l, alpha = att.v)
-res.FIXJ.sum.post.comp$PCVcomp + ggplot2::geom_hline(yintercept = class.J$PCV[K], color = "red")
-res.FIXJ.sum.post.comp$PCAmcomp + ggplot2::geom_hline(yintercept = class.J$PCA, color = "red")
+res.FIXJ.sum.post.summary <- cdcat.summary(cdcat.obj = res.FIXJ.l, alpha = att.v)
+res.FIXJ.sum.post.summary$PCVcomp + ggplot2::geom_hline(yintercept = class.J$PCV[K], color = "red")
+res.FIXJ.sum.post.summary$PCAmcomp + ggplot2::geom_hline(yintercept = class.J$PCA, color = "red")
 # VARJ comparison
-res.VARJ.sum.post.comp <- cdcat.comp(cdcat.obj.l = res.VARJ.l, alpha = att.v)
-res.VARJ.sum.post.comp$stats
-res.VARJ.sum.post.comp$plots
-res.VARJ.sum.post.comp$recovery
+res.VARJ.sum.post.summary <- cdcat.summary(cdcat.obj = res.VARJ.l, alpha = att.v)
+res.VARJ.sum.post.summary$stats
+res.VARJ.sum.post.summary$plots
+res.VARJ.sum.post.summary$recovery
 
 ######################################
 # Example 3.                         #
@@ -162,14 +162,16 @@ res.VARJ.sum.post.comp$recovery
 Q <- sim180DINA$simQ
 K <- ncol(Q)
 N <- 50
-dat <- sim180DINA$simdat[1:N,]
-att <- sim180DINA$simalpha[1:N,]
+dat <- sim180DINA$simdat.c[1:N,]
+att <- sim180DINA$simalpha.c[1:N,]
 
 #--------Nonparametric CD-CAT--------#
-res.NPS.FIXJ <- cdcat(dat = dat, Q = Q, itemSelect = "NPS", FIXED.LENGTH = TRUE,
+res.NPS.FIXJ <- cdcat(dat = dat, Q = Q, itemSelect = "NPS",
+                     FIXED.LENGTH = TRUE, MAXJ = 30,
                      NPS.args = list(gate = "AND", pseudo.prob = TRUE, w.type = 1, seed = 12345),
                      n.cores = 4)
-res.NPS.VARJ <- cdcat(dat = dat, Q = Q, itemSelect = "NPS", FIXED.LENGTH = FALSE, max.cut = 0.95,
+res.NPS.VARJ <- cdcat(dat = dat, Q = Q, itemSelect = "NPS",
+                     FIXED.LENGTH = FALSE, MAXJ = 30, max.cut = 0.95,
                      NPS.args = list(gate = "AND", pseudo.prob = TRUE, w.type = 1, seed = 12345),
                      n.cores = 4)
 

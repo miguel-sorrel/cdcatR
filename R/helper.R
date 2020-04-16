@@ -1,45 +1,262 @@
-gen.Q <- function(minJ.K, complexity, ...){
-  # dependencies: GDINA (attributepattern)
+cdcat.getdata <- function(cdcat.obj, alpha){
+  # used in cdcat.summary function
+  MAXJ <- cdcat.obj$specifications$MAXJ
+  if(cdcat.obj$specifications$itemSelect != "NPS"){
+    if(cdcat.obj$specifications$FIXED.LENGTH == TRUE){
+      est <- lapply(cdcat.obj$est, '[[', 1)
+      N <- length(est)
+      K <- ncol(cdcat.obj$specifications$Q)
+      est.MAP.jj <- list()
+      PCV.jj <- as.data.frame(matrix(0, nrow = MAXJ, ncol = 2))
+      PCAm.jj <- as.data.frame(matrix(0, nrow = MAXJ, ncol = 2))
+      colnames(PCV.jj) <- c("item.position", "pattern.recovery")
+      colnames(PCAm.jj) <- c("item.position", "attribute.recovery")
+      for (jj in 1:MAXJ) {
+        est.MAP.jj[[jj]] <- matrix(data = as.numeric(unlist(lapply(lapply(est, function(x) x[jj, "MAP"]), FUN = strsplit, split = ""))),
+                                   ncol = K, nrow = N, byrow = TRUE)
+        PCV.jj[jj, ] <- c(jj, GDINA::ClassRate(est.MAP.jj[[jj]], alpha)$PCV[K])
+        PCAm.jj[jj, ] <- c(jj, GDINA::ClassRate(est.MAP.jj[[jj]], alpha)$PCA)
+      }
+      recovery <- list()
+      recovery$numeric <- cbind(PCV.jj, attribute.recovery = PCAm.jj[, 2])
+      recovery$plotPCV <- ggplot2::ggplot(data = PCV.jj, ggplot2::aes(x=item.position, y=pattern.recovery)) +
+        ggplot2::theme(panel.grid.minor.x = ggplot2::element_blank(), panel.grid.minor.y = ggplot2::element_blank()) +
+        ggplot2::scale_x_continuous("Until Item Position", labels = 1:MAXJ, breaks = 1:MAXJ) +
+        ggplot2::scale_y_continuous("Pattern Recovery", limits = c(0,1), labels = seq(from = 0, to = 1, by = 0.10),
+                                    breaks = seq(from = 0, to = 1, by = 0.10)) +
+        ggplot2::geom_line() + ggplot2::geom_point(size = 2)
+      recovery$plotPCAm <- ggplot2::ggplot(data = PCAm.jj, ggplot2::aes(x=item.position, y=attribute.recovery)) +
+        ggplot2::theme(panel.grid.minor.x = ggplot2::element_blank(), panel.grid.minor.y = ggplot2::element_blank()) +
+        ggplot2::scale_x_continuous("Until Item Position", labels = 1:MAXJ, breaks = 1:MAXJ) +
+        ggplot2::scale_y_continuous("Attribute Recovery", limits = c(0,1), labels = seq(from = 0, to = 1, by = 0.10),
+                                    breaks = seq(from = 0, to = 1, by = 0.10)) +
+        ggplot2::geom_line() + ggplot2::geom_point(size = 2)
 
-  # minJ.K: Vector indicating the minimum number of items measuring each attribute
-  # complexity: Vector indicating the maximum number of attributes being measured by an item in each column of Q
+      return(list("recovery" = recovery))
 
-  K <- length(minJ.K)
-  J <- sum(minJ.K)
-  pattern <- GDINA::attributepattern(K)[-1,]
-  n.attributes <- apply(pattern,1,sum)
-
-  candidates <- list()
-  Q <- NULL
-
-  for (k in 1:K) {
-    candidates[[k]] <- which(n.attributes <= complexity[k] & (pattern[, k] == TRUE))
-    if(length(candidates[[k]]) == 1){
-      J.K0 <- rep(candidates[[k]], times = minJ.K[k])
     } else {
-      J.K0 <- sample(x = c(candidates[[k]]), size = minJ.K[k], replace = TRUE)}
-    J.K <- pattern[J.K0, ]
-    Q <- rbind(Q, J.K)}
+      N <- length(cdcat.obj$est)
+      CATlength <- list()
+      data.len <- data.frame("length" = unlist(lapply(lapply(cdcat.obj$est, '[[', 2), length)),
+                             "cond" = rep(1, N))
+      CATlength$stats <- summary(data.len[, 1])
+      CATlength$plot <- ggplot2::ggplot(data.len, ggplot2::aes(x=cond, y=length)) +
+        ggplot2::geom_violin(alpha=0.4) +
+        ggplot2::theme(panel.grid.minor.x = ggplot2::element_blank(), panel.grid.minor.y = ggplot2::element_blank()) +
+        ggplot2::geom_dotplot(binaxis = 'y', stackdir = 'center', binwidth = 0.15) +
+        ggplot2::stat_summary(fun=mean, geom="point", shape=20, size=10, color="red", fill="red") +
+        ggplot2::theme(legend.position="none",
+                       axis.text.x = ggplot2::element_blank(),
+                       axis.ticks.x = ggplot2::element_blank()) +
+        ggplot2::scale_fill_brewer(palette="Set3") +
+        ggplot2::scale_y_continuous("CAT length", limits = c(0, (max(data.len[, 1]) + 2)),
+                                    labels = seq(from = 0, to = (max(data.len[, 1]) + 2), by = 5),
+                                    breaks = seq(from = 0, to = (max(data.len[, 1]) + 2), by = 5)) +
+        ggplot2::scale_x_continuous("", labels = c("", "", ""), breaks = seq(0.75, 1.25, 0.25))
 
-  return(Q)
-}
-gen.att <- function(N, K, prior = NULL, ...){
-  # dependencies: GDINA (attributepattern)
+      est <- lapply(cdcat.obj$est, '[[', 1)
+      N <- length(est)
+      K <- ncol(cdcat.obj$specifications$Q)
+      est.MAP.end <- matrix(data = as.numeric(
+        unlist(lapply(lapply(est, function(x) x[nrow(x), "MAP"]), FUN = strsplit, split = ""))),
+        ncol = K, nrow = N, byrow = TRUE)
+      recovery <- GDINA::ClassRate(est.MAP.end, alpha)
 
-  # N: Number of attribute patterns to be generated
-  # K: Number of attributes
+      res <- list("CATlength" = CATlength, "recovery" = recovery)
+      class(res) <- "cdcat.summary"
 
-  if (is.null(prior)) {
-    prior<-rep(1/2^K,2^K)
+      return(res)
+    }
+  } else if(cdcat.obj$specifications$itemSelect == "NPS"){
+    if(cdcat.obj$specifications$FIXED.LENGTH == TRUE){
+      est <- lapply(cdcat.obj$est, '[[', 1)
+      N <- length(est)
+      K <- ncol(cdcat.obj$specifications$Q)
+      est.MAP.jj <- list()
+      PCV.jj <- as.data.frame(matrix(0, nrow = MAXJ, ncol = 2))
+      PCAm.jj <- as.data.frame(matrix(0, nrow = MAXJ, ncol = 2))
+      colnames(PCV.jj) <- c("item.position", "pattern.recovery")
+      colnames(PCAm.jj) <- c("item.position", "attribute.recovery")
+      for (jj in K:MAXJ) {
+        est.MAP.jj[[jj]] <-
+          matrix(data = as.numeric(
+            unlist(lapply(lapply(est, function(x) x[jj, 4]), FUN = strsplit, split = ""))),
+            ncol = K, nrow = N, byrow = TRUE)
+        PCV.jj[jj, ] <- c(jj, GDINA::ClassRate(est.MAP.jj[[jj]], alpha)$PCV[K])
+        PCAm.jj[jj, ] <- c(jj, GDINA::ClassRate(est.MAP.jj[[jj]], alpha)$PCA)
+      }
+      PCV.jj <- PCV.jj[-c(1:(K - 1)),]
+      PCAm.jj <- PCAm.jj[-c(1:(K - 1)),]
+      recovery <- list()
+      recovery$numeric <- cbind(PCV.jj, attribute.recovery = PCAm.jj[, 2])
+      recovery$plotPCV <- ggplot2::ggplot(data = PCV.jj, ggplot2::aes(x=item.position, y=pattern.recovery)) +
+        ggplot2::theme_gray() +
+        ggplot2::scale_x_continuous("Until Item Position", labels = K:MAXJ, breaks = K:MAXJ) +
+        ggplot2::scale_y_continuous("Pattern Recovery", limits = c(0,1), labels = seq(from = 0, to = 1, by = 0.10),
+                                    breaks = seq(from = 0, to = 1, by = 0.10)) +
+        ggplot2::geom_line() + ggplot2::geom_point(size = 2)
+      recovery$plotPCAm <- ggplot2::ggplot(data = PCAm.jj, ggplot2::aes(x=item.position, y=attribute.recovery)) +
+        ggplot2::theme_gray() +
+        ggplot2::scale_x_continuous("Until Item Position", labels = K:MAXJ, breaks = K:MAXJ) +
+        ggplot2::scale_y_continuous("Attribute Recovery", limits = c(0,1), labels = seq(from = 0, to = 1, by = 0.10),
+                                    breaks = seq(from = 0, to = 1, by = 0.10)) +
+        ggplot2::geom_line() + ggplot2::geom_point(size = 2)
+
+      return(list("recovery" = recovery))
+    } else {
+      N <- length(cdcat.obj$est)
+      CATlength <- list()
+      data.len <- data.frame("length" = unlist(lapply(lapply(cdcat.obj$est, '[[', 2), length)), "cond" = rep(1, N))
+      CATlength$stats <- summary(data.len[, 1])
+      CATlength$plot <- ggplot2::ggplot(data.len, ggplot2::aes(x=cond, y=length)) +
+        ggplot2::geom_violin(alpha=0.4) +
+        ggplot2::theme(panel.grid.minor.x = ggplot2::element_blank(), panel.grid.minor.y = ggplot2::element_blank()) +
+        ggplot2::geom_dotplot(binaxis = 'y', stackdir = 'center', binwidth = 0.15) +
+        ggplot2::stat_summary(fun=mean, geom="point", shape=20, size=10, color="red", fill="red") +
+        ggplot2::theme(legend.position="none",
+                       axis.text.x = ggplot2::element_blank(),
+                       axis.ticks.x = ggplot2::element_blank()) +
+        ggplot2::scale_fill_brewer(palette="Set3") +
+        ggplot2::scale_y_continuous("CAT length", limits = c(0, (max(data.len[, 1]) + 2)),
+                                    labels = seq(from = 0, to = (max(data.len[, 1]) + 2), by = 5),
+                                    breaks = seq(from = 0, to = (max(data.len[, 1]) + 2), by = 5)) +
+        ggplot2::scale_x_continuous("", labels = c("", "", ""), breaks = seq(0.75, 1.25, 0.25))
+
+      est <- lapply(cdcat.obj$est, '[[', 1)
+      N <- length(est)
+      K <- ncol(cdcat.obj$specifications$Q)
+      est.MAP.end <- matrix(data = as.numeric(
+        unlist(lapply(lapply(est, function(x) x[nrow(x), 4]), FUN = strsplit, split = ""))),
+        ncol = K, nrow = N, byrow = TRUE)
+      recovery <- GDINA::ClassRate(est.MAP.end, alpha)
+
+      res <- list("CATlength" = CATlength, "recovery" = recovery)
+      class(res) <- "cdcat.summary"
+
+      return(res)
+    }
   }
-  prior
-  att.gr <- sample(x = length(prior), size = N, replace = TRUE,
-                   prob = prior)
-  att <- GDINA::attributepattern(K)[att.gr, ]
-  return(att)
 }
 
-# Item selection procedures
+# For gen.itembank
+genQ <- function(J, K, n.id = 2, qkProp, PropWithId = T, min.jk = 1, max.kcor = 0.3, seed = NULL){
+  # J: number of items
+  # K: number of attributes
+  # qkProp: proportion of non-identity matrix items with k attributes (e.g., qkProb = c(0.1, 0.45, 0.45), 0.1 of items will have 1 attribute, 0.45 will have 2 attributes, etc.)
+  # n.id: number of identity matrices inside Q-matrix
+  # min.jk: minimum number of non-identity matrix items measuring each attribute
+  # max.kcor: maximum permitted attribute correlation
+  # seed: seed
+
+  if(!is.null(seed)){set.seed(seed)}
+  if(length(qkProp) > K){stop("length(qkProp) must be <= K")}
+  if(sum(qkProp) != 1){stop("sum(qkProp) must be equal to 1")}
+  pat <- GDINA::attributepattern(K)
+  for(k in 1:length(qkProp)){assign(paste0("pat", k), rbind(pat[which(rowSums(pat) == k),]))}
+  if((K * n.id) > J){stop("Identity matrix/matrices has/have more rows than the whole Q-matrix ((K * nI) > J)")}
+  I <- matrix(rep(diag(1, K), n.id), ncol = K, byrow = T)
+  Q <- c()
+
+  if(!PropWithId){
+    Jq <- J - K * n.id
+    Jk <- c()
+    for(k in 1:length(qkProp)){Jk <- c(Jk, floor(Jq * qkProp[k]))}
+    while(sum(Jk) < Jq){
+      tmp <- sample(1:length(Jk), 1)
+      Jk[tmp] <- Jk[tmp] + 1
+    }
+    for(k in 1:length(qkProp)){assign(paste0("replace", k), ifelse(Jk[k] > nrow(get(paste0("pat", k))), T, F))}
+    Q <- rbind(I)
+    for(k in 1:length(qkProp)){Q <- rbind(Q, rbind(get(paste0("pat", k))[sample(nrow(get(paste0("pat", k))), size = Jk[k], replace = get(paste0("replace", k))),]))}
+    while(any(colSums(Q) < min.jk) | any(abs(cor(Q)[lower.tri(cor(Q))]) > max.kcor)){
+      Q <- rbind(I)
+      for(k in 1:length(qkProp)){Q <- rbind(Q, rbind(get(paste0("pat", k))[sample(nrow(get(paste0("pat", k))), size = Jk[k], replace = get(paste0("replace", k))),]))}
+    }
+  } else {
+    Jk <- c()
+    for(k in 1:length(qkProp)){Jk <- c(Jk, floor(J * qkProp[k]))}
+    while(sum(Jk) < J){
+      tmp <- sample(which(Jk != 0), 1)
+      Jk[tmp] <- Jk[tmp] + 1
+    }
+    if(min.jk > (sum(Jk * 1:length(Jk)) / (J*K)) * J){cat("Warning in genQ: min.jk may be to high according to the other arguments. Consider using a lower value for min.jk")}
+    for(k in 1:length(qkProp)){assign(paste0("replace", k), ifelse(Jk[k] > nrow(get(paste0("pat", k))), T, F))}
+    Q <- rbind(I)
+    Jk[1] <- Jk[1] - nrow(Q)
+    for(k in 1:length(qkProp)){Q <- rbind(Q, rbind(get(paste0("pat", k))[sample(nrow(get(paste0("pat", k))), size = Jk[k], replace = get(paste0("replace", k))),]))}
+    while(any(colSums(Q) < min.jk) | any(abs(cor(Q)[lower.tri(cor(Q))]) > max.kcor)){
+      Q <- rbind(I)
+      for(k in 1:length(qkProp)){Q <- rbind(Q, rbind(get(paste0("pat", k))[sample(nrow(get(paste0("pat", k))), size = Jk[k], replace = get(paste0("replace", k))),]))}
+    }
+  }
+
+  Jk[1] <- Jk[1] + K * n.id
+  Jk <- matrix(c(Jk, K*n.id), nrow = 1, dimnames = list("n.items", c(paste0("q", 1:length(qkProp)), "id")))
+  att.cor <- cor(Q)
+  options <- list(J = J, K = K, n.id = n.id,
+                  qkProp = matrix(qkProp, nrow = 1, dimnames = list("qkProp", paste0("q", 1:length(qkProp)))),
+                  PropWithId = PropWithId, min.jk = min.jk, max.kcor = max.kcor, seed = seed)
+
+  return(list(Q = Q, Jk = Jk, att.cor = att.cor, options = options))
+}
+gen.ACDMparam <- function(P0, P1, k.j, min.delta = 0, seed = NULL){
+  if((P1 - P0) / k.j < min.delta){
+    warning("min.delta not achievable with P0 and P1. min.delta has been forced to be lower.")
+    min.delta <- (P1 - P0) / k.j
+  }
+  if(!is.null(seed)){set.seed(seed)}
+  if(k.j == 1){
+    catprob.parm <- c("P(0)" = P0, "P(1)" = P1)
+    delta.parm <- c(d0 = P0, d1 = P1 - P0)
+    return(list(catprob.parm = catprob.parm, delta.parm = delta.parm))
+  } else {
+    delta.parm <- -1
+    while(any(delta.parm < min.delta)){
+      tmp <- runif(k.j, round(min.delta, 10), round(P1 - P0 - (min.delta * (k.j - 1)), 10))
+      delta.parm <- tmp / sum(tmp) * (P1 - P0)
+    }
+    delta.parm <- c(P0, delta.parm)
+    names(delta.parm) <- paste0("d", 0:k.j)
+    lc <- GDINA::attributepattern(k.j)
+    catprob.parm <- rep(P0, nrow(lc))
+    names(catprob.parm) <- paste0("P(", apply(lc, 1, paste, collapse = ""), ")")
+    for(k in 1:k.j){catprob.parm[lc[,k] == 1] <- catprob.parm[lc[,k] == 1] + delta.parm[k + 1]}
+    return(list(catprob.parm = catprob.parm, delta.parm = delta.parm))
+  }
+}
+gen.GDINAparam <- function(P0, P1, k.j, min.delta = 0, seed = NULL){
+  if(!is.null(seed)){set.seed(seed)}
+  if(k.j == 1){
+    catprob.parm <- c("P(0)" = P0, "P(1)" = P1)
+    delta.parm <- c(d0 = P0, d1 = P1 - P0)
+    return(list(catprob.parm = catprob.parm, delta.parm = delta.parm))
+  } else {
+    lc <- GDINA::attributepattern(k.j)
+    pos.k <- apply(lc, 2, function(x) which(x == 1))
+    delta.k <- rep(-1, k.j)
+    while(any(delta.k < min.delta)){
+      catprob.parm <- delta.parm <- P0
+      for(l in 2:(nrow(lc) - 1)){
+        k <- which(pos.k == l, arr.ind = T)[,2]
+        if(length(k) == 1){
+          catprob.parm <- c(catprob.parm, runif(1, P0, P1))
+          delta.parm <- c(delta.parm, catprob.parm[l] - P0)
+        } else {
+          pos <- pos.k[,k][pos.k[,k] < l]
+          pos <- pos[rowSums(lc[pos,]) < length(k)]
+          catprob.parm <- c(catprob.parm, runif(1, max(catprob.parm[pos]), P1))
+          delta.parm <- c(delta.parm, catprob.parm[l] - P0 - sum(delta.parm[pos]))
+        }
+      }
+      catprob.parm <- c(catprob.parm, P1)
+      delta.parm <- c(delta.parm, P1 - sum(delta.parm))
+      delta.k <- delta.parm[1 + 1:k.j]
+    }
+    return(list(catprob.parm = catprob.parm, delta.parm = delta.parm))
+  }
+}
+
+# Item selection procedures for cdcat function
 GDI.M <- function(LC.prob, prior){
   GDI.est <- c(0)
   for (jj in 1:nrow(LC.prob)) {
@@ -91,7 +308,6 @@ MPWKL.M <- function(LC.prob, prior){
   } # end jj
   return(MPWKL.est)
 }
-
 # Nonparametric CD-CAT
 NPC.eta <- function(q, l, gate){
   eta_k <- c()
@@ -134,17 +350,7 @@ pseudoP <- function(NPCD.obj, inv.type, w.type){
       opt <- length(inv.change.pre)
       switch(w.type,
              w <- 2^((opt - 1):0),
-             w <- exp((opt - 1):0),
-             if(opt %% 2 != 0){
-               w <- 2^(c(floor(opt/2):1, 0, 1:floor(opt/2)))
-             } else {
-               w <- 2^(c((floor(opt/2) - 1):0, 0:(floor(opt/2) - 1)))
-             },
-             if(opt %% 2 != 0){
-               w <- exp(c(floor(opt/2):1, 0, 1:floor(opt/2)))
-             } else {
-               w <- exp(c((floor(opt/2) - 1):0, 0:(floor(opt/2) - 1)))
-             }
+             w <- exp((opt - 1):0)
       )
       names(w) <- min.dist:max.dist
       w <- w[names(w) %in% names(prop.dist.ik)]

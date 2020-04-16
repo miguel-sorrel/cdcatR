@@ -1,15 +1,16 @@
 #' Simulated data (180 items, G-DINA model)
 #'
-#' Simulated data, Q-matrix and item parameters for a 180-item bank with 5 attributes.
+#' Simulated data, Q-matrix and item parameters for a 180-item bank with 5 attributes. Data generated using the \code{gen.itembank} function.
 #'
 #' @format A list with components:
 #' \describe{
-#' \item{\code{simdat}}{Simulated responses of 500 examinees}
-#' \item{\code{simQ}}{Artificial Q-matrix}
-#' \item{\code{simcatprob.parm}}{Artificial item parameters (probability of success for each latent group). All items are G-DINA items}
-#' \item{\code{simalpha}}{Simulated attribute patterns of 500 examinees}
+#' \item{\code{simdat.c}}{Simulated responses of 500 examinees}
+#' \item{\code{simalpha.c}}{Simulated attribute patterns of 500 examinees}
+#' \item{\code{simQ}}{Simulated Q-matrix}
+#' \item{\code{simcatprob.parm}}{Simulated success probabilities for each latent group in each item}
+#' \item{\code{simdelta.parm}}{Simulated delta parameters for each item}
+#' \item{\code{specifications}}{A list that contains all the specifications that were used in the \code{gen.itembank} function}
 #' }
-#'
 #'
 #'
 "sim180GDINA"

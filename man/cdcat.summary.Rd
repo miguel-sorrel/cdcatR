@@ -4,16 +4,18 @@
 \alias{cdcat.summary}
 \title{Summary information for a \code{cdcat} object}
 \usage{
-cdcat.summary(cdcat.obj, alpha)
+cdcat.summary(cdcat.obj, alpha, label = NULL)
 }
 \arguments{
-\item{cdcat.obj}{An object of class \code{cdcat}}
+\item{cdcat.obj}{An object or list of objects of class \code{cdcat}}
 
 \item{alpha}{N x K matrix with the attribute patterns to be compared to the \code{cdcat} results}
+
+\item{label}{labels for the \code{cdcat} objects. If NULL (by default), the models are used as labels}
 }
 \value{
 \code{cdcat.summary} returns an object of class \code{cdcat.summary}.
 }
 \description{
-This function provides classification accuracy (\code{FIXED.LENGTH == TRUE)} and/or CAT length (\code{FIXED.LENGTH == FALSE}) results for cdcat object.
+This function provides classification accuracy and CAT length results for \code{cdcat} object. If a list of \code{cdcat} objects is included, these objects are compared through different in different tables and figures.
 }

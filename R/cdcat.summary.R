@@ -1,145 +1,124 @@
 #' Summary information for a \code{cdcat} object
 #'
-#' This function provides classification accuracy (\code{FIXED.LENGTH == TRUE)} and/or CAT length (\code{FIXED.LENGTH == FALSE}) results for cdcat object.
+#' This function provides classification accuracy and CAT length results for \code{cdcat} object. If a list of \code{cdcat} objects is included, these objects are compared through different in different tables and figures.
 #'
-#' @param cdcat.obj An object of class \code{cdcat}
+#' @param cdcat.obj An object or list of objects of class \code{cdcat}
 #' @param alpha N x K matrix with the attribute patterns to be compared to the \code{cdcat} results
+#' @param label labels for the \code{cdcat} objects. If NULL (by default), the models are used as labels
 #'
 #' @return \code{cdcat.summary} returns an object of class \code{cdcat.summary}.
 #'
 #' @export
 #'
-cdcat.summary <- function(cdcat.obj, alpha){
-  MAXJ <- cdcat.obj$specifications$MAXJ
-  if(cdcat.obj$specifications$itemSelect != "NPS"){
-    if(cdcat.obj$specifications$FIXED.LENGTH == TRUE){
-      est <- lapply(cdcat.obj$est, '[[', 1)
-      N <- length(est)
-      K <- ncol(cdcat.obj$specifications$Q)
-      est.MAP.jj <- list()
-      PCV.jj <- as.data.frame(matrix(0, nrow = MAXJ, ncol = 2))
-      PCAm.jj <- as.data.frame(matrix(0, nrow = MAXJ, ncol = 2))
-      colnames(PCV.jj) <- c("item.position", "pattern.recovery")
-      colnames(PCAm.jj) <- c("item.position", "attribute.recovery")
-      for (jj in 1:MAXJ) {
-        est.MAP.jj[[jj]] <- matrix(data = as.numeric(unlist(lapply(lapply(est, function(x) x[jj, "MAP"]), FUN = strsplit, split = ""))),
-                                   ncol = K, nrow = N, byrow = TRUE)
-        PCV.jj[jj, ] <- c(jj, GDINA::ClassRate(est.MAP.jj[[jj]], alpha)$PCV[K])
-        PCAm.jj[jj, ] <- c(jj, GDINA::ClassRate(est.MAP.jj[[jj]], alpha)$PCA)
+cdcat.summary <- function(cdcat.obj, alpha, label = NULL){
+  if(class(cdcat.obj) == "list") {
+    cdcat.obj.l <- cdcat.obj
+    if(!is.null(label)){
+      if(length(label) != length(cdcat.obj.l)){stop("label and cdcat.obj.l must have the same length")}
+    }
+
+    if(length(unique(unlist(lapply(cdcat.obj.l, function(x) {x$specifications$FIXED.LENGTH})))) != 1){
+      stop("FIXED.LENGTH must be TRUE or FALSE for all the cdcat objects included")
+    }
+
+    model <- label
+    cdmCAT.obj.sum.l <- list()
+    for(cc in 1:length(cdcat.obj.l)){cdmCAT.obj.sum.l[[cc]] <- cdcat.getdata(cdcat.obj.l[[cc]], alpha)}
+
+    MAXJ <- cdcat.obj.l[[1]]$specifications$MAXJ
+
+    if(cdcat.obj.l[[1]]$specifications$FIXED.LENGTH == TRUE) {
+      Jtot <-  MAXJ * length(cdcat.obj.l)
+      data0 <- lapply(cdmCAT.obj.sum.l, function(x) x$recovery$numeric)
+      datacomp <- NULL
+      for(cc in 1:length(cdmCAT.obj.sum.l)){
+        if(is.null(model)){
+          model.cc <- cdcat.obj.l[[cc]]$specifications$model
+          if(is.null(cdcat.obj.l[[cc]]$specifications$fit$control$maxitr)){
+            model.cc <- model.cc
+          } else if(cdcat.obj.l[[cc]]$specifications$fit$control$maxitr == 0) {
+            model.cc <- "TRUE"
+          }
+        } else {
+          model.cc <- model[cc]
+        }
+        if(model.cc %in% datacomp$`rep(model.cc, nrow(data0[[cc]]))`){warning("Duplicated models. Consider providing different labels")}
+        datacomp <- rbind(datacomp, cbind(data0[[cc]], rep(model.cc, nrow(data0[[cc]]))))
       }
-      recovery <- list()
-      recovery$numeric <- cbind(PCV.jj, attribute.recovery = PCAm.jj[, 2])
-      recovery$plotPCV <- ggplot2::ggplot(data = PCV.jj, ggplot2::aes(x=item.position, y=pattern.recovery)) +
-        ggplot2::theme(panel.grid.minor.x = ggplot2::element_blank(), panel.grid.minor.y = ggplot2::element_blank()) +
+
+      datacomp <- as.data.frame(datacomp)
+      colnames(datacomp) <- c("item.position", "pattern.recovery", "attribute.recovery", "model")
+
+      PCVplot <- ggplot2::ggplot(data = datacomp,
+                                 ggplot2::aes(x=item.position, y=pattern.recovery, colour = model)) +
+        ggplot2::theme(panel.grid.minor.x = ggplot2::element_blank(),
+                       panel.grid.minor.y = ggplot2::element_blank()) +
         ggplot2::scale_x_continuous("Until Item Position", labels = 1:MAXJ, breaks = 1:MAXJ) +
         ggplot2::scale_y_continuous("Pattern Recovery", limits = c(0,1), labels = seq(from = 0, to = 1, by = 0.10),
                                     breaks = seq(from = 0, to = 1, by = 0.10)) +
-        ggplot2::geom_line() + ggplot2::geom_point(size = 2)
-      recovery$plotPCAm <- ggplot2::ggplot(data = PCAm.jj, ggplot2::aes(x=item.position, y=attribute.recovery)) +
-        ggplot2::theme(panel.grid.minor.x = ggplot2::element_blank(), panel.grid.minor.y = ggplot2::element_blank()) +
+        ggplot2::geom_line() + ggplot2::geom_point()
+
+      PCAmplot <- ggplot2::ggplot(data = datacomp,
+                                  ggplot2::aes(x=item.position, y=attribute.recovery, colour = model)) +
+        ggplot2::theme(panel.grid.minor.x = ggplot2::element_blank(),
+                       panel.grid.minor.y = ggplot2::element_blank()) +
         ggplot2::scale_x_continuous("Until Item Position", labels = 1:MAXJ, breaks = 1:MAXJ) +
         ggplot2::scale_y_continuous("Attribute Recovery", limits = c(0,1), labels = seq(from = 0, to = 1, by = 0.10),
                                     breaks = seq(from = 0, to = 1, by = 0.10)) +
-        ggplot2::geom_line() + ggplot2::geom_point(size = 2)
+        ggplot2::geom_line() + ggplot2::geom_point()
 
-      return(list("recovery" = recovery))
-
-    } else {
-      N <- length(cdcat.obj$est)
-      CATlength <- list()
-      data.len <- data.frame("length" = unlist(lapply(lapply(cdcat.obj$est, '[[', 2), length)),
-                             "cond" = rep(1, N))
-      CATlength$stats <- summary(data.len[, 1])
-      CATlength$plot <- ggplot2::ggplot(data.len, ggplot2::aes(x=cond, y=length)) +
-        ggplot2::geom_violin(alpha=0.4) +
-        ggplot2::theme(panel.grid.minor.x = ggplot2::element_blank(), panel.grid.minor.y = ggplot2::element_blank()) +
-        ggplot2::geom_dotplot(binaxis = 'y', stackdir = 'center', binwidth = 0.15) +
-        ggplot2::stat_summary(fun=mean, geom="point", shape=20, size=10, color="red", fill="red") +
-        ggplot2::theme(legend.position="none") +
-        ggplot2::scale_fill_brewer(palette="Set3") +
-        ggplot2::scale_y_continuous("CAT length", limits = c(0, (max(data.len[, 1]) + 2)),
-                                    labels = seq(from = 0, to = (max(data.len[, 1]) + 2), by = 1),
-                                    breaks = seq(from = 0, to = (max(data.len[, 1]) + 2), by = 1)) +
-        ggplot2::scale_x_continuous("", labels = c("", "", ""), breaks = seq(0.75, 1.25, 0.25))
-
-      est <- lapply(cdcat.obj$est, '[[', 1)
-      N <- length(est)
-      K <- ncol(cdcat.obj$specifications$Q)
-      est.MAP.end <- matrix(data = as.numeric(
-        unlist(lapply(lapply(est, function(x) x[nrow(x), "MAP"]), FUN = strsplit, split = ""))),
-        ncol = K, nrow = N, byrow = TRUE)
-      recovery <- GDINA::ClassRate(est.MAP.end, alpha)
-
-      res <- list("CATlength" = CATlength, "recovery" = recovery)
-      class(res) <- "cdcat.summary"
-
-      return(res)
+      res <- list("PCVcomp" = PCVplot, "PCAmcomp" = PCAmplot, "data" = datacomp)
     }
-  } else if(cdcat.obj$specifications$itemSelect == "NPS"){
-    if(cdcat.obj$specifications$FIXED.LENGTH == TRUE){
-      est <- lapply(cdcat.obj$est, '[[', 1)
-      N <- length(est)
-      K <- ncol(cdcat.obj$specifications$Q)
-      est.MAP.jj <- list()
-      PCV.jj <- as.data.frame(matrix(0, nrow = MAXJ, ncol = 2))
-      PCAm.jj <- as.data.frame(matrix(0, nrow = MAXJ, ncol = 2))
-      colnames(PCV.jj) <- c("item.position", "pattern.recovery")
-      colnames(PCAm.jj) <- c("item.position", "attribute.recovery")
-      for (jj in K:MAXJ) {
-        est.MAP.jj[[jj]] <-
-          matrix(data = as.numeric(
-            unlist(lapply(lapply(est, function(x) x[jj, 4]), FUN = strsplit, split = ""))),
-            ncol = K, nrow = N, byrow = TRUE)
-        PCV.jj[jj, ] <- c(jj, GDINA::ClassRate(est.MAP.jj[[jj]], alpha)$PCV[K])
-        PCAm.jj[jj, ] <- c(jj, GDINA::ClassRate(est.MAP.jj[[jj]], alpha)$PCA)
+
+    if(cdcat.obj.l[[1]]$specifications$FIXED.LENGTH == FALSE) {
+
+      m <- length(cdmCAT.obj.sum.l)
+      if(is.null(model)){
+        for(cc in 1:m){
+          tmp <- cdcat.obj.l[[cc]]$specifications$model
+          if(!is.null(cdcat.obj.l[[cc]]$specifications$fit$control$maxitr)){
+            if(cdcat.obj.l[[cc]]$specifications$fit$control$maxitr == 0){tmp <- "TRUE"}
+          }
+          model <- c(model, tmp)
+        } # end cc
       }
-      PCV.jj <- PCV.jj[-c(1:(K - 1)),]
-      PCAm.jj <- PCAm.jj[-c(1:(K - 1)),]
-      recovery <- list()
-      recovery$numeric <- cbind(PCV.jj, attribute.recovery = PCAm.jj[, 2])
-      recovery$plotPCV <- ggplot2::ggplot(data = PCV.jj, ggplot2::aes(x=item.position, y=pattern.recovery)) +
-        ggplot2::theme_gray() +
-        ggplot2::scale_x_continuous("Until Item Position", labels = K:MAXJ, breaks = K:MAXJ) +
-        ggplot2::scale_y_continuous("Pattern Recovery", limits = c(0,1), labels = seq(from = 0, to = 1, by = 0.10),
-                                    breaks = seq(from = 0, to = 1, by = 0.10)) +
-        ggplot2::geom_line() + ggplot2::geom_point(size = 2)
-      recovery$plotPCAm <- ggplot2::ggplot(data = PCAm.jj, ggplot2::aes(x=item.position, y=attribute.recovery)) +
-        ggplot2::theme_gray() +
-        ggplot2::scale_x_continuous("Until Item Position", labels = K:MAXJ, breaks = K:MAXJ) +
-        ggplot2::scale_y_continuous("Attribute Recovery", limits = c(0,1), labels = seq(from = 0, to = 1, by = 0.10),
-                                    breaks = seq(from = 0, to = 1, by = 0.10)) +
-        ggplot2::geom_line() + ggplot2::geom_point(size = 2)
 
-      return(list("recovery" = recovery))
-    } else {
-      N <- length(cdcat.obj$est)
-      CATlength <- list()
-      data.len <- data.frame("length" = unlist(lapply(lapply(cdcat.obj$est, '[[', 2), length)), "cond" = rep(1, N))
-      CATlength$stats <- summary(data.len[, 1])
-      CATlength$plot <- ggplot2::ggplot(data.len, ggplot2::aes(x=cond, y=length)) +
-        ggplot2::geom_violin(alpha=0.4) +
-        ggplot2::theme(panel.grid.minor.x = ggplot2::element_blank(), panel.grid.minor.y = ggplot2::element_blank()) +
-        ggplot2::geom_dotplot(binaxis = 'y', stackdir = 'center', binwidth = 0.15) +
-        ggplot2::stat_summary(fun=mean, geom="point", shape=20, size=10, color="red", fill="red") +
-        ggplot2::theme(legend.position="none") +
-        ggplot2::scale_fill_brewer(palette="Set3") +
-        ggplot2::scale_y_continuous("CAT length", limits = c(0, (max(data.len[, 1]) + 2)),
-                                    labels = seq(from = 0, to = (max(data.len[, 1]) + 2), by = 1),
-                                    breaks = seq(from = 0, to = (max(data.len[, 1]) + 2), by = 1)) +
-        ggplot2::scale_x_continuous("", labels = c("", "", ""), breaks = seq(0.75, 1.25, 0.25))
+      if(any(duplicated(model))){warning("Duplicated models. Consider providing different labels")}
 
-      est <- lapply(cdcat.obj$est, '[[', 1)
-      N <- length(est)
-      K <- ncol(cdcat.obj$specifications$Q)
-      est.MAP.end <- matrix(data = as.numeric(
-        unlist(lapply(lapply(est, function(x) x[nrow(x), 4]), FUN = strsplit, split = ""))),
-        ncol = K, nrow = N, byrow = TRUE)
-      recovery <- GDINA::ClassRate(est.MAP.end, alpha)
+      stats <- lapply(cdmCAT.obj.sum.l, function(x) x$CATlength$stats)
+      plots <- lapply(cdmCAT.obj.sum.l, function(x) x$CATlength$plot)
+      recovery <- lapply(cdmCAT.obj.sum.l, function(x) x$recovery)
 
-      res <- list("CATlength" = CATlength, "recovery" = recovery)
-      class(res) <- "cdcat.summary"
+      res.stats <- matrix(unlist(stats), nrow = m, byrow = TRUE)
+      rownames(res.stats) <- model
+      colnames(res.stats) <- names(stats[[1]])
+      or <- order(res.stats[,"Mean"])
+      res.stats <- res.stats[or, ]
+      for (mm in 1:m) {
+        plots[or][mm][[1]] <- plots[or][mm][[1]] + ggplot2::theme(axis.ticks.x = ggplot2::element_blank())
+      }
+      title <- cowplot::ggdraw() +
+        cowplot::draw_label(
+          paste("Models from left to right:",
+                paste(model[or], sep = "", collapse = ", "), collapse = ""),
+          fontface = 'bold', size = 10,
+          x = 0, hjust = 0) +
+        ggplot2::theme(plot.margin = ggplot2::margin(0, 0, 0, 7))
+      plot_row <- cowplot::plot_grid(plotlist = plots[or], nrow = 1)
+      res.plots <- cowplot::plot_grid(title, plot_row, ncol = 1, rel_heights = c(0.1, 1))
+      res.recov <- matrix(unlist(recovery), nrow = m, byrow = TRUE)
+      rownames(res.recov) <- model
+      K <- ncol(cdcat.obj.l[[1]]$specifications$Q)
+      colnames(res.recov) <- c("PCA", paste(1:K, "/", K, sep = ""))
+      or2 <- order(res.recov[,"PCA"], decreasing = TRUE)
+      res.recov <- res.recov[or2, ]
 
-      return(res)
+      res <- list("stats" = res.stats, "plots" = res.plots, "recovery" = res.recov)
     }
+  } else {
+    res <- cdcat.getdata(cdcat.obj, alpha)
   }
+  class(res) <- "cdcat.summary"
+  return(res)
 }
+
