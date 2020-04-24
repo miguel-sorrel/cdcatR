@@ -9,16 +9,16 @@ att.plot(cdcat.obj, i, k = NULL)
 \arguments{
 \item{cdcat.obj}{An object of class \code{cdcat}}
 
-\item{i}{Examinee to be plotted}
+\item{i}{Numeric vector of length 1 that specifies the examinee to be plotted}
 
-\item{k}{Attribute/s to be plotted. Default is NULL, which plots all attributes}
+\item{k}{Numeric vector that specifies the attribute/s to be plotted. Default is \code{NULL}, which plots all attributes}
 }
 \value{
-\code{att.plot} creates a plot.
+\code{att.plot} returns a plot of class \code{ggplot}.
 }
 \description{
-This function generates a plot monitoring the attribute mastery estimates (\emph{X}: item position, \emph{Y}: mastery probability).
+This function generates a plot monitoring the attribute mastery estimates (\emph{x-axis}: Item position, \emph{y-axis}: Mastery posterior probability estimate).
 If a parametric CD-CAT has been conducted, posterior probabilites (with confident intervals) of mastering each attribute are plotted.
-If a nonparametric CD-CAT has been conducted (and pseudo-probabilites have been computed), both nonparametric classification and pseudo-posterior probabilites (with confident intervals) of mastering each attribute are plotted.
+If a nonparametric CD-CAT has been conducted (and pseudo-probabilites have been computed), both nonparametric classification and pseudo-posterior probabilites (with confident intervals) of mastering each attribute are plotted. Pseudo-posterior probabilities is a method in progress. Caution in the interpretation is advised.
 Colors are used in the plots to indicate mastery (green), non-mastery (red), or uncertainty (blue).
 }

@@ -5,122 +5,80 @@
 \title{Item bank generation}
 \usage{
 gen.itembank(
-  N.c,
-  N.v = NULL,
   Q = NULL,
-  gen.Q = list(J = NULL, K = NULL, propK.J = NULL, nI = NULL, minJ.K = NULL, max.Kcor =
-    NULL),
-  IQ,
-  VAR,
+  gen.Q = list(J = NULL, K = NULL, propK.J = NULL, nI = 1, minJ.K = NULL, max.Kcor = 1),
+  mean.IQ,
+  range.IQ,
   model = "GDINA",
   min.param = 0,
-  gen.att = list(att.dist = "uniform", mvnorm.cor = 0, mvnorm.mean = 0, mvnorm.cutoff =
-    0, higher.order.a = 0, higher.order.b = 0),
   seed = NULL
 )
 }
 \arguments{
-\item{N.c}{Sample size for the calibration sample}
+\item{Q}{Numeric Matrix or dataframe of length \emph{J} number of items x \emph{K} number of atributes Q-matrix}
 
-\item{N.v}{Sample size for the validation sample. If NULL (by default), no validation data are provided}
+\item{gen.Q}{A list of arguments to generate a Q-matrix if \code{Q} is not provided. \code{J}: number of items. \code{K}: number of attributes. \code{propK.J}: numeric vector summing up to 1 that determines the proportion of 1-attribute, 2-attribute, ..., items (See \code{Examples}). The length of \code{propK.J} determines the maximum number of attributes considered for an item. \code{nI}: numeric vector of length 1 that sets the minimum number of identity matrices to be included in the Q-matrix. \code{minJ.K}: numeric vector of length \emph{K} that sets minimum number of items measuring each attribute. \code{max.Kcor}: numeric vector of length 1 that sets the maximum positive correlation allowed between two attributes}
 
-\item{Q}{Q-matrix}
+\item{mean.IQ}{Item discrimination (mean for the uniform distribution). \emph{mean.IQ} = \emph{P}(\strong{1}) - \emph{P}(\strong{0}) (Sorrel et al., 2017; Najera et al., in press). Must be a numeric value between 0 and 1}
 
-\item{gen.Q}{A list of arguments to generate a Q-matrix if \code{Q} is not provided. \code{J}: number of items. \code{K}: number of attributes. \code{propK.J}: vector summing up to 1 that determines the proportion of 1-attribute, 2-attribute, ..., items (See \code{Examples}). \code{nI}: minimum number of identity matrices to be included in the Q-matrix. \code{minJ.K}: minimum number of items measuring each attribute. \code{max.Kcor}: maximum correlation allowed between two attributes}
+\item{range.IQ}{Item discrimination (range for the uniform distribution). Must be a numeric value between 0 and 1}
 
-\item{IQ}{Item discrimination (mean for the uniform distribution). \emph{IQ} = \emph{P}(\strong{1}) - \emph{P}(\strong{0}) (Sorrel, Abad, Olea, de la Torre, and Barrada, 2017; NÃ¡jera, Sorrel, de la Torre, and Abad, in press)}
+\item{model}{A character vector of length \emph{J} with one model for each item, or a single value to be used for all items. The possible options include \code{"DINA"}, \code{"DINO"}, \code{"ACDM"}, and \code{"GDINA"}. One-attribute items will be coded in the output as \code{"GDINA"}}
 
-\item{VAR}{Item discrimination (variance for the uniform distribution)}
+\item{min.param}{Numeric vector of length 1. Minimum value for the delta parameter of the principal effects of each attribute. Only usable if \code{model} = \code{"ACDM"} or \code{model} = \code{"GDINA"}}
 
-\item{model}{A character vector with one model for each item, or a single value to be used for all items. The possible options include \code{"DINA"}, \code{"DINO"}, \code{"ACDM"}, and \code{"GDINA"}. One-attribute items will be coded as \code{"GDINA"}}
-
-\item{min.param}{Minimum value for the delta parameter of the principal effects of each attribute. Only usable if \code{model} = \code{"ACDM"} or \code{model} = \code{"GDINA"}}
-
-\item{gen.att}{A list of arguments for the attribute profiles generation. Uniform attribute distribution by default. See \code{simGDINA} function of package \code{GDINA}}
-
-\item{seed}{A scalar to use with \code{set.seed}}
+\item{seed}{Numeric vector of length 1. A scalar to use with \code{set.seed}}
 }
 \value{
 \code{gen.itembank} returns an object of class \code{gen.itembank}.
 \describe{
-\item{simdat.c}{A matrix with the calibration dataset}
-\item{simalpha.c}{A matrix with the alpha patterns for the calibration dataset}
-\item{simdat.v}{A matrix with the validation dataset (only if \code{N.v} is specified)}
-\item{simalpha.v}{A matrix with the alpha patterns for the validation dataset (only if \code{N.v} is specified)}
-\item{simQ}{Q-matrix}
-\item{simcatprob.parm}{A list of non-zero categories success probabilities for each latent group in each item}
+\item{simQ}{Generated Q-matrix (only if \code{gen.Q} arguments have been used)}
+\item{simcatprob.parm}{A list of success probabilities for each latent group in each item}
 \item{simdelta.parm}{A list of delta parameters for each item}
+\item{check}{A list that contains the mean.IQ and range.IQ for the item bank so that users can check whether these values match the expected results}
 \item{specifications}{A list that contains all the specifications}
 }
 }
 \description{
-This function can be used to generate a calibration and a validation sample of responses to an item bank.
+This function can be used to generate an item bank.
 The user can provide a Q-matrix or create one defining a set of arguments.
-Item quality is sampled from a uniform distribution with mean = \emph{IQ} and variance = \emph{VAR}.
-Item parameters are generated with monotonicity constraint.
-Data are generated following either a uniform, multivariate normal, or higher-order distribution.
+Item quality is sampled from a uniform distribution with mean = \emph{mean.IQ} and range = \emph{range.IQ}.
+Item parameters are generated so that the satisfy the monotonicity constraint.
 }
 \examples{
 ####################################
 # Example 1.                       #
-# Generate calibration sample      #
-# and item parameters providing    #
-# a Q-matrix, with G-DINA model    #
-# and uniform attribute            #
-# distribution                     #
+# Generate item bank providing a   #
+# Q-matrix using the G-DINA model  #
 ####################################
 
 Q <- sim180GDINA$simQ
-model <- rep("GDINA", each = nrow(Q))
-IQ <- .70 # P(1), IQ = Low item quality in Kaplan, de la Torre & Barrada (2015)
-VAR <- .10 # High variance in Kaplan et al. (2015)
-bank <- gen.itembank(N.c = 1000, Q = Q, IQ = IQ, VAR = VAR, model = model)
+bank <- gen.itembank(Q = Q, mean.IQ = .70, range.IQ = .20, model = "GDINA")
 
 ####################################
 # Example 2.                       #
-# Generate calibration sample      #
-# and item parameters providing    #
-# a Q-matrix, with different       #
-# models and higher-order          #
-# attribute distribution           #
+# Generate item bank providing a   #
+# Q-matrix using multiple models   #
 ####################################
 
 Q <- sim180GDINA$simQ
 K <- ncol(Q)
 model <- sample(c("DINA", "DINO", "ACDM"), size = nrow(Q), replace = TRUE)
-IQ <- .70
-VAR <- .10
-bank <- gen.itembank(N.c = 1000, Q = Q, IQ = IQ, VAR = VAR, model = model,
-                     gen.att = list(att.dist = "higher.order",
-                      higher.order.a = runif(K, 0.8, 1.3),
-                      higher.order.b = seq(-2, 2, length.out = K)))
+bank <- gen.itembank(Q = Q, mean.IQ = .70, range.IQ = .20, model = model)
 
 ####################################
 # Example 3.                       #
-# Generate calibration and         #
-# validation samples and item      #
-# parameters without providing a   #
-# Q-matrix (using gen.Q arguments) #
+# Generate item bank without       #
+# providing a Q-matrix (using      #
+# gen.Q arguments)                 #
 ####################################
 
-J <- 150
-K <- 5
-propK.J <- c(0.5, 0.3, 0, 0.2)
-nI <- 3
-minJ.K <- 50
-max.Kcor <- 0.5
-IQ <- .80
-VAR <- .05
-min.param <- 0.1
-bank <- gen.itembank(N.c = 1000, N.v = 2000,
-                     gen.Q = list(J = J, K = K, propK.J = propK.J,
-                     nI = nI, minJ.K = minJ.K, max.Kcor = max.Kcor),
-                     IQ = IQ, VAR = VAR, min.param = min.param)
+bank <- gen.itembank(gen.Q = list(J = 150, K = 5, propK.J = c(0.4, 0.3, 0.2, 0.1),
+                     nI = 3, minJ.K = 30, max.Kcor = 1),
+                     mean.IQ = .80, range.IQ = .10, min.param = 0.1)
 
 }
 \references{
-Kaplan, M., de la Torre, J., & Barrada, J. R. (2015). New item selection methods for cognitive diagnosis computerized adaptive testing. \emph{Applied Psychological Measurement, 39}, 167-188.
-
 Najera, P., Sorrel, M. A., de la Torre, J., & Abad, F. J. (in press). Improving robustness in Q-matrix validation using an iterative and dynamic procedure. \emph{Applied Psychological Measurement}.
 
 Sorrel, M. A., Abad, F. J., Olea, J., de la Torre, J., & Barrada, J. R. (2017). Inferential item-fit evaluation in cognitive diagnosis modeling. \emph{Applied Psychological Measurement, 41}, 614-631.

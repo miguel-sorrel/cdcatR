@@ -1,3 +1,13 @@
+overlap.rate <- function(CAT.length, exposure.rates){
+  # used in cdcat.getdata function
+  Q <- CAT.length
+  exp <- exposure.rates
+  n <- length(exp)
+  # Q: test length, n: Item bank size, exp: Item exposure rates
+  res <- (n/Q)*var(exp) + Q/n # Barrada et al. (2009) Psicothema
+  return(res)
+}
+
 cdcat.getdata <- function(cdcat.obj, alpha){
   # used in cdcat.summary function
   MAXJ <- cdcat.obj$specifications$MAXJ
@@ -12,13 +22,18 @@ cdcat.getdata <- function(cdcat.obj, alpha){
       colnames(PCV.jj) <- c("item.position", "pattern.recovery")
       colnames(PCAm.jj) <- c("item.position", "attribute.recovery")
       for (jj in 1:MAXJ) {
-        est.MAP.jj[[jj]] <- matrix(data = as.numeric(unlist(lapply(lapply(est, function(x) x[jj, "MAP"]), FUN = strsplit, split = ""))),
+        est.MAP.jj[[jj]] <- matrix(data = as.numeric(unlist(lapply(lapply(lapply(est, function(x) x[jj, "MAP"]), as.character), FUN = strsplit, split = ""))),
                                    ncol = K, nrow = N, byrow = TRUE)
-        PCV.jj[jj, ] <- c(jj, GDINA::ClassRate(est.MAP.jj[[jj]], alpha)$PCV[K])
-        PCAm.jj[jj, ] <- c(jj, GDINA::ClassRate(est.MAP.jj[[jj]], alpha)$PCA)
+        PCV.jj[jj, ] <- c(jj, mean(rowSums(est.MAP.jj[[jj]] == alpha) == K))
+        PCAm.jj[jj, ] <- c(jj, mean(est.MAP.jj[[jj]] == alpha))
       }
       recovery <- list()
-      recovery$numeric <- cbind(PCV.jj, attribute.recovery = PCAm.jj[, 2])
+      for (kk in 1:K) {
+        recovery$PCV[kk] <- mean(rowSums(est.MAP.jj[[jj]] == alpha) >= kk)}
+      recovery$PCA <- c(colMeans(est.MAP.jj[[jj]] == alpha), mean(est.MAP.jj[[jj]] == alpha))
+      names(recovery$PCV) <- paste(1:K, sep = " out of ", K)
+      names(recovery$PCA) <- c(paste("K", 1:K, sep = ""), "PCAm")
+      recovery$dataplot <- cbind(PCV.jj, attribute.recovery = PCAm.jj[, 2])
       recovery$plotPCV <- ggplot2::ggplot(data = PCV.jj, ggplot2::aes(x=item.position, y=pattern.recovery)) +
         ggplot2::theme(panel.grid.minor.x = ggplot2::element_blank(), panel.grid.minor.y = ggplot2::element_blank()) +
         ggplot2::scale_x_continuous("Until Item Position", labels = 1:MAXJ, breaks = 1:MAXJ) +
@@ -32,10 +47,38 @@ cdcat.getdata <- function(cdcat.obj, alpha){
                                     breaks = seq(from = 0, to = 1, by = 0.10)) +
         ggplot2::geom_line() + ggplot2::geom_point(size = 2)
 
-      return(list("recovery" = recovery))
+      J  <- nrow(cdcat.obj$specifications$Q)
+      tmp <- table(unlist(lapply(cdcat.obj$est, function(x) x[[2]])))
+      df.exp <- data.frame("item" = 1:J,
+                           "exp" = 0)
+      df.exp[as.numeric(names(tmp)), 2] <- tmp/N
+      exposure <- list()
+      exposure$stats <- c(summary(df.exp[, 2]), "overlap rate" = overlap.rate(MAXJ, df.exp[, 2]))
+      exposure$plot <-
+        ggplot2::ggplot(data=df.exp, ggplot2::aes(x=item, y=exp)) +
+        ggplot2::geom_bar(stat="identity") +
+        ggplot2::scale_x_continuous(name = "Item") +
+        ggplot2::scale_y_continuous(name = "Exposure rate", limits = c(0, 1))
+      exposure$dataplot <- df.exp
+
+      return(list("recovery" = recovery, "item.exposure" = exposure))
 
     } else {
-      N <- length(cdcat.obj$est)
+
+      est <- lapply(cdcat.obj$est, '[[', 1)
+      N <- length(est)
+      K <- ncol(cdcat.obj$specifications$Q)
+      est.MAP.end <- matrix(data = as.numeric(
+        unlist(lapply(lapply(lapply(est, function(x) x[nrow(x), "MAP"]), as.character), FUN = strsplit, split = ""))),
+        ncol = K, nrow = N, byrow = TRUE)
+
+      recovery <- list()
+      for (kk in 1:K) {
+        recovery$PCV[kk] <- mean(rowSums(est.MAP.end == alpha) >= kk)}
+      recovery$PCA <- c(colMeans(est.MAP.end == alpha), mean(est.MAP.end == alpha))
+      names(recovery$PCV) <- paste(1:K, sep = " out of ", K)
+      names(recovery$PCA) <- c(paste("K", 1:K, sep = ""), "PCAm")
+
       CATlength <- list()
       data.len <- data.frame("length" = unlist(lapply(lapply(cdcat.obj$est, '[[', 2), length)),
                              "cond" = rep(1, N))
@@ -54,15 +97,21 @@ cdcat.getdata <- function(cdcat.obj, alpha){
                                     breaks = seq(from = 0, to = (max(data.len[, 1]) + 2), by = 5)) +
         ggplot2::scale_x_continuous("", labels = c("", "", ""), breaks = seq(0.75, 1.25, 0.25))
 
-      est <- lapply(cdcat.obj$est, '[[', 1)
-      N <- length(est)
-      K <- ncol(cdcat.obj$specifications$Q)
-      est.MAP.end <- matrix(data = as.numeric(
-        unlist(lapply(lapply(est, function(x) x[nrow(x), "MAP"]), FUN = strsplit, split = ""))),
-        ncol = K, nrow = N, byrow = TRUE)
-      recovery <- GDINA::ClassRate(est.MAP.end, alpha)
+      J  <- nrow(cdcat.obj$specifications$Q)
+      tmp <- table(unlist(lapply(cdcat.obj$est, function(x) x[[2]])))
+      df.exp <- data.frame("item" = 1:J,
+                           "exp" = 0)
+      df.exp[as.numeric(names(tmp)), 2] <- tmp/N
+      exposure <- list()
+      exposure$stats <- c(summary(df.exp[, 2]), "overlap rate" = overlap.rate(CATlength$stats["Mean"], df.exp[, 2]))
+      exposure$plot <-
+        ggplot2::ggplot(data=df.exp, ggplot2::aes(x=item, y=exp)) +
+        ggplot2::geom_bar(stat="identity") +
+        ggplot2::scale_x_continuous(name = "Item") +
+        ggplot2::scale_y_continuous(name = "Exposure rate", limits = c(0, 1))
+      exposure$dataplot <- df.exp
 
-      res <- list("CATlength" = CATlength, "recovery" = recovery)
+      res <- list("recovery" = recovery, "item.exposure" = exposure, "CATlength" = CATlength)
       class(res) <- "cdcat.summary"
 
       return(res)
@@ -80,15 +129,22 @@ cdcat.getdata <- function(cdcat.obj, alpha){
       for (jj in K:MAXJ) {
         est.MAP.jj[[jj]] <-
           matrix(data = as.numeric(
-            unlist(lapply(lapply(est, function(x) x[jj, 4]), FUN = strsplit, split = ""))),
+            unlist(lapply(lapply(lapply(est, function(x) x[jj, 4]), as.character), FUN = strsplit, split = ""))),
             ncol = K, nrow = N, byrow = TRUE)
-        PCV.jj[jj, ] <- c(jj, GDINA::ClassRate(est.MAP.jj[[jj]], alpha)$PCV[K])
-        PCAm.jj[jj, ] <- c(jj, GDINA::ClassRate(est.MAP.jj[[jj]], alpha)$PCA)
+        PCV.jj[jj, ] <- c(jj, mean(rowSums(est.MAP.jj[[jj]] == alpha) == K))
+        PCAm.jj[jj, ] <- c(jj, mean(est.MAP.jj[[jj]] == alpha))
       }
       PCV.jj <- PCV.jj[-c(1:(K - 1)),]
       PCAm.jj <- PCAm.jj[-c(1:(K - 1)),]
       recovery <- list()
-      recovery$numeric <- cbind(PCV.jj, attribute.recovery = PCAm.jj[, 2])
+      recovery <- list()
+      for (kk in 1:K) {
+        recovery$PCV[kk] <- mean(rowSums(est.MAP.jj[[jj]] == alpha) >= kk)}
+      recovery$PCA <- c(colMeans(est.MAP.jj[[jj]] == alpha), mean(est.MAP.jj[[jj]] == alpha))
+      names(recovery$PCV) <- paste(1:K, sep = " out of ", K)
+      names(recovery$PCA) <- c(paste("K", 1:K, sep = ""), "PCAm")
+
+      recovery$dataplot <- cbind(PCV.jj, attribute.recovery = PCAm.jj[, 2])
       recovery$plotPCV <- ggplot2::ggplot(data = PCV.jj, ggplot2::aes(x=item.position, y=pattern.recovery)) +
         ggplot2::theme_gray() +
         ggplot2::scale_x_continuous("Until Item Position", labels = K:MAXJ, breaks = K:MAXJ) +
@@ -102,11 +158,48 @@ cdcat.getdata <- function(cdcat.obj, alpha){
                                     breaks = seq(from = 0, to = 1, by = 0.10)) +
         ggplot2::geom_line() + ggplot2::geom_point(size = 2)
 
-      return(list("recovery" = recovery))
+      J  <- nrow(cdcat.obj$specifications$Q)
+      tmp <- table(unlist(lapply(cdcat.obj$est, function(x) x[[2]])))
+      df.exp <- data.frame("item" = 1:J,
+                           "exp" = 0)
+      df.exp[as.numeric(names(tmp)), 2] <- tmp/N
+      exposure <- list()
+      exposure$stats <- c(summary(df.exp[, 2]), "overlap rate" = overlap.rate(MAXJ, df.exp[, 2]))
+      exposure$plot <-
+        ggplot2::ggplot(data=df.exp, ggplot2::aes(x=item, y=exp)) +
+        ggplot2::geom_bar(stat="identity") +
+        ggplot2::scale_x_continuous(name = "Item") +
+        ggplot2::scale_y_continuous(name = "Exposure rate", limits = c(0, 1))
+      exposure$dataplot <- df.exp
+
+      J  <- nrow(cdcat.obj$specifications$Q)
+      tmp <- table(unlist(lapply(cdcat.obj$est, function(x) x[[2]])))
+      df.exp <- data.frame("item" = 1:J,
+                           "exp" = 0)
+      df.exp[as.numeric(names(tmp)), 2] <- tmp/N
+      exposure <- list()
+      exposure$stats <- c(summary(df.exp[, 2]), "overlap rate" = overlap.rate(MAXJ, df.exp[, 2]))
+      exposure$plot <-
+        ggplot2::ggplot(data=df.exp, ggplot2::aes(x=item, y=exp)) +
+        ggplot2::geom_bar(stat="identity") +
+        ggplot2::scale_x_continuous(name = "Item") +
+        ggplot2::scale_y_continuous(name = "Exposure rate", limits = c(0, 1))
+      exposure$dataplot <- df.exp
+
+      return(list("recovery" = recovery, "item.exposure" = exposure))
     } else {
       N <- length(cdcat.obj$est)
       CATlength <- list()
       data.len <- data.frame("length" = unlist(lapply(lapply(cdcat.obj$est, '[[', 2), length)), "cond" = rep(1, N))
+
+      est <- lapply(cdcat.obj$est, '[[', 1)
+      N <- length(est)
+      K <- ncol(cdcat.obj$specifications$Q)
+      est.MAP.end <- matrix(data = as.numeric(
+        unlist(lapply(lapply(est, function(x) x[nrow(x), 4]), FUN = strsplit, split = ""))),
+        ncol = K, nrow = N, byrow = TRUE)
+      recovery <- GDINA::ClassRate(est.MAP.end, alpha)
+
       CATlength$stats <- summary(data.len[, 1])
       CATlength$plot <- ggplot2::ggplot(data.len, ggplot2::aes(x=cond, y=length)) +
         ggplot2::geom_violin(alpha=0.4) +
@@ -122,15 +215,21 @@ cdcat.getdata <- function(cdcat.obj, alpha){
                                     breaks = seq(from = 0, to = (max(data.len[, 1]) + 2), by = 5)) +
         ggplot2::scale_x_continuous("", labels = c("", "", ""), breaks = seq(0.75, 1.25, 0.25))
 
-      est <- lapply(cdcat.obj$est, '[[', 1)
-      N <- length(est)
-      K <- ncol(cdcat.obj$specifications$Q)
-      est.MAP.end <- matrix(data = as.numeric(
-        unlist(lapply(lapply(est, function(x) x[nrow(x), 4]), FUN = strsplit, split = ""))),
-        ncol = K, nrow = N, byrow = TRUE)
-      recovery <- GDINA::ClassRate(est.MAP.end, alpha)
+      J  <- nrow(cdcat.obj$specifications$Q)
+      tmp <- table(unlist(lapply(cdcat.obj$est, function(x) x[[2]])))
+      df.exp <- data.frame("item" = 1:J,
+                           "exp" = 0)
+      df.exp[as.numeric(names(tmp)), 2] <- tmp/N
+      exposure <- list()
+      exposure$stats <- c(summary(df.exp[, 2]), "overlap rate" = overlap.rate(CATlength$stats["Mean"], df.exp[, 2]))
+      exposure$plot <-
+        ggplot2::ggplot(data=df.exp, ggplot2::aes(x=item, y=exp)) +
+        ggplot2::geom_bar(stat="identity") +
+        ggplot2::scale_x_continuous(name = "Item") +
+        ggplot2::scale_y_continuous(name = "Exposure rate", limits = c(0, 1))
+      exposure$dataplot <- df.exp
 
-      res <- list("CATlength" = CATlength, "recovery" = recovery)
+      res <- list("recovery" = recovery, "item.exposure" = exposure, "CATlength" = CATlength)
       class(res) <- "cdcat.summary"
 
       return(res)
@@ -168,9 +267,12 @@ genQ <- function(J, K, n.id = 2, qkProp, PropWithId = T, min.jk = 1, max.kcor = 
     for(k in 1:length(qkProp)){assign(paste0("replace", k), ifelse(Jk[k] > nrow(get(paste0("pat", k))), T, F))}
     Q <- rbind(I)
     for(k in 1:length(qkProp)){Q <- rbind(Q, rbind(get(paste0("pat", k))[sample(nrow(get(paste0("pat", k))), size = Jk[k], replace = get(paste0("replace", k))),]))}
-    while(any(colSums(Q) < min.jk) | any(abs(cor(Q)[lower.tri(cor(Q))]) > max.kcor)){
+    i <- 0
+    while(any(colSums(Q) < min.jk) | any(cor(Q)[lower.tri(cor(Q))] > max.kcor)){
       Q <- rbind(I)
       for(k in 1:length(qkProp)){Q <- rbind(Q, rbind(get(paste0("pat", k))[sample(nrow(get(paste0("pat", k))), size = Jk[k], replace = get(paste0("replace", k))),]))}
+      i <- i + 1
+      if(i == 500){stop("In gen.itembank, no convergence in Q-matrix generation. Try a lower value for argument gen.Q$minJ.K or a higher value for argument gen.Q$max.Kcor")}
     }
   } else {
     Jk <- c()
@@ -184,9 +286,12 @@ genQ <- function(J, K, n.id = 2, qkProp, PropWithId = T, min.jk = 1, max.kcor = 
     Q <- rbind(I)
     Jk[1] <- Jk[1] - nrow(Q)
     for(k in 1:length(qkProp)){Q <- rbind(Q, rbind(get(paste0("pat", k))[sample(nrow(get(paste0("pat", k))), size = Jk[k], replace = get(paste0("replace", k))),]))}
-    while(any(colSums(Q) < min.jk) | any(abs(cor(Q)[lower.tri(cor(Q))]) > max.kcor)){
+    i <- 0
+    while(any(colSums(Q) < min.jk) | any(cor(Q)[lower.tri(cor(Q))] > max.kcor)){
       Q <- rbind(I)
       for(k in 1:length(qkProp)){Q <- rbind(Q, rbind(get(paste0("pat", k))[sample(nrow(get(paste0("pat", k))), size = Jk[k], replace = get(paste0("replace", k))),]))}
+      i <- i + 1
+      if(i == 500){stop("In gen.itembank, no convergence in Q-matrix generation. Try a lower value for argument gen.Q$minJ.K or a higher value for argument gen.Q$max.Kcor")}
     }
   }
 

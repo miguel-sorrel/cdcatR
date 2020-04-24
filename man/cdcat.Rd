@@ -7,42 +7,39 @@
 cdcat(
   fit = NULL,
   dat = NULL,
-  Q = NULL,
   itemSelect = "GDI",
   MAXJ = 20,
   FIXED.LENGTH = TRUE,
   att.prior = NULL,
-  post.initial = NULL,
-  max.cut = 0.8,
-  NPS.args = list(gate = NULL, pseudo.prob = T, w.type = 1, seed = NULL),
+  initial.distr = NULL,
+  precision.cut = 0.8,
+  NPS.args = list(Q = NULL, gate = NULL, pseudo.prob = T, w.type = 1, seed = NULL),
   n.cores = 2,
-  i.print = 250
+  print.progress = TRUE
 )
 }
 \arguments{
-\item{fit}{Calibrated item bank with the GDINA or CDM package}
+\item{fit}{Calibrated item bank with the \code{GDINA::GDINA} (Ma & de la Torre, 2020) or \code{CDM::gdina} (Robitzsch et al., 2020) R packages functions}
 
-\item{dat}{Dataset to be analyzed. If \code{is.null(dat)} it takes data from the fit object (i.e., post-hoc simulation)}
+\item{dat}{Numeric Matrix or dataframe of length \emph{N} number of examinees x \emph{J} number of items. Dataset to be analyzed. If \code{is.null(dat)} the data is taken data from the fit object (i.e.,  the calibration sample is used)}
 
-\item{Q}{Q-matrix to be used in the analysis. If \code{is.null(Q)} it takes Q from the fit object}
+\item{itemSelect}{Character vector of length 1. Item selection rule: \code{GDI}, \code{JSD}, \code{MPWKL}, \code{PWKL}, \code{NPS}, or \code{random}}
 
-\item{itemSelect}{Item selection rule: GDI, JSD, MPWKL, PWKL, NPS, random}
+\item{MAXJ}{Numeric vector of length 1. Maximum number of items to be applied regardless of the \code{FIXED.LENGTH} argument. Default is 20}
 
-\item{MAXJ}{Maximum number of items to be applied. Default is 20}
+\item{FIXED.LENGTH}{Logical vector of length 1. Fixed CAT-length (\code{TRUE}) or fixed-precision (\code{FALSE}) application. Default is \code{TRUE}}
 
-\item{FIXED.LENGTH}{Fixed CAT-length (TRUE) or fixed-precision (FALSE). Default is TRUE}
+\item{att.prior}{Numeric vector of length 2^\emph{K}, where \emph{K} is the number of attributes. Prior distribution for MAP/EAP estimates. Default is uniform}
 
-\item{att.prior}{Prior distribution for MAP/EAP estimates}
+\item{initial.distr}{Numeric vector of length 2^\emph{K}, where \emph{K} is the number of attributes. Weighting distribution to initialize \code{itemSelect} at item position 1. Default is uniform}
 
-\item{post.initial}{Prior distribution for \code{itemSelect}}
+\item{precision.cut}{Numeric vector of length 1. Cutoff for fixed-precision (assigned pattern posterior probability > precision.cut; Hsu, Wang, & Chen, 2013). When \code{itemSelect = "NPS"} this is evaluated at the attribute level using the pseudo-posterior probabilities for each attribute (\emph{K} assigned attribute pseudo-posterior probability > precision.cut). Default is .80. A higher cutoff is recommended when \code{itemSelect = "NPS"}}
 
-\item{max.cut}{Cutoff for fixed-precision (posterior pattern > max.cut). When \code{itemSelect = "NPS"} this is evaluated at the attribute level using the pseudo-posterior probabilities for each attribute (\emph{K} posterior probabilities > max.cut). Default is .80. A higher cutoff is recommended when \code{itemSelect = "NPS"}}
+\item{NPS.args}{A list of options when \code{itemSelect = "NPS"}. \code{Q} Q-matrix to be used in the analysis. \code{gate} = "AND" or "OR", depending on whether a conjunctive o disjunctive nonparametric CDM is used. \code{pseudo.prob} = pseudo-posterior probability of each examinee mastering each attribute (experimental). \code{w.type} = weight type used for computing the pseudo-posterior probability (experimental): 1 = Power-of-2 weight; 2 = Exponential weight. \code{seed} = Numeric vector of length 1. NPS has a random component, so a seed is required for consistent results.}
 
-\item{NPS.args}{A list of options when \code{itemSelect = "NPS"}. \code{gate} = "AND" or "OR", depending on whether a conjunctive o disjunctive nonparametric CDM is used. \code{pseudo.prob} = pseudo-posterior probability of each examinee mastering each attribute (experimental). \code{w.type} = weight type used for computing the pseudo-posterior probability (experimental): 1 = Power-of-2 weight; 2 = Exponential weight. \code{seed} = NPS has a random component, so a seed is required for consistent results.}
+\item{n.cores}{Numeric vector of length 1. Number of cores to be used during parallelization. Default is 2}
 
-\item{n.cores}{Number of cores to be used during parallelization. Default is 2}
-
-\item{i.print}{Print examinee information. Default is 250}
+\item{print.progress}{Logical vector of length 1. Prints a progress bar to the console. Default is TRUE}
 }
 \value{
 \code{cdcat} returns an object of class \code{cdcat}.
@@ -55,7 +52,7 @@ cdcat(
 \code{cdcat} conducts a CD-CAT application for a given dataset. Different item selection rules can be used: the general discrimination index
 (GDI; de la Torre & Chiu, 2016; Kaplan et al., 2015), the Jensen-Shannon divergence index (JSD; Kang et al., 2017; Minchen & de la Torre, 2016;
 Yigit et al., 2018), the posterior-weighted Kullback-Leibler index (PWKL; Cheng, 2009), the modified PWKL index (MPWKL; Kaplan et al., 2015), the nonparametric
-item selection method (NPS; Chang et al., 2018), or random selection. Fixed length or fixed precision CD-CAT can be applied. Fixed precision CD-CAT with
+item selection method (NPS; Chang et al., 2019), or random selection. Fixed length or fixed precision CD-CAT can be applied. Fixed precision CD-CAT with
 NPS is available, by using the pseudo-posterior probability of each student mastering each attribute (experimental).
 }
 \examples{
@@ -64,19 +61,21 @@ NPS is available, by using the pseudo-posterior probability of each student mast
 # CD-CAT simulation for a GDINA obj  #
 ######################################
 
-#-----------Data generation----------#
+#-----------Data----------#
 Q <- sim180GDINA$simQ
 K <- ncol(Q)
-dat <- sim180GDINA$simdat.c
-att <- sim180GDINA$simalpha.c
+dat <- sim180GDINA$simdat
+att <- sim180GDINA$simalpha
 
 #----------Model estimation----------#
 fit <- GDINA::GDINA(dat = dat, Q = Q, verbose = 0) # GDINA package
 #fit <- CDM::gdina(data = dat, q.matrix = Q, progress = 0) # CDM package
 
 #---------------CD-CAT---------------#
-res.FIXJ <- cdcat(fit = fit, dat = dat, FIXED.LENGTH = TRUE, n.cores = 4)
-res.VARJ <- cdcat(fit = fit, dat = dat, FIXED.LENGTH = FALSE, n.cores = 4)
+res.FIXJ <- cdcat(fit = fit, dat = dat, FIXED.LENGTH = TRUE,
+                 MAXJ = 20, n.cores = 4)
+res.VARJ <- cdcat(fit = fit, dat = dat, FIXED.LENGTH = FALSE,
+                 MAXJ = 20, precision.cut = .80, n.cores = 4)
 
 #---------------Results--------------#
 res.FIXJ$est[[1]] # estimates for the first examinee (fixed-length)
@@ -87,18 +86,20 @@ att.plot(cdcat.obj = res.VARJ, i = 1) # plot  for the first examinee (fixed-prec
 res.FIXJ.sum.real <- cdcat.summary(cdcat.obj = res.FIXJ, alpha = att) # vs. real accuracy
 res.FIXJ.sum.real$recovery$plotPCV
 res.FIXJ.sum.real$recovery$plotPCA
+res.FIXJ.sum.real$item.exposure$plot
 # VARJ summary
-res.VARJ.sum.post <- cdcat.summary(cdcat.obj = res.VARJ, alpha = att)
-res.VARJ.sum.post$CATlength$stats
-res.VARJ.sum.post$CATlength$plot
-res.VARJ.sum.post$recovery
-# Post-hoc CAT simulation (only if dat is fit$options$dat)
+res.VARJ.sum.real <- cdcat.summary(cdcat.obj = res.VARJ, alpha = att)
+res.VARJ.sum.real$recovery
+res.VARJ.sum.real$CATlength$stats
+res.VARJ.sum.real$CATlength$plot
+res.VARJ.sum.real$item.exposure$plot
+# vs. maximum observable accuracy
 att.J <- GDINA::personparm(fit, "MAP")[, -(K+1)] # GDINA package
 # att.J <- t(sapply(strsplit(as.character(fit$pattern$map.est), ""), as.numeric)) # CDM package
 class.J <- GDINA::ClassRate(att, att.J) # upper-limit for accuracy
-res.FIXJ.sum.post <- cdcat.summary(cdcat.obj = res.FIXJ, alpha = att.J)
-res.FIXJ.sum.post$recovery$plotPCV + ggplot2::geom_hline(yintercept = class.J$PCV[K], color = "red")
-res.FIXJ.sum.post$recovery$plotPCA + ggplot2::geom_hline(yintercept = class.J$PCA, color = "red")
+res.FIXJ.sum.obse <- cdcat.summary(cdcat.obj = res.FIXJ, alpha = att.J)
+res.FIXJ.sum.obse$recovery$plotPCV + ggplot2::geom_hline(yintercept = class.J$PCV[K], color = "red")
+res.FIXJ.sum.obse$recovery$plotPCA + ggplot2::geom_hline(yintercept = class.J$PCA, color = "red")
 
 ######################################
 # Example 2.                         #
@@ -110,32 +111,28 @@ res.FIXJ.sum.post$recovery$plotPCA + ggplot2::geom_hline(yintercept = class.J$PC
 #----------------Data----------------#
 Q <- sim180combination$simQ
 K <- ncol(Q)
-parm <- sim180combination$simcatprob.parm
-dat.c <- sim180combination$simdat.c
-att.c <- sim180combination$simalpha.c
-dat.v <- sim180combination$simdat.v
-att.v <- sim180combination$simalpha.v
+parm <- sim180combination$specifications$item.bank$simcatprob.parm
+dat.c <- sim180combination$simdat[,,1]
+att.c <- sim180combination$simalpha[,,1]
+dat.v <- sim180combination$simdat[,,2]
+att.v <- sim180combination$simalpha[,,2]
 
 #-----(multiple) Model estimation----#
 fitTRUE <- GDINA::GDINA(dat = dat.c, Q = Q, catprob.parm = parm,
-
            control = list(maxitr = 0), verbose = 0)
+
 fitGDINA <- GDINA::GDINA(dat = dat.c, Q = Q, verbose = 0)
 fitDINA <- GDINA::GDINA(dat = dat.c, Q = Q, model = "DINA", verbose = 0)
-fitDINO <- GDINA::GDINA(dat = dat.c, Q = Q, model = "DINO", verbose = 0)
-fitACDM <- GDINA::GDINA(dat = dat.c, Q = Q, model = "ACDM", verbose = 0)
 LR2step <- LR.2step(fitGDINA)
 models <- LR2step$models.adj.pvalues
 fitLR2 <- GDINA::GDINA(dat = dat.c, Q = Q, model = models, verbose = 0)
 
 #---------------CD-CAT---------------#
-fit.l <- list(fitTRUE, fitGDINA, fitDINA, fitDINO, fitACDM, fitLR2)
-res.FIXJ.l <- res.VARJ.l <- list()
-for(mm in 1:length(fit.l)) {
- fit <- fit.l[[mm]]
- res.FIXJ.l[[mm]] <- cdcat(fit = fit, dat = dat.v, FIXED.LENGTH = TRUE, n.cores = 4)
- res.VARJ.l[[mm]] <- cdcat(fit = fit, dat = dat.v, FIXED.LENGTH = FALSE, n.cores = 4)
-}
+fit.l <- list(fitTRUE, fitLR2, fitGDINA, fitDINA)
+res.FIXJ.l <- lapply(fit.l, function(x)  cdcat(dat = dat.v,fit = x,
+                                              FIXED.LENGTH = TRUE, n.cores = 4))
+res.VARJ.l <- lapply(fit.l, function(x)  cdcat(dat = dat.v,fit = x,
+                                              FIXED.LENGTH = FALSE, n.cores = 4))
 
 #---------------Results--------------#
 fitbest <- GDINA::GDINA(dat = dat.v, Q = Q, catprob.parm = parm,
@@ -143,14 +140,18 @@ fitbest <- GDINA::GDINA(dat = dat.v, Q = Q, catprob.parm = parm,
 fitbest.acc <- GDINA::personparm(fitbest, "MAP")[, -(K+1)]
 class.J <- GDINA::ClassRate(att.v, fitbest.acc) # upper-limit for accuracy
 # FIXJ comparison
-res.FIXJ.sum.post.summary <- cdcat.summary(cdcat.obj = res.FIXJ.l, alpha = att.v)
-res.FIXJ.sum.post.summary$PCVcomp + ggplot2::geom_hline(yintercept = class.J$PCV[K], color = "red")
-res.FIXJ.sum.post.summary$PCAmcomp + ggplot2::geom_hline(yintercept = class.J$PCA, color = "red")
+res.FIXJ.sum <- cdcat.summary(cdcat.obj = res.FIXJ.l, alpha = att.v)
+res.FIXJ.sum$recovery$PCVcomp + ggplot2::geom_hline(yintercept = class.J$PCV[K], color = "red")
+res.FIXJ.sum$recovery$PCAmcomp + ggplot2::geom_hline(yintercept = class.J$PCA, color = "red")
+res.FIXJ.sum$item.exposure$stats
+res.FIXJ.sum$item.exposure$plot
 # VARJ comparison
-res.VARJ.sum.post.summary <- cdcat.summary(cdcat.obj = res.VARJ.l, alpha = att.v)
-res.VARJ.sum.post.summary$stats
-res.VARJ.sum.post.summary$plots
-res.VARJ.sum.post.summary$recovery
+res.VARJ.sum <- cdcat.summary(cdcat.obj = res.VARJ.l, alpha = att.v)
+res.VARJ.sum$recovery
+res.VARJ.sum$item.exposure$stats
+res.VARJ.sum$item.exposure$plot
+res.VARJ.sum$CATlength$stats
+res.VARJ.sum$CATlength$plot
 
 ######################################
 # Example 3.                         #
@@ -158,22 +159,22 @@ res.VARJ.sum.post.summary$recovery
 # small-scale assessment             #
 ######################################
 
-#-----------Data generation----------#
+#-----------Data----------#
 Q <- sim180DINA$simQ
 K <- ncol(Q)
 N <- 50
-dat <- sim180DINA$simdat.c[1:N,]
-att <- sim180DINA$simalpha.c[1:N,]
+dat <- sim180DINA$simdat[1:N,]
+att <- sim180DINA$simalpha[1:N,]
 
 #--------Nonparametric CD-CAT--------#
-res.NPS.FIXJ <- cdcat(dat = dat, Q = Q, itemSelect = "NPS",
-                     FIXED.LENGTH = TRUE, MAXJ = 30,
-                     NPS.args = list(gate = "AND", pseudo.prob = TRUE, w.type = 1, seed = 12345),
-                     n.cores = 4)
-res.NPS.VARJ <- cdcat(dat = dat, Q = Q, itemSelect = "NPS",
-                     FIXED.LENGTH = FALSE, MAXJ = 30, max.cut = 0.95,
-                     NPS.args = list(gate = "AND", pseudo.prob = TRUE, w.type = 1, seed = 12345),
-                     n.cores = 4)
+res.NPS.FIXJ <- cdcat(dat = dat, itemSelect = "NPS", FIXED.LENGTH = TRUE,
+                     MAXJ = 25, n.cores = 4,
+                     NPS.args = list(Q = Q, gate = "AND", pseudo.prob = TRUE, w.type = 1,
+                     seed = 12345))
+res.NPS.VARJ <- cdcat(dat = dat, itemSelect = "NPS", FIXED.LENGTH = FALSE,
+                     MAXJ = 25, precision.cut = 0.90, n.cores = 4,
+                     NPS.args = list(Q = Q, gate = "AND", pseudo.prob = TRUE, w.type = 1,
+                     seed = 12345))
 
 #---------------Results--------------#
 res.NPS.FIXJ$est[[1]] # estimates for the first examinee (fixed-length)
@@ -184,19 +185,21 @@ att.plot(res.NPS.VARJ, i = 1) # plot for estimates for the first examinee (fixed
 res.NPS.FIXJ.sum.real <- cdcat.summary(cdcat.obj = res.NPS.FIXJ, alpha = att) # vs. real accuracy
 res.NPS.FIXJ.sum.real$recovery$plotPCV
 res.NPS.FIXJ.sum.real$recovery$plotPCA
+res.NPS.FIXJ.sum.real$item.exposure$plot
 # VARJ summary
-res.NPS.VARJ.sum.post <- cdcat.summary(cdcat.obj = res.NPS.VARJ, alpha = att)
-res.NPS.VARJ.sum.post$CATlength$stats
-res.NPS.VARJ.sum.post$CATlength$plot
-res.NPS.VARJ.sum.post$recovery
-# Post-hoc CAT simulation
+res.NPS.VARJ.sum.real <- cdcat.summary(cdcat.obj = res.NPS.VARJ, alpha = att)
+res.NPS.VARJ.sum.real$recovery
+res.NPS.VARJ.sum.real$CATlength$stats
+res.NPS.VARJ.sum.real$CATlength$plot
+res.NPS.VARJ.sum.real$item.exposure$plot
+# vs. maximum observable accuracy
 fit <- NPCD::AlphaNP(Y = dat, Q = Q, gate = "AND")
 att.J <- fit$alpha.est
 class.J <- GDINA::ClassRate(att, att.J) # upper-limit for accuracy
-res.NPS.FIXJ.sum.post <- cdcat.summary(cdcat.obj = res.NPS.FIXJ, alpha = att.J)
-res.NPS.FIXJ.sum.post$recovery$plotPCV + ggplot2::geom_hline(yintercept = class.J$PCV[K],
+res.NPS.FIXJ.sum.obse <- cdcat.summary(cdcat.obj = res.NPS.FIXJ, alpha = att.J)
+res.NPS.FIXJ.sum.obse$recovery$plotPCV + ggplot2::geom_hline(yintercept = class.J$PCV[K],
                                                             color = "firebrick3")
-res.NPS.FIXJ.sum.post$recovery$plotPCA + ggplot2::geom_hline(yintercept = class.J$PCA,
+res.NPS.FIXJ.sum.obse$recovery$plotPCA + ggplot2::geom_hline(yintercept = class.J$PCA,
                                                             color = "firebrick3")
 
 }
@@ -207,11 +210,19 @@ Cheng, Y. (2009). When cognitive diagnosis meets computerized adaptive testing: 
 
 de la Torre, J., & Chiu, C. Y. (2016). General method of empirical Q-matrix validation. \emph{Psychometrika, 81}, 253-273.
 
+George, A. C., Robitzsch, A., Kiefer, T., Gross, J., & Uenlue, A. (2016). The R Package CDM for cognitive diagnosis models. \emph{Journal of Statistical Software, 74}, 1-24. doi:10.18637/jss.v074.i02
+
+Hsu, C. L., Wang, W. C., & Chen, S. Y. (2013). Variable-length computerized adaptive testing based on cognitive diagnosis models. \emph{Applied Psychological Measurement, 37}, 563-582.
+
 Kang, H.-A., Zhang, S., & Chang, H.-H. (2017). Dual-objective item selection criteria in cognitive diagnostic computerized adaptive testing. \emph{Journal of Educational Measurement, 54}, 165-183.
 
 Kaplan, M., de la Torre, J., & Barrada, J. R. (2015). New item selection methods for cognitive diagnosis computerized adaptive testing. \emph{Applied Psychological Measurement, 39}, 167-188.
 
+Ma, W. & de la Torre, J. (2020). GDINA: The generalized DINA model framework. R package version 2.7.9. Retrived from https://CRAN.R-project.org/package=GDINA
+
 Minchen, N., & de la Torre, J. (2016, July). \emph{The continuous G-DINA model and the Jensen-Shannon divergence}. Paper presented at the International Meeting of the Psychometric Society, Asheville, NC, United States.
+
+Robitzsch, A., Kiefer, T., George, A. C., & Uenlue, A. (2020). CDM: Cognitive Diagnosis Modeling. R package version 7.5-15. https://CRAN.R-project.org/package=CDM
 
 Yigit, H. D., Sorrel, M. A., de la Torre, J. (2018). Computerized adaptive testing for cognitively based multiple-choice data. \emph{Applied Psychological Measurement, 43}, 388-401.
 }

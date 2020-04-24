@@ -1,37 +1,28 @@
 #' Item bank generation
 #'
-#' This function can be used to generate a calibration and a validation sample of responses to an item bank.
+#' This function can be used to generate an item bank.
 #' The user can provide a Q-matrix or create one defining a set of arguments.
-#' Item quality is sampled from a uniform distribution with mean = \emph{IQ} and variance = \emph{VAR}.
-#' Item parameters are generated with monotonicity constraint.
-#' Data are generated following either a uniform, multivariate normal, or higher-order distribution.
+#' Item quality is sampled from a uniform distribution with mean = \emph{mean.IQ} and range = \emph{range.IQ}.
+#' Item parameters are generated so that the satisfy the monotonicity constraint.
 #'
-#' @param N.c Sample size for the calibration sample
-#' @param N.v Sample size for the validation sample. If NULL (by default), no validation data are provided
-#' @param Q Q-matrix
-#' @param gen.Q A list of arguments to generate a Q-matrix if \code{Q} is not provided. \code{J}: number of items. \code{K}: number of attributes. \code{propK.J}: vector summing up to 1 that determines the proportion of 1-attribute, 2-attribute, ..., items (See \code{Examples}). \code{nI}: minimum number of identity matrices to be included in the Q-matrix. \code{minJ.K}: minimum number of items measuring each attribute. \code{max.Kcor}: maximum correlation allowed between two attributes
-#' @param IQ Item discrimination (mean for the uniform distribution). \emph{IQ} = \emph{P}(\strong{1}) - \emph{P}(\strong{0}) (Sorrel, Abad, Olea, de la Torre, and Barrada, 2017; NÃ¡jera, Sorrel, de la Torre, and Abad, in press)
-#' @param VAR Item discrimination (variance for the uniform distribution)
-#' @param model A character vector with one model for each item, or a single value to be used for all items. The possible options include \code{"DINA"}, \code{"DINO"}, \code{"ACDM"}, and \code{"GDINA"}. One-attribute items will be coded as \code{"GDINA"}
-#' @param min.param Minimum value for the delta parameter of the principal effects of each attribute. Only usable if \code{model} = \code{"ACDM"} or \code{model} = \code{"GDINA"}
-#' @param gen.att A list of arguments for the attribute profiles generation. Uniform attribute distribution by default. See \code{simGDINA} function of package \code{GDINA}
-#' @param seed A scalar to use with \code{set.seed}
+#' @param Q Numeric Matrix or dataframe of length \emph{J} number of items x \emph{K} number of atributes Q-matrix
+#' @param gen.Q A list of arguments to generate a Q-matrix if \code{Q} is not provided. \code{J}: number of items. \code{K}: number of attributes. \code{propK.J}: numeric vector summing up to 1 that determines the proportion of 1-attribute, 2-attribute, ..., items (See \code{Examples}). The length of \code{propK.J} determines the maximum number of attributes considered for an item. \code{nI}: numeric vector of length 1 that sets the minimum number of identity matrices to be included in the Q-matrix. \code{minJ.K}: numeric vector of length \emph{K} that sets minimum number of items measuring each attribute. \code{max.Kcor}: numeric vector of length 1 that sets the maximum positive correlation allowed between two attributes
+#' @param mean.IQ Item discrimination (mean for the uniform distribution). \emph{mean.IQ} = \emph{P}(\strong{1}) - \emph{P}(\strong{0}) (Sorrel et al., 2017; Najera et al., in press). Must be a numeric value between 0 and 1
+#' @param range.IQ Item discrimination (range for the uniform distribution). Must be a numeric value between 0 and 1
+#' @param model A character vector of length \emph{J} with one model for each item, or a single value to be used for all items. The possible options include \code{"DINA"}, \code{"DINO"}, \code{"ACDM"}, and \code{"GDINA"}. One-attribute items will be coded in the output as \code{"GDINA"}
+#' @param min.param Numeric vector of length 1. Minimum value for the delta parameter of the principal effects of each attribute. Only usable if \code{model} = \code{"ACDM"} or \code{model} = \code{"GDINA"}
+#' @param seed Numeric vector of length 1. A scalar to use with \code{set.seed}
 #'
 #' @return \code{gen.itembank} returns an object of class \code{gen.itembank}.
 #' \describe{
-#' \item{simdat.c}{A matrix with the calibration dataset}
-#' \item{simalpha.c}{A matrix with the alpha patterns for the calibration dataset}
-#' \item{simdat.v}{A matrix with the validation dataset (only if \code{N.v} is specified)}
-#' \item{simalpha.v}{A matrix with the alpha patterns for the validation dataset (only if \code{N.v} is specified)}
-#' \item{simQ}{Q-matrix}
-#' \item{simcatprob.parm}{A list of non-zero categories success probabilities for each latent group in each item}
+#' \item{simQ}{Generated Q-matrix (only if \code{gen.Q} arguments have been used)}
+#' \item{simcatprob.parm}{A list of success probabilities for each latent group in each item}
 #' \item{simdelta.parm}{A list of delta parameters for each item}
+#' \item{check}{A list that contains the mean.IQ and range.IQ for the item bank so that users can check whether these values match the expected results}
 #' \item{specifications}{A list that contains all the specifications}
 #' }
 #'
 #' @references
-#'
-#' Kaplan, M., de la Torre, J., & Barrada, J. R. (2015). New item selection methods for cognitive diagnosis computerized adaptive testing. \emph{Applied Psychological Measurement, 39}, 167-188.
 #'
 #' Najera, P., Sorrel, M. A., de la Torre, J., & Abad, F. J. (in press). Improving robustness in Q-matrix validation using an iterative and dynamic procedure. \emph{Applied Psychological Measurement}.
 #'
@@ -40,83 +31,61 @@
 #' @examples
 #'####################################
 #'# Example 1.                       #
-#'# Generate calibration sample      #
-#'# and item parameters providing    #
-#'# a Q-matrix, with G-DINA model    #
-#'# and uniform attribute            #
-#'# distribution                     #
+#'# Generate item bank providing a   #
+#'# Q-matrix using the G-DINA model  #
 #'####################################
 #'
 #' Q <- sim180GDINA$simQ
-#' model <- rep("GDINA", each = nrow(Q))
-#' IQ <- .70 # P(1), IQ = Low item quality in Kaplan, de la Torre & Barrada (2015)
-#' VAR <- .10 # High variance in Kaplan et al. (2015)
-#' bank <- gen.itembank(N.c = 1000, Q = Q, IQ = IQ, VAR = VAR, model = model)
+#' bank <- gen.itembank(Q = Q, mean.IQ = .70, range.IQ = .20, model = "GDINA")
 #'
 #'####################################
 #'# Example 2.                       #
-#'# Generate calibration sample      #
-#'# and item parameters providing    #
-#'# a Q-matrix, with different       #
-#'# models and higher-order          #
-#'# attribute distribution           #
+#'# Generate item bank providing a   #
+#'# Q-matrix using multiple models   #
 #'####################################
 #'
 #' Q <- sim180GDINA$simQ
 #' K <- ncol(Q)
 #' model <- sample(c("DINA", "DINO", "ACDM"), size = nrow(Q), replace = TRUE)
-#' IQ <- .70
-#' VAR <- .10
-#' bank <- gen.itembank(N.c = 1000, Q = Q, IQ = IQ, VAR = VAR, model = model,
-#'                      gen.att = list(att.dist = "higher.order",
-#'                       higher.order.a = runif(K, 0.8, 1.3),
-#'                       higher.order.b = seq(-2, 2, length.out = K)))
+#' bank <- gen.itembank(Q = Q, mean.IQ = .70, range.IQ = .20, model = model)
 #'
 #'####################################
 #'# Example 3.                       #
-#'# Generate calibration and         #
-#'# validation samples and item      #
-#'# parameters without providing a   #
-#'# Q-matrix (using gen.Q arguments) #
+#'# Generate item bank without       #
+#'# providing a Q-matrix (using      #
+#'# gen.Q arguments)                 #
 #'####################################
 #'
-#' J <- 150
-#' K <- 5
-#' propK.J <- c(0.5, 0.3, 0, 0.2)
-#' nI <- 3
-#' minJ.K <- 50
-#' max.Kcor <- 0.5
-#' IQ <- .80
-#' VAR <- .05
-#' min.param <- 0.1
-#' bank <- gen.itembank(N.c = 1000, N.v = 2000,
-#'                      gen.Q = list(J = J, K = K, propK.J = propK.J,
-#'                      nI = nI, minJ.K = minJ.K, max.Kcor = max.Kcor),
-#'                      IQ = IQ, VAR = VAR, min.param = min.param)
+#' bank <- gen.itembank(gen.Q = list(J = 150, K = 5, propK.J = c(0.4, 0.3, 0.2, 0.1),
+#'                      nI = 3, minJ.K = 30, max.Kcor = 1),
+#'                      mean.IQ = .80, range.IQ = .10, min.param = 0.1)
 #'
 #' @export
 #'
-gen.itembank <- function(N.c, N.v = NULL, Q = NULL,
-                         gen.Q = list(J = NULL, K = NULL, propK.J = NULL, nI = NULL, minJ.K = NULL, max.Kcor = NULL),
-                         IQ, VAR, model = "GDINA", min.param = 0,
-                         gen.att = list(att.dist = "uniform", mvnorm.cor = 0, mvnorm.mean = 0, mvnorm.cutoff = 0, higher.order.a = 0, higher.order.b = 0),
-                         seed = NULL){
+gen.itembank <- function(Q = NULL,
+                         gen.Q = list(J = NULL, K = NULL, propK.J = NULL, nI = 1, minJ.K = NULL, max.Kcor = 1),
+                         mean.IQ, range.IQ, model = "GDINA", min.param = 0,
+                         seed = NULL)
+  {
 
   #----------------------------
   # Warning end error messages
   #----------------------------
 
-  if(is.null(N.c)){stop("N.c argument missing, with no default.")}
   if(is.null(Q) & any(sapply(gen.Q, is.null))){stop("Q argument or all gen.Q arguments required.")}
   if(!is.null(Q) & all(!sapply(gen.Q, is.null))){warning("If Q argument is specified, gen.Q arguments are ignored.")}
-  if(is.null(IQ)){stop("IQ argument missing, with no default.")}
-  if(is.null(VAR)){stop("VAR argument missing, with no default.")}
-  if(is.null(gen.att$att.dist)){stop("gen.att$att.dist argument required.")}
-  if(is.null(gen.att$mvnorm.cor)){gen.att$mvnorm.cor <- 0}
-  if(is.null(gen.att$mvnorm.mean)){gen.att$mvnorm.mean <- 0}
-  if(is.null(gen.att$mvnorm.cutoff)){gen.att$mvnorm.cutoff <- 0}
-  if(is.null(gen.att$higher.order.a)){gen.att$higher.order.a <- 0}
-  if(is.null(gen.att$higher.order.b)){gen.att$higher.order.b <- 0}
+  if(is.null(mean.IQ)){stop("mean.IQ argument missing, with no default.")}
+  if(mean.IQ > 1 | mean.IQ < 0){stop("mean.IQ must be a value between 0 and 1.")}
+  if(is.null(range.IQ)){stop("range.IQ argument missing, with no default.")}
+  if(range.IQ > 1 | range.IQ < 0){stop("range.IQ must be a value between 0 and 1.")}
+  if(is.null(Q)){
+    if(is.null(gen.Q$J)){stop("gen.Q$J argument required.")}
+    if(is.null(gen.Q$K)){stop("gen.Q$K argument required.")}
+    if(is.null(gen.Q$propK.J)){stop("gen.Q$propK.J argument required.")}
+    if(is.null(gen.Q$nI)){gen.Q$nI <- 1}
+    if(is.null(gen.Q$minJ.K)){stop("gen.Q$minJ.K argument required.")}
+    if(is.null(gen.Q$max.Kcor)){gen.Q$max.Kcor <- 1}
+  }
 
   #----------------
   # Gather objects
@@ -126,6 +95,7 @@ gen.itembank <- function(N.c, N.v = NULL, Q = NULL,
   if(is.null(seed)){seed <- sample(1:1000000, size = 1)}
 
   if(!is.null(Q)){
+    sim.Q <- NULL
     arg.Q <- Q
     J <- nrow(Q)
     K <- ncol(Q)
@@ -135,16 +105,29 @@ gen.itembank <- function(N.c, N.v = NULL, Q = NULL,
     arg.Q <- NULL
     J <- gen.Q$J
     K <- gen.Q$K
-    Q <- genQ(J, K, gen.Q$nI, gen.Q$propK.J, T, gen.Q$minJ.K, gen.Q$max.Kcor, seed)$Q
+    sim.Q <- Q <- genQ(J, K, gen.Q$nI, gen.Q$propK.J, T, gen.Q$minJ.K, gen.Q$max.Kcor, seed)$Q
     arg.model <- model
     if(length(model) == 1){model <- rep(model, J)}
   }
-  if(length(gen.att$mvnorm.mean) == 1){gen.att$mvnorm.mean <- rep(gen.att$mvnorm.mean, K)}
-  if(length(gen.att$mvnorm.cutoff) == 1){gen.att$mvnorm.cutoff <- rep(gen.att$mvnorm.cutoff, K)}
-  if(length(gen.att$higher.order.a) == 1){gen.att$higher.order.a <- rep(gen.att$higher.order.a, K)}
-  if(length(gen.att$higher.order.b) == 1){gen.att$higher.order.b <- rep(gen.att$higher.order.b, K)}
-  P <- cbind(P0 = runif(J, (1 - IQ) / 2 - VAR, (1 - IQ) / 2 + VAR),
-             P1 = runif(J, (1 - ((1 - IQ) / 2)) - VAR, (1 - ((1 - IQ) / 2)) + VAR))
+  min.P0 <- round(((1 - mean.IQ) / 2) - (range.IQ / 2), 10)
+  max.P0 <- round(((1 - mean.IQ) / 2) + (range.IQ / 2), 10)
+  min.P1 <- round(((1 - ((1 - mean.IQ) / 2))) - (range.IQ / 2), 10)
+  max.P1 <- round(((1 - ((1 - mean.IQ) / 2))) + (range.IQ / 2), 10)
+  if(min.P0 < 0){
+    warning("mean.IQ and range.IQ may give probabilities below 0 for P0. Probabilities coherced to be 0 at least.")
+    min.P0 <- 0
+  }
+  if(max.P1 > 1){
+    warning("mean.IQ and range.IQ may give probabilities above 1 for P1. Probabilities coherced to be 1 at most.")
+    max.P1 <- 1
+  }
+  if(max.P0 > min.P1){
+    warning("mean.IQ and range.IQ may give to P0 higher probabilities than to P1. Probabilities coherced to be always higher for P1.")
+    diff <- max.P0 - min.P1
+    max.P0 <- max.P0 - diff / 2
+    min.P1 <- min.P1 + diff / 2
+  }
+  P <- cbind(P0 = runif(J, min.P0, max.P0), P1 = runif(J, min.P1, max.P1))
 
   #--------------------------
   # Generate item parameters
@@ -166,52 +149,28 @@ gen.itembank <- function(N.c, N.v = NULL, Q = NULL,
     names(catprob.parm[[j]]) <- names(delta.parm[[j]]) <- NULL
   }
 
-  #---------------
-  # Generate data
-  #---------------
-
-  sim.v <- NULL
-  if(gen.att$att.dist == "uniform"){
-    sim.c <- GDINA::simGDINA(N.c, Q, catprob.parm = catprob.parm, att.dist = "uniform")
-    if(!is.null(N.v)){
-      sim.v <- GDINA::simGDINA(N.v, Q, catprob.parm = catprob.parm, att.dist = "uniform")
-    }
-  } else if(gen.att$att.dist == "mvnorm"){
-    cutoffs <- gen.att$mvnorm.cutoff
-    m <- gen.att$mvnorm.mean
-    vcov <- matrix(gen.att$mvnorm.cor, K, K); diag(vcov) <- 1
-    sim.c <- GDINA::simGDINA(N.c, Q, catprob.parm = catprob.parm, att.dist = "mvnorm",
-                             mvnorm.parm = list(mean = m, sigma = vcov, cutoffs = cutoffs))
-    if(!is.null(N.v)){
-      sim.v <- GDINA::simGDINA(N.v, Q, catprob.parm = catprob.parm, att.dist = "mvnorm",
-                               mvnorm.parm = list(mean = m, sigma = vcov, cutoffs = cutoffs))
-    }
-  } else if(gen.att$att.dist == "higher.order"){
-    theta <- rnorm(N.c)
-    lambda <- data.frame(a = gen.att$higher.order.a, b = gen.att$higher.order.b)
-    sim.c <- GDINA::simGDINA(N.c, Q, catprob.parm = catprob.parm, att.dist = "higher.order",
-                             higher.order.parm = list(theta = theta,lambda = lambda))
-    if(!is.null(N.v)){
-      sim.v <- GDINA::simGDINA(N.v, Q, catprob.parm = catprob.parm, att.dist = "higher.order",
-                               higher.order.parm = list(theta = theta,lambda = lambda))
-    }
-  }
+  check <- list()
+  check[["mean.IQ.bank"]] <-
+    mean(P[,2] - P[,1])
+  check[["range.IQ.bank"]] <-
+    max(c(abs(P[,2] - mean(P[,2])), abs(P[,1] - mean(P[,1]))))*2
+  if(is.null(arg.Q)){
+  check[["propK.J"]] <- table(rowSums(sim.Q))/nrow(sim.Q)
+  tmp <- cor(sim.Q)
+  diag(tmp) <- NA
+  check[["max.Kcor"]] <- max(tmp, na.rm = TRUE)}
 
   #----------------
   # Return results
   #----------------
 
   res <- list()
-  res$simdat.c <- sim.c$dat
-  res$simalpha.c <- sim.c$attribute
-  res$simdat.v <- sim.v$dat
-  res$simalpha.v <- sim.v$attribute
-  res$simQ <- Q
+  res$simQ <- sim.Q
   res$simcatprob.parm <- catprob.parm
   res$simdelta.parm <- delta.parm
+  res$check <- check
   model[which(rowSums(Q)==1)] <- "GDINA"
-  res$specifications <- list(N.c = N.c, N.v = N.v, Q = arg.Q, gen.Q = gen.Q,
-                             IQ = IQ, VAR = VAR, model = model, min.param = min.param,
-                             gen.att = gen.att, seed = seed)
+  res$specifications <- list(Q = arg.Q, gen.Q = gen.Q, mean.IQ = mean.IQ, range.IQ = range.IQ,
+                             model = model, min.param = min.param, seed = seed)
   return(res)
 }

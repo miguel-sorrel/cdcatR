@@ -9,13 +9,18 @@ cdcat.summary(cdcat.obj, alpha, label = NULL)
 \arguments{
 \item{cdcat.obj}{An object or list of objects of class \code{cdcat}}
 
-\item{alpha}{N x K matrix with the attribute patterns to be compared to the \code{cdcat} results}
+\item{alpha}{Numeric matrix of dimensions \emph{N} x \emph{K} with the reference attribute patterns used to compute attribute classification accuracy. It is expected that it will contain the true, generating alpha patter of the ones estimated with the entire item bank. It is a guideline to evaluate the \code{cdcat} results}
 
-\item{label}{labels for the \code{cdcat} objects. If NULL (by default), the models are used as labels}
+\item{label}{Character vector that contains the labels for the \code{cdcat} object(s). If \code{NULL} (by default), the models are used as labels}
 }
 \value{
 \code{cdcat.summary} returns an object of class \code{cdcat.summary}.
+\describe{
+\item{recovery}{A list that contains the attribute classification accuracy results calculated at the pattern- (\emph{PCV}) and attribute-levels (\emph{PCA})}
+\item{item.exposure}{A list that contains the item exposure rates results: descriptive statistics (\code{stats}) and a plot representing the item exposure rates (\code{plot}). Note that when \code{FIXED.LENGTH = FALSE} the overlap rate is calculated based on the average CAT length}
+\item{CATlength}{If the object or list of objects of class \code{cdcat} are fixed-precision applications (i.e., \code{FIXED.LENGTH = FALSE}), this additional list is included. It contains descriptive statistics (\code{stats}) and a plot (\code{plot}) describing the the CAT length}
+}
 }
 \description{
-This function provides classification accuracy and CAT length results for \code{cdcat} object. If a list of \code{cdcat} objects is included, these objects are compared through different in different tables and figures.
+This function provides classification accuracy, item exposure, and CAT length results for \code{cdcat} object. If a list of \code{cdcat} objects is included, these objects are compared through different tables and plots.
 }

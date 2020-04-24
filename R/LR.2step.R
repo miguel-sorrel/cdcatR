@@ -2,24 +2,29 @@
 #'
 #' This function evaluates whether the saturated G-DINA model can be replaced by reduced CDMs without significant loss in model data fit for each item using two-step likelihood ratio test (2LR). Sorrel, de la Torre, Abad, and Olea (2017) and Ma & de la Torre (2018) can be consulted for details.
 #'
-#' @param fit Calibrated item bank with GDINA or CDM package
-#' @param p.adjust.method Correction method for p-values. Possible values include "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none". See p.adjust function from stats for additional details. Default is holm
-#' @param alpha.level Alpha level for decision. Default is 0.05
+#' @param fit Calibrated item bank with the \code{GDINA::GDINA} (Ma & de la Torre, 2020) or \code{CDM::gdina} (Robitzsch et al., 2020) R packages functions
+#' @param p.adjust.method Character vector of length 1. Correction method for \emph{p}-values. Possible values include \code{"holm"}, \code{"hochberg"}, \code{"hommel"}, \code{"bonferroni"}, \code{"BH"}, \code{"BY"}, \code{"fdr"}, and \code{"none"}. See \code{p.adjust} function from the \code{stats} R package for additional details. Default is \code{holm}
+#' @param alpha.level Numeric vector of length 1. Alpha level for decision. Default is \code{0.05}
+#'
 #' @return \code{LR2.step} returns an object of class \code{LR2.step}
 #' \describe{
-#' \item{LR2}{LR2 statistics}
-#' \item{pvalues}{p-values associated with the wald statistics}
-#' \item{adj.pvalues}{adjusted p-values associated with the wald statistics}
-#' \item{df}{degrees of freedom}
-#' \item{models.adj.pvalues}{Models selected using the rule \emph{largestp} (Ma, Iaconangelo, & de la Torre, 2016). All statistics whose p-values are less than \code{alpha.level} are rejected. All statistics with p-value larger than \code{alpha.level} define the set of candidate reduced models. The G-DINA model is retained if all statistics are rejected. Whenever the set includes more than one model, the model with the largest p-value was selected as the best model for that item.}
+#' \item{LR2}{Numeric matrix. LR2 statistics}
+#' \item{pvalues}{Numeric matrix. \emph{p}-values associated with the 2LR statistics}
+#' \item{adj.pvalues}{Numeric matrix. Adjusted \emph{p}-values associated with the 2LR statistics}
+#' \item{df}{Numeric matrix. Degrees of freedom}
+#' \item{models.adj.pvalues}{Character vector denoting the model selected for each item using the \emph{largestp} rule (Ma et al., 2016). All statistics whose \emph{p}-values are less than \code{alpha.level} are rejected. All statistics with \emph{p}-value larger than \code{alpha.level} define the set of candidate reduced models. The G-DINA model is retained if all statistics are rejected. Whenever the set includes more than one model, the model with the largest \emph{p}-value was selected as the best model for that item}
 #' }
 
 #' @references
 #'
 #' Ma, W. & de la Torre, J. (2018). Category-level model selection for the sequential G-DINA model. \emph{Journal of Educational and Behavorial Statistic, 44}, 45-77.
 #'
+#' Ma, W. & de la Torre, J. (2020). GDINA: The generalized DINA model framework. R package version 2.7.9. Retrived from https://CRAN.R-project.org/package=GDINA
+#'
 #' Ma, W., Iaconangelo, C., & de la Torre, J. (2016). Model similarity, model selection and attribute classification.
 #' \emph{Applied Psychological Measurement, 40}, 200-217.
+#'
+#' Robitzsch, A., Kiefer, T., George, A. C., & Uenlue, A. (2020). CDM: Cognitive Diagnosis Modeling. R package version 7.5-15. https://CRAN.R-project.org/package=CDM
 #'
 #' Sorrel, M. A., de la Torre, J., Abad, F. J., & Olea, J. (2017). Two-step likelihood ratio test for item-level model comparison in cognitive diagnosis models. \emph{Methodology, 13}, 39-47.
 #'
@@ -27,22 +32,21 @@
 #'
 #' @examples
 #'Q <- sim180DINA$simQ
-#'dat <- sim180DINA$simdat.c
+#'dat <- sim180DINA$simdat
 #'resGDINA <- GDINA::GDINA(dat = dat, Q = Q, model = "GDINA",verbose = FALSE)
 #'resCDM <- CDM::gdina(data = dat, q.matrix = Q, rule = "GDINA", progress = FALSE)
 #'LR2.GDINA <- LR.2step(fit = resGDINA)
 #'LR2.CDM <- LR.2step(fit = resCDM)
 #'mean(LR2.GDINA$models.adj.pvalues[which(rowSums(Q) != 1)] ==
-#'       sim180DINA$specifications$model[which(rowSums(Q) != 1)])
+#'       sim180DINA$specifications$item.bank$specifications$model[which(rowSums(Q) != 1)])
 #'mean(LR2.CDM$models.adj.pvalues[which(rowSums(Q) != 1)] ==
-#'       sim180DINA$specifications$model[which(rowSums(Q) != 1)])
+#'       sim180DINA$specifications$item.bank$specifications$model[which(rowSums(Q) != 1)])
 #'
 #' @export
 #'
 
-LR.2step <- function(fit, p.adjust.method = "holm", alpha.level = 0.05){
-  ## GDINA likelihood is computed from the fit estimates
-  # Notes from this function: (ui %*% theta - ci) >= 0
+LR.2step <- function(fit, p.adjust.method = "holm", alpha.level = 0.05)
+  {
 
   make.Lik.DINA.k <- function(vP){
     p <- rep(vP[1], classes - 1)

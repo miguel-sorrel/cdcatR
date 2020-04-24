@@ -4,11 +4,9 @@
 #'
 #' @format A list with components:
 #' \describe{
-#' \item{\code{simdat.c}}{Simulated responses of 500 examinees}
-#' \item{\code{simalpha.c}}{Simulated attribute patterns of 500 examinees}
-#' \item{\code{simQ}}{Simulated Q-matrix}
-#' \item{\code{simcatprob.parm}}{Simulated success probabilities for each latent group in each item}
-#' \item{\code{simdelta.parm}}{Simulated delta parameters for each item}
+#' \item{\code{simdat}}{Numeric array. Simulated responses of 250 examinees for two replicates}
+#' \item{\code{simQ}}{Numeric matrix. Simulated Q-matrix}
+#' \item{\code{simalpha}}{Numeric array. Simulated attribute patterns of 250 examinees for two replicates}
 #' \item{\code{specifications}}{A list that contains all the specifications that were used in the \code{gen.itembank} function}
 #' }
 #'

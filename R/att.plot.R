@@ -1,19 +1,20 @@
 #' Plots for attribute mastery estimates
 #'
-#' @description This function generates a plot monitoring the attribute mastery estimates (\emph{X}: item position, \emph{Y}: mastery probability).
+#' @description This function generates a plot monitoring the attribute mastery estimates (\emph{x-axis}: Item position, \emph{y-axis}: Mastery posterior probability estimate).
 #' If a parametric CD-CAT has been conducted, posterior probabilites (with confident intervals) of mastering each attribute are plotted.
-#' If a nonparametric CD-CAT has been conducted (and pseudo-probabilites have been computed), both nonparametric classification and pseudo-posterior probabilites (with confident intervals) of mastering each attribute are plotted.
+#' If a nonparametric CD-CAT has been conducted (and pseudo-probabilites have been computed), both nonparametric classification and pseudo-posterior probabilites (with confident intervals) of mastering each attribute are plotted. Pseudo-posterior probabilities is a method in progress. Caution in the interpretation is advised.
 #' Colors are used in the plots to indicate mastery (green), non-mastery (red), or uncertainty (blue).
 #'
 #' @param cdcat.obj An object of class \code{cdcat}
-#' @param i Examinee to be plotted
-#' @param k Attribute/s to be plotted. Default is NULL, which plots all attributes
+#' @param i Numeric vector of length 1 that specifies the examinee to be plotted
+#' @param k Numeric vector that specifies the attribute/s to be plotted. Default is \code{NULL}, which plots all attributes
 #'
-#' @return \code{att.plot} creates a plot.
+#' @return \code{att.plot} returns a plot of class \code{ggplot}.
 #'
 #' @export
 #'
-att.plot <- function(cdcat.obj, i, k = NULL){
+att.plot <- function(cdcat.obj, i, k = NULL)
+  {
 
   Q <- cdcat.obj$specifications$Q
   K <- ncol(Q)
@@ -28,7 +29,7 @@ att.plot <- function(cdcat.obj, i, k = NULL){
   plots <- list()
   if(cdcat.obj$specifications$itemSelect != "NPS"){
     est <- lapply(cdcat.obj$est, '[[', 1)[[i]]
-    est <- as.matrix(est[, 8:(7 + K)])
+    est <- as.matrix(est[, (ncol(est):1)[1:K]])
     est <- apply(est, 2, as.numeric)
     est <- cbind(est, sqrt(est * (1 - est)))
     colnames(est) <- c(paste("K", 1:K, sep = ""), paste("SE.K", 1:K, sep = ""))
