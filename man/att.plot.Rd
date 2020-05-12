@@ -9,9 +9,9 @@ att.plot(cdcat.obj, i, k = NULL)
 \arguments{
 \item{cdcat.obj}{An object of class \code{cdcat}}
 
-\item{i}{Numeric vector of length 1 that specifies the examinee to be plotted}
+\item{i}{Scalar numeric. It specifies the examinee to be plotted}
 
-\item{k}{Numeric vector that specifies the attribute/s to be plotted. Default is \code{NULL}, which plots all attributes}
+\item{k}{Numeric vector. It specifies the attribute/s to be plotted. Default is \code{NULL}, which plots all attributes}
 }
 \value{
 \code{att.plot} returns a plot of class \code{ggplot}.

@@ -31,8 +31,8 @@ cdcat.getdata <- function(cdcat.obj, alpha){
       for (kk in 1:K) {
         recovery$PCV[kk] <- mean(rowSums(est.MAP.jj[[jj]] == alpha) >= kk)}
       recovery$PCA <- c(colMeans(est.MAP.jj[[jj]] == alpha), mean(est.MAP.jj[[jj]] == alpha))
-      names(recovery$PCV) <- paste(1:K, sep = " out of ", K)
-      names(recovery$PCA) <- c(paste("K", 1:K, sep = ""), "PCAm")
+      names(recovery$PCV) <- paste(1:K, sep = "/", K)
+      names(recovery$PCA) <- c(paste("K", 1:K, sep = ""), "mean.PCA")
       recovery$dataplot <- cbind(PCV.jj, attribute.recovery = PCAm.jj[, 2])
       recovery$plotPCV <- ggplot2::ggplot(data = PCV.jj, ggplot2::aes(x=item.position, y=pattern.recovery)) +
         ggplot2::theme(panel.grid.minor.x = ggplot2::element_blank(), panel.grid.minor.y = ggplot2::element_blank()) +
@@ -76,8 +76,8 @@ cdcat.getdata <- function(cdcat.obj, alpha){
       for (kk in 1:K) {
         recovery$PCV[kk] <- mean(rowSums(est.MAP.end == alpha) >= kk)}
       recovery$PCA <- c(colMeans(est.MAP.end == alpha), mean(est.MAP.end == alpha))
-      names(recovery$PCV) <- paste(1:K, sep = " out of ", K)
-      names(recovery$PCA) <- c(paste("K", 1:K, sep = ""), "PCAm")
+      names(recovery$PCV) <- paste(1:K, sep = "/", K)
+      names(recovery$PCA) <- c(paste("K", 1:K, sep = ""), "mean.PCA")
 
       CATlength <- list()
       data.len <- data.frame("length" = unlist(lapply(lapply(cdcat.obj$est, '[[', 2), length)),
@@ -141,8 +141,8 @@ cdcat.getdata <- function(cdcat.obj, alpha){
       for (kk in 1:K) {
         recovery$PCV[kk] <- mean(rowSums(est.MAP.jj[[jj]] == alpha) >= kk)}
       recovery$PCA <- c(colMeans(est.MAP.jj[[jj]] == alpha), mean(est.MAP.jj[[jj]] == alpha))
-      names(recovery$PCV) <- paste(1:K, sep = " out of ", K)
-      names(recovery$PCA) <- c(paste("K", 1:K, sep = ""), "PCAm")
+      names(recovery$PCV) <- paste(1:K, sep = "/", K)
+      names(recovery$PCA) <- c(paste("K", 1:K, sep = ""), "mean.PCA")
 
       recovery$dataplot <- cbind(PCV.jj, attribute.recovery = PCAm.jj[, 2])
       recovery$plotPCV <- ggplot2::ggplot(data = PCV.jj, ggplot2::aes(x=item.position, y=pattern.recovery)) +

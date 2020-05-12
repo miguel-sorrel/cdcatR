@@ -2,13 +2,13 @@ Package: cdcatR
 Type: Package
 Title: Cognitive Diagnostic Computerized Adaptive Testing in R 
 Version: 1.0.0
-Date: 2020-04-24
+Date: 2020-04-29
 Authors@R: c(person(given = "Miguel A.",family = "Sorrel", role = c("aut", "cre", "cph"),email = "miguel.sorrel@uam.es"),person(given = "Pablo", family = "Nájera", role = c("aut","cph")), person(given="Francisco J.",family = "Abad",role = c("aut","cph")))
-Description: This package holds functions for conducting CD-CAT applications.
+Description: A set of functions for conducting cognitive diagnostic computerized adaptive testing applications.
 License: GPL-3
 LazyData: TRUE
 Depends: R (>= 3.5.0)
-Imports: GDINA (>= 2.2.0), ggplot2 (>= 3.3.0), tibble, cowplot, doParallel (>= 1.0.15), foreach, CDM (>= 7.4.19), snow, NPCD, stats, doSNOW
+Imports: GDINA (>= 2.2.0), ggplot2 (>= 3.3.0), cowplot, doParallel (>= 1.0.15), foreach, CDM (>= 7.4.19), NPCD, stats, parallel, snow, doSNOW
 URL: https://github.com/miguel-sorrel/cdcatR
 BugReports: https://github.com/miguel-sorrel/cdcatR/issues
 RoxygenNote: 7.1.0

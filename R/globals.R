@@ -11,6 +11,5 @@ utils::globalVariables(
     'pattern.recovery',
     'attribute.recovery',
     'cond',
-    'txtProgressBar',
-    'setTxtProgressBar',
+    'pb',
     'item'))

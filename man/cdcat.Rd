@@ -19,33 +19,33 @@ cdcat(
 )
 }
 \arguments{
-\item{fit}{Calibrated item bank with the \code{GDINA::GDINA} (Ma & de la Torre, 2020) or \code{CDM::gdina} (Robitzsch et al., 2020) R packages functions}
+\item{fit}{An object of class \code{GDINA} or \code{gdina}. Calibrated item bank with the \code{GDINA::GDINA} (Ma & de la Torre, 2020) or \code{CDM::gdina} (Robitzsch et al., 2020) R packages functions}
 
-\item{dat}{Numeric Matrix or dataframe of length \emph{N} number of examinees x \emph{J} number of items. Dataset to be analyzed. If \code{is.null(dat)} the data is taken data from the fit object (i.e.,  the calibration sample is used)}
+\item{dat}{Numeric matrix of dimensions \emph{N} number of examinees x \emph{J} number of items. Dataset to be analyzed. If \code{is.null(dat)} the data is taken data from the fit object (i.e.,  the calibration sample is used)}
 
-\item{itemSelect}{Character vector of length 1. Item selection rule: \code{GDI}, \code{JSD}, \code{MPWKL}, \code{PWKL}, \code{NPS}, or \code{random}}
+\item{itemSelect}{Scalar character. Item selection rule: \code{GDI}, \code{JSD}, \code{MPWKL}, \code{PWKL}, \code{NPS}, or \code{random}}
 
-\item{MAXJ}{Numeric vector of length 1. Maximum number of items to be applied regardless of the \code{FIXED.LENGTH} argument. Default is 20}
+\item{MAXJ}{Scalar numeric. Maximum number of items to be applied regardless of the \code{FIXED.LENGTH} argument. Default is 20}
 
-\item{FIXED.LENGTH}{Logical vector of length 1. Fixed CAT-length (\code{TRUE}) or fixed-precision (\code{FALSE}) application. Default is \code{TRUE}}
+\item{FIXED.LENGTH}{Scalar logical. Fixed CAT-length (\code{TRUE}) or fixed-precision (\code{FALSE}) application. Default is \code{TRUE}}
 
 \item{att.prior}{Numeric vector of length 2^\emph{K}, where \emph{K} is the number of attributes. Prior distribution for MAP/EAP estimates. Default is uniform}
 
 \item{initial.distr}{Numeric vector of length 2^\emph{K}, where \emph{K} is the number of attributes. Weighting distribution to initialize \code{itemSelect} at item position 1. Default is uniform}
 
-\item{precision.cut}{Numeric vector of length 1. Cutoff for fixed-precision (assigned pattern posterior probability > precision.cut; Hsu, Wang, & Chen, 2013). When \code{itemSelect = "NPS"} this is evaluated at the attribute level using the pseudo-posterior probabilities for each attribute (\emph{K} assigned attribute pseudo-posterior probability > precision.cut). Default is .80. A higher cutoff is recommended when \code{itemSelect = "NPS"}}
+\item{precision.cut}{Scalar numeric. Cutoff for fixed-precision (assigned pattern posterior probability > precision.cut; Hsu, Wang, & Chen, 2013). When \code{itemSelect = "NPS"} this is evaluated at the attribute level using the pseudo-posterior probabilities for each attribute (\emph{K} assigned attribute pseudo-posterior probability > precision.cut). Default is .80. A higher cutoff is recommended when \code{itemSelect = "NPS"}}
 
-\item{NPS.args}{A list of options when \code{itemSelect = "NPS"}. \code{Q} Q-matrix to be used in the analysis. \code{gate} = "AND" or "OR", depending on whether a conjunctive o disjunctive nonparametric CDM is used. \code{pseudo.prob} = pseudo-posterior probability of each examinee mastering each attribute (experimental). \code{w.type} = weight type used for computing the pseudo-posterior probability (experimental): 1 = Power-of-2 weight; 2 = Exponential weight. \code{seed} = Numeric vector of length 1. NPS has a random component, so a seed is required for consistent results.}
+\item{NPS.args}{A list of options when \code{itemSelect = "NPS"}. \code{Q} = Q-matrix to be used in the analysis. \code{gate} = "AND" or "OR", depending on whether a conjunctive o disjunctive nonparametric CDM is used. \code{pseudo.prob} = pseudo-posterior probability of each examinee mastering each attribute (experimental). \code{w.type} = weight type used for computing the pseudo-posterior probability (experimental): 1 = Power-of-2 weight; 2 = Exponential weight. \code{seed} = Numeric vector of length 1. NPS has a random component, so a seed is required for consistent results.}
 
-\item{n.cores}{Numeric vector of length 1. Number of cores to be used during parallelization. Default is 2}
+\item{n.cores}{Scalar numeric. Number of cores to be used during parallelization. Default is 2}
 
-\item{print.progress}{Logical vector of length 1. Prints a progress bar to the console. Default is TRUE}
+\item{print.progress}{Scalar logical. Prints a progress bar to the console. Default is TRUE}
 }
 \value{
 \code{cdcat} returns an object of class \code{cdcat}.
 \describe{
-\item{est}{A list of that contains for each examinee the mastery probability estimates at each step of the CAT (\code{est.cat}) and the items applied (\code{item.usage})}
-\item{specifications}{A list of that contains all the specifications}
+\item{est}{A list that contains for each examinee the mastery posterior probability estimates at each step of the CAT (\code{est.cat}) and the items applied (\code{item.usage})}
+\item{specifications}{A list that contains all the specifications}
 }
 }
 \description{
@@ -56,6 +56,7 @@ item selection method (NPS; Chang et al., 2019), or random selection. Fixed leng
 NPS is available, by using the pseudo-posterior probability of each student mastering each attribute (experimental).
 }
 \examples{
+
 ######################################
 # Example 1.                         #
 # CD-CAT simulation for a GDINA obj  #
@@ -73,9 +74,9 @@ fit <- GDINA::GDINA(dat = dat, Q = Q, verbose = 0) # GDINA package
 
 #---------------CD-CAT---------------#
 res.FIXJ <- cdcat(fit = fit, dat = dat, FIXED.LENGTH = TRUE,
-                 MAXJ = 20, n.cores = 4)
+                 MAXJ = 20, n.cores = 2)
 res.VARJ <- cdcat(fit = fit, dat = dat, FIXED.LENGTH = FALSE,
-                 MAXJ = 20, precision.cut = .80, n.cores = 4)
+                 MAXJ = 20, precision.cut = .80, n.cores = 2)
 
 #---------------Results--------------#
 res.FIXJ$est[[1]] # estimates for the first examinee (fixed-length)
@@ -98,8 +99,10 @@ att.J <- GDINA::personparm(fit, "MAP")[, -(K+1)] # GDINA package
 # att.J <- t(sapply(strsplit(as.character(fit$pattern$map.est), ""), as.numeric)) # CDM package
 class.J <- GDINA::ClassRate(att, att.J) # upper-limit for accuracy
 res.FIXJ.sum.obse <- cdcat.summary(cdcat.obj = res.FIXJ, alpha = att.J)
-res.FIXJ.sum.obse$recovery$plotPCV + ggplot2::geom_hline(yintercept = class.J$PCV[K], color = "red")
-res.FIXJ.sum.obse$recovery$plotPCA + ggplot2::geom_hline(yintercept = class.J$PCA, color = "red")
+res.FIXJ.sum.obse$recovery$plotPCV + ggplot2::geom_hline(yintercept = class.J$PCV[K],
+                                                        color = "firebrick3")
+res.FIXJ.sum.obse$recovery$plotPCA + ggplot2::geom_hline(yintercept = class.J$PCA,
+                                                        color = "firebrick3")
 
 ######################################
 # Example 2.                         #
@@ -130,9 +133,9 @@ fitLR2 <- GDINA::GDINA(dat = dat.c, Q = Q, model = models, verbose = 0)
 #---------------CD-CAT---------------#
 fit.l <- list(fitTRUE, fitLR2, fitGDINA, fitDINA)
 res.FIXJ.l <- lapply(fit.l, function(x)  cdcat(dat = dat.v,fit = x,
-                                              FIXED.LENGTH = TRUE, n.cores = 4))
+                                              FIXED.LENGTH = TRUE, n.cores = 2))
 res.VARJ.l <- lapply(fit.l, function(x)  cdcat(dat = dat.v,fit = x,
-                                              FIXED.LENGTH = FALSE, n.cores = 4))
+                                              FIXED.LENGTH = FALSE, n.cores = 2))
 
 #---------------Results--------------#
 fitbest <- GDINA::GDINA(dat = dat.v, Q = Q, catprob.parm = parm,
@@ -141,8 +144,10 @@ fitbest.acc <- GDINA::personparm(fitbest, "MAP")[, -(K+1)]
 class.J <- GDINA::ClassRate(att.v, fitbest.acc) # upper-limit for accuracy
 # FIXJ comparison
 res.FIXJ.sum <- cdcat.summary(cdcat.obj = res.FIXJ.l, alpha = att.v)
-res.FIXJ.sum$recovery$PCVcomp + ggplot2::geom_hline(yintercept = class.J$PCV[K], color = "red")
-res.FIXJ.sum$recovery$PCAmcomp + ggplot2::geom_hline(yintercept = class.J$PCA, color = "red")
+res.FIXJ.sum$recovery$PCVcomp + ggplot2::geom_hline(yintercept = class.J$PCV[K],
+                                                   color = "firebrick3")
+res.FIXJ.sum$recovery$PCAmcomp + ggplot2::geom_hline(yintercept = class.J$PCA,
+                                                   color = "firebrick3")
 res.FIXJ.sum$item.exposure$stats
 res.FIXJ.sum$item.exposure$plot
 # VARJ comparison
@@ -168,11 +173,11 @@ att <- sim180DINA$simalpha[1:N,]
 
 #--------Nonparametric CD-CAT--------#
 res.NPS.FIXJ <- cdcat(dat = dat, itemSelect = "NPS", FIXED.LENGTH = TRUE,
-                     MAXJ = 25, n.cores = 4,
+                     MAXJ = 25, n.cores = 2,
                      NPS.args = list(Q = Q, gate = "AND", pseudo.prob = TRUE, w.type = 1,
                      seed = 12345))
 res.NPS.VARJ <- cdcat(dat = dat, itemSelect = "NPS", FIXED.LENGTH = FALSE,
-                     MAXJ = 25, precision.cut = 0.90, n.cores = 4,
+                     MAXJ = 25, precision.cut = 0.90, n.cores = 2,
                      NPS.args = list(Q = Q, gate = "AND", pseudo.prob = TRUE, w.type = 1,
                      seed = 12345))
 

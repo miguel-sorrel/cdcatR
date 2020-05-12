@@ -3,8 +3,8 @@
 #' This function evaluates whether the saturated G-DINA model can be replaced by reduced CDMs without significant loss in model data fit for each item using two-step likelihood ratio test (2LR). Sorrel, de la Torre, Abad, and Olea (2017) and Ma & de la Torre (2018) can be consulted for details.
 #'
 #' @param fit Calibrated item bank with the \code{GDINA::GDINA} (Ma & de la Torre, 2020) or \code{CDM::gdina} (Robitzsch et al., 2020) R packages functions
-#' @param p.adjust.method Character vector of length 1. Correction method for \emph{p}-values. Possible values include \code{"holm"}, \code{"hochberg"}, \code{"hommel"}, \code{"bonferroni"}, \code{"BH"}, \code{"BY"}, \code{"fdr"}, and \code{"none"}. See \code{p.adjust} function from the \code{stats} R package for additional details. Default is \code{holm}
-#' @param alpha.level Numeric vector of length 1. Alpha level for decision. Default is \code{0.05}
+#' @param p.adjust.method Scalar character. Correction method for \emph{p}-values. Possible values include \code{"holm"}, \code{"hochberg"}, \code{"hommel"}, \code{"bonferroni"}, \code{"BH"}, \code{"BY"}, \code{"fdr"}, and \code{"none"}. See \code{p.adjust} function from the \code{stats} R package for additional details. Default is \code{holm}
+#' @param alpha.level Scalar numeric. Alpha level for decision. Default is \code{0.05}
 #'
 #' @return \code{LR2.step} returns an object of class \code{LR2.step}
 #' \describe{
@@ -12,9 +12,9 @@
 #' \item{pvalues}{Numeric matrix. \emph{p}-values associated with the 2LR statistics}
 #' \item{adj.pvalues}{Numeric matrix. Adjusted \emph{p}-values associated with the 2LR statistics}
 #' \item{df}{Numeric matrix. Degrees of freedom}
-#' \item{models.adj.pvalues}{Character vector denoting the model selected for each item using the \emph{largestp} rule (Ma et al., 2016). All statistics whose \emph{p}-values are less than \code{alpha.level} are rejected. All statistics with \emph{p}-value larger than \code{alpha.level} define the set of candidate reduced models. The G-DINA model is retained if all statistics are rejected. Whenever the set includes more than one model, the model with the largest \emph{p}-value was selected as the best model for that item}
+#' \item{models.adj.pvalues}{Character vector denoting the model selected for each item using the \emph{largestp} rule (Ma et al., 2016). All statistics whose \emph{p}-values are less than \code{alpha.level} are rejected. All statistics with \emph{p}-value larger than \code{alpha.level} define the set of candidate reduced models. The G-DINA model is retained if all statistics are rejected. Whenever the set includes more than one model, the model with the largest \emph{p}-value is selected as the best model for that item}
 #' }
-
+#'
 #' @references
 #'
 #' Ma, W. & de la Torre, J. (2018). Category-level model selection for the sequential G-DINA model. \emph{Journal of Educational and Behavorial Statistic, 44}, 45-77.
@@ -31,22 +31,27 @@
 #' @import stats
 #'
 #' @examples
+#'
 #'Q <- sim180DINA$simQ
 #'dat <- sim180DINA$simdat
 #'resGDINA <- GDINA::GDINA(dat = dat, Q = Q, model = "GDINA",verbose = FALSE)
-#'resCDM <- CDM::gdina(data = dat, q.matrix = Q, rule = "GDINA", progress = FALSE)
-#'LR2.GDINA <- LR.2step(fit = resGDINA)
-#'LR2.CDM <- LR.2step(fit = resCDM)
+#'#resCDM <- CDM::gdina(data = dat, q.matrix = Q, rule = "GDINA", progress = FALSE)
+#'LR2.GDINA <- LR.2step(fit = resGDINA) # GDINA package
+#'#LR2.CDM <- LR.2step(fit = resCDM) # CDM package
 #'mean(LR2.GDINA$models.adj.pvalues[which(rowSums(Q) != 1)] ==
 #'       sim180DINA$specifications$item.bank$specifications$model[which(rowSums(Q) != 1)])
-#'mean(LR2.CDM$models.adj.pvalues[which(rowSums(Q) != 1)] ==
-#'       sim180DINA$specifications$item.bank$specifications$model[which(rowSums(Q) != 1)])
+#'#mean(LR2.CDM$models.adj.pvalues[which(rowSums(Q) != 1)] ==
+#'#     sim180DINA$specifications$item.bank$specifications$model[which(rowSums(Q) != 1)])
 #'
 #' @export
 #'
 
 LR.2step <- function(fit, p.adjust.method = "holm", alpha.level = 0.05)
   {
+
+  if(!(class(fit) != "GDINA" | class(fit) != "gdina")){stop("fit must be an object of class 'GDINA' or 'gdina'")}
+  if(!(p.adjust.method %in% c("holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"))){stop("p.adjust.method must be one of the following: 'holm', 'hochberg', 'hommel', 'bonferroni', 'BH', 'BY', 'fdr', 'none'")}
+  if(alpha.level > 1 | alpha.level < 0){stop("alpha.level must be a value between 0 and 1.")}
 
   make.Lik.DINA.k <- function(vP){
     p <- rep(vP[1], classes - 1)

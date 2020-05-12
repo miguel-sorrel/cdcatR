@@ -1,6 +1,6 @@
 #' Simulated data (180 items, DINA model)
 #'
-#' Simulated data, Q-matrix and item parameters for a 180-item bank with 5 attributes. Data generated using the \code{gen.itembank} function.
+#' Simulated data, Q-matrix and item parameters for a 180-item bank with 5 attributes. Data generated using the \code{gen.data} function.
 #'
 #' @format A list with components:
 #' \describe{

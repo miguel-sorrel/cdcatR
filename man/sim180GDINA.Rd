@@ -17,6 +17,6 @@ A list with components:
 sim180GDINA
 }
 \description{
-Simulated data, Q-matrix and item parameters for a 180-item bank with 5 attributes. Data generated using the \code{gen.itembank} function.
+Simulated data, Q-matrix and item parameters for a 180-item bank with 5 attributes. Data generated using the \code{gen.data} function.
 }
 \keyword{datasets}

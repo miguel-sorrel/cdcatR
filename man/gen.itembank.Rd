@@ -15,19 +15,19 @@ gen.itembank(
 )
 }
 \arguments{
-\item{Q}{Numeric Matrix or dataframe of length \emph{J} number of items x \emph{K} number of atributes Q-matrix}
+\item{Q}{Numeric matrix of length \emph{J} number of items x \emph{K} number of atributes. Q-matrix}
 
-\item{gen.Q}{A list of arguments to generate a Q-matrix if \code{Q} is not provided. \code{J}: number of items. \code{K}: number of attributes. \code{propK.J}: numeric vector summing up to 1 that determines the proportion of 1-attribute, 2-attribute, ..., items (See \code{Examples}). The length of \code{propK.J} determines the maximum number of attributes considered for an item. \code{nI}: numeric vector of length 1 that sets the minimum number of identity matrices to be included in the Q-matrix. \code{minJ.K}: numeric vector of length \emph{K} that sets minimum number of items measuring each attribute. \code{max.Kcor}: numeric vector of length 1 that sets the maximum positive correlation allowed between two attributes}
+\item{gen.Q}{A list of arguments to generate a Q-matrix if \code{Q} is not provided. \code{J} = number of items (scalar numeric). \code{K} = number of attributes (scalar numeric). \code{propK.J} = numeric vector summing up to 1 that determines the proportion of 1-attribute, 2-attribute, ..., items. The length of \code{propK.J} determines the maximum number of attributes considered for an item (see \code{Examples} below). \code{nI} = Scalar numeric that sets the minimum number of identity matrices to be included in the Q-matrix. \code{minJ.K} = numeric vector of length \emph{K} that sets the minimum number of items measuring each attribute. \code{max.Kcor} = scalar numeric that sets the maximum positive correlation allowed between two attributes}
 
-\item{mean.IQ}{Item discrimination (mean for the uniform distribution). \emph{mean.IQ} = \emph{P}(\strong{1}) - \emph{P}(\strong{0}) (Sorrel et al., 2017; Najera et al., in press). Must be a numeric value between 0 and 1}
+\item{mean.IQ}{Item discrimination (mean for the uniform distribution). \emph{mean.IQ} = \emph{P}(\strong{1}) - \emph{P}(\strong{0}) (Sorrel et al., 2017; Najera et al., in press). Must be a scalar numeric between 0 and 1}
 
-\item{range.IQ}{Item discrimination (range for the uniform distribution). Must be a numeric value between 0 and 1}
+\item{range.IQ}{Item discrimination (range for the uniform distribution). Must be a scalar numeric between 0 and 1}
 
 \item{model}{A character vector of length \emph{J} with one model for each item, or a single value to be used for all items. The possible options include \code{"DINA"}, \code{"DINO"}, \code{"ACDM"}, and \code{"GDINA"}. One-attribute items will be coded in the output as \code{"GDINA"}}
 
-\item{min.param}{Numeric vector of length 1. Minimum value for the delta parameter of the principal effects of each attribute. Only usable if \code{model} = \code{"ACDM"} or \code{model} = \code{"GDINA"}}
+\item{min.param}{Scalar numeric. Minimum value for the delta parameter of the principal effects of each attribute. Only usable if \code{model} = \code{"ACDM"} or \code{model} = \code{"GDINA"}}
 
-\item{seed}{Numeric vector of length 1. A scalar to use with \code{set.seed}}
+\item{seed}{Scalar numeric. A scalar to use with \code{set.seed}}
 }
 \value{
 \code{gen.itembank} returns an object of class \code{gen.itembank}.
@@ -43,7 +43,7 @@ gen.itembank(
 This function can be used to generate an item bank.
 The user can provide a Q-matrix or create one defining a set of arguments.
 Item quality is sampled from a uniform distribution with mean = \emph{mean.IQ} and range = \emph{range.IQ}.
-Item parameters are generated so that the satisfy the monotonicity constraint.
+Item parameters are generated so that the monotonicity constraint is satisfied.
 }
 \examples{
 ####################################

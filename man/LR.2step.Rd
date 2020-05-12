@@ -9,9 +9,9 @@ LR.2step(fit, p.adjust.method = "holm", alpha.level = 0.05)
 \arguments{
 \item{fit}{Calibrated item bank with the \code{GDINA::GDINA} (Ma & de la Torre, 2020) or \code{CDM::gdina} (Robitzsch et al., 2020) R packages functions}
 
-\item{p.adjust.method}{Character vector of length 1. Correction method for \emph{p}-values. Possible values include \code{"holm"}, \code{"hochberg"}, \code{"hommel"}, \code{"bonferroni"}, \code{"BH"}, \code{"BY"}, \code{"fdr"}, and \code{"none"}. See \code{p.adjust} function from the \code{stats} R package for additional details. Default is \code{holm}}
+\item{p.adjust.method}{Scalar character. Correction method for \emph{p}-values. Possible values include \code{"holm"}, \code{"hochberg"}, \code{"hommel"}, \code{"bonferroni"}, \code{"BH"}, \code{"BY"}, \code{"fdr"}, and \code{"none"}. See \code{p.adjust} function from the \code{stats} R package for additional details. Default is \code{holm}}
 
-\item{alpha.level}{Numeric vector of length 1. Alpha level for decision. Default is \code{0.05}}
+\item{alpha.level}{Scalar numeric. Alpha level for decision. Default is \code{0.05}}
 }
 \value{
 \code{LR2.step} returns an object of class \code{LR2.step}
@@ -20,23 +20,24 @@ LR.2step(fit, p.adjust.method = "holm", alpha.level = 0.05)
 \item{pvalues}{Numeric matrix. \emph{p}-values associated with the 2LR statistics}
 \item{adj.pvalues}{Numeric matrix. Adjusted \emph{p}-values associated with the 2LR statistics}
 \item{df}{Numeric matrix. Degrees of freedom}
-\item{models.adj.pvalues}{Character vector denoting the model selected for each item using the \emph{largestp} rule (Ma et al., 2016). All statistics whose \emph{p}-values are less than \code{alpha.level} are rejected. All statistics with \emph{p}-value larger than \code{alpha.level} define the set of candidate reduced models. The G-DINA model is retained if all statistics are rejected. Whenever the set includes more than one model, the model with the largest \emph{p}-value was selected as the best model for that item}
+\item{models.adj.pvalues}{Character vector denoting the model selected for each item using the \emph{largestp} rule (Ma et al., 2016). All statistics whose \emph{p}-values are less than \code{alpha.level} are rejected. All statistics with \emph{p}-value larger than \code{alpha.level} define the set of candidate reduced models. The G-DINA model is retained if all statistics are rejected. Whenever the set includes more than one model, the model with the largest \emph{p}-value is selected as the best model for that item}
 }
 }
 \description{
 This function evaluates whether the saturated G-DINA model can be replaced by reduced CDMs without significant loss in model data fit for each item using two-step likelihood ratio test (2LR). Sorrel, de la Torre, Abad, and Olea (2017) and Ma & de la Torre (2018) can be consulted for details.
 }
 \examples{
+
 Q <- sim180DINA$simQ
 dat <- sim180DINA$simdat
 resGDINA <- GDINA::GDINA(dat = dat, Q = Q, model = "GDINA",verbose = FALSE)
-resCDM <- CDM::gdina(data = dat, q.matrix = Q, rule = "GDINA", progress = FALSE)
-LR2.GDINA <- LR.2step(fit = resGDINA)
-LR2.CDM <- LR.2step(fit = resCDM)
+#resCDM <- CDM::gdina(data = dat, q.matrix = Q, rule = "GDINA", progress = FALSE)
+LR2.GDINA <- LR.2step(fit = resGDINA) # GDINA package
+#LR2.CDM <- LR.2step(fit = resCDM) # CDM package
 mean(LR2.GDINA$models.adj.pvalues[which(rowSums(Q) != 1)] ==
       sim180DINA$specifications$item.bank$specifications$model[which(rowSums(Q) != 1)])
-mean(LR2.CDM$models.adj.pvalues[which(rowSums(Q) != 1)] ==
-      sim180DINA$specifications$item.bank$specifications$model[which(rowSums(Q) != 1)])
+#mean(LR2.CDM$models.adj.pvalues[which(rowSums(Q) != 1)] ==
+#     sim180DINA$specifications$item.bank$specifications$model[which(rowSums(Q) != 1)])
 
 }
 \references{

@@ -6,8 +6,8 @@
 #' Colors are used in the plots to indicate mastery (green), non-mastery (red), or uncertainty (blue).
 #'
 #' @param cdcat.obj An object of class \code{cdcat}
-#' @param i Numeric vector of length 1 that specifies the examinee to be plotted
-#' @param k Numeric vector that specifies the attribute/s to be plotted. Default is \code{NULL}, which plots all attributes
+#' @param i Scalar numeric. It specifies the examinee to be plotted
+#' @param k Numeric vector. It specifies the attribute/s to be plotted. Default is \code{NULL}, which plots all attributes
 #'
 #' @return \code{att.plot} returns a plot of class \code{ggplot}.
 #'

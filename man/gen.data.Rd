@@ -17,9 +17,9 @@ gen.data(
 )
 }
 \arguments{
-\item{N}{Numeric vector of length 1. Sample size for the datasets}
+\item{N}{Scalar numeric. Sample size for the datasets}
 
-\item{R}{Numeric vector of length 1. Number of datasets replications. Default is 1}
+\item{R}{Scalar numeric. Number of datasets replications. Default is 1}
 
 \item{item.bank}{An object of class \code{gen.itembank}}
 
@@ -29,14 +29,14 @@ gen.data(
 
 \item{mvnorm.parm}{A list of arguments for multivariate normal attribute distribution (\code{att.dist = "mvnorm"}). See \code{simGDINA} function of package \code{GDINA} for more information}
 
-\item{higher.order.parm}{A list of arguments for higher-order attribute distribution (\code{att.dist = "mvnorm"}). See \code{simGDINA} function of package \code{GDINA} for more information}
+\item{higher.order.parm}{A list of arguments for higher-order attribute distribution (\code{att.dist = "higher.order"}). See \code{simGDINA} function of package \code{GDINA} for more information}
 
-\item{categorical.parm}{A list of arguments for categorical attribute distribution (\code{att.dist = "mvnorm"}). See \code{simGDINA} function of package \code{GDINA} for more information}
+\item{categorical.parm}{A list of arguments for categorical attribute distribution (\code{att.dist = "categorical"}). See \code{simGDINA} function of package \code{GDINA} for more information}
 
-\item{seed}{Numeric vector of length 1. A scalar to use with \code{set.seed}}
+\item{seed}{Scalar numeric. A scalar to use with \code{set.seed}}
 }
 \value{
-\code{gen.itembank} returns an object of class \code{gen.itembank}.
+\code{gen.data} returns an object of class \code{gen.data}.
 \describe{
 \item{simdat}{An array containing the simulated responses (dimensions N examinees x J items x R replicates). If \code{R = 1}, a matrix is provided}
 \item{simalpha}{An array containing the simulated attribute profiles (dimensions N examinees x K attributes x R replicates). If \code{R = 1}, a matrix is provided}
@@ -44,11 +44,12 @@ gen.data(
 }
 }
 \description{
-This function can be used to generate datasets based on object of class \code{gen.itembank}.
+This function can be used to generate datasets based on an object of class \code{gen.itembank}.
 The user can manipulate the examinees' attribute distribution or provide a matrix of attribute profiles.
 Data are simulated using the \code{GDINA::simGDINA} function (Ma & de la Torre, 2020).
 }
 \examples{
+
 ####################################
 # Example 1.                       #
 # Generate dataset (GDINA item     #

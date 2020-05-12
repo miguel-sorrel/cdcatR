@@ -59,4 +59,4 @@ helper:
 * all functions required for cdcat and gen.itembank functions included
 
 zzz:
-* version and date updated
+* version updated

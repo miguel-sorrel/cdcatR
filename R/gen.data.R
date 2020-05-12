@@ -1,20 +1,20 @@
 #' Data generation
 #'
-#' This function can be used to generate datasets based on object of class \code{gen.itembank}.
+#' This function can be used to generate datasets based on an object of class \code{gen.itembank}.
 #' The user can manipulate the examinees' attribute distribution or provide a matrix of attribute profiles.
 #' Data are simulated using the \code{GDINA::simGDINA} function (Ma & de la Torre, 2020).
 #'
-#' @param N Numeric vector of length 1. Sample size for the datasets
-#' @param R Numeric vector of length 1. Number of datasets replications. Default is 1
+#' @param N Scalar numeric. Sample size for the datasets
+#' @param R Scalar numeric. Number of datasets replications. Default is 1
 #' @param item.bank An object of class \code{gen.itembank}
 #' @param att.profiles Numeric matrix indicating the true attribute profile for each examinee (\emph{N} examinees x \emph{K} attributes). If \code{NULL} (by default), \code{att.dist} must be specified
 #' @param att.dist Numeric vector of length 2^\emph{K}, where \emph{K} is the number of attributes. Distribution for attribute simulation. It can be \code{"uniform"} (by default), \code{"higher.order"}, \code{"mvnorm"}, or \code{"categorical"}. See \code{simGDINA} function of package \code{GDINA} for more information. Only used when \code{att.profiles = NULL}
 #' @param mvnorm.parm A list of arguments for multivariate normal attribute distribution (\code{att.dist = "mvnorm"}). See \code{simGDINA} function of package \code{GDINA} for more information
-#' @param higher.order.parm A list of arguments for higher-order attribute distribution (\code{att.dist = "mvnorm"}). See \code{simGDINA} function of package \code{GDINA} for more information
-#' @param categorical.parm A list of arguments for categorical attribute distribution (\code{att.dist = "mvnorm"}). See \code{simGDINA} function of package \code{GDINA} for more information
-#' @param seed Numeric vector of length 1. A scalar to use with \code{set.seed}
+#' @param higher.order.parm A list of arguments for higher-order attribute distribution (\code{att.dist = "higher.order"}). See \code{simGDINA} function of package \code{GDINA} for more information
+#' @param categorical.parm A list of arguments for categorical attribute distribution (\code{att.dist = "categorical"}). See \code{simGDINA} function of package \code{GDINA} for more information
+#' @param seed Scalar numeric. A scalar to use with \code{set.seed}
 #'
-#' @return \code{gen.itembank} returns an object of class \code{gen.itembank}.
+#' @return \code{gen.data} returns an object of class \code{gen.data}.
 #' \describe{
 #' \item{simdat}{An array containing the simulated responses (dimensions N examinees x J items x R replicates). If \code{R = 1}, a matrix is provided}
 #' \item{simalpha}{An array containing the simulated attribute profiles (dimensions N examinees x K attributes x R replicates). If \code{R = 1}, a matrix is provided}
@@ -26,6 +26,7 @@
 #' Ma, W. & de la Torre, J. (2020). GDINA: The generalized DINA model framework. R package version 2.7.9. Retrived from https://CRAN.R-project.org/package=GDINA
 #'
 #' @examples
+#'
 #'####################################
 #'# Example 1.                       #
 #'# Generate dataset (GDINA item     #
@@ -103,6 +104,7 @@ gen.data <- function(N = NULL, R = 1, item.bank = NULL, att.profiles = NULL, att
   # Warning end error messages
   #----------------------------
 
+  if(class(item.bank) != "gen.itembank"){stop("item.bank must be an object of class 'gen.itembank'")}
   if(!is.null(att.profiles)){N <- nrow(att.profiles)}
   if(is.null(N)){stop("N argument missing, with no default.")}
   if(R < 1){stop("R argument must be a positive scalar.")}
