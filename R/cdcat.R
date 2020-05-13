@@ -54,7 +54,7 @@
 #' @import utils
 #'
 #' @examples
-#'
+#' \dontrun{
 #'######################################
 #'# Example 1.                         #
 #'# CD-CAT simulation for a GDINA obj  #
@@ -204,7 +204,7 @@
 #'                                                             color = "firebrick3")
 #'res.NPS.FIXJ.sum.obse$recovery$plotPCA + ggplot2::geom_hline(yintercept = class.J$PCA,
 #'                                                             color = "firebrick3")
-#'
+#'}
 #' @export
 #'
 cdcat <- function(fit = NULL, dat = NULL,

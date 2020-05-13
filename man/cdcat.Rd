@@ -56,7 +56,7 @@ item selection method (NPS; Chang et al., 2019), or random selection. Fixed leng
 NPS is available, by using the pseudo-posterior probability of each student mastering each attribute (experimental).
 }
 \examples{
-
+\dontrun{
 ######################################
 # Example 1.                         #
 # CD-CAT simulation for a GDINA obj  #
@@ -206,7 +206,7 @@ res.NPS.FIXJ.sum.obse$recovery$plotPCV + ggplot2::geom_hline(yintercept = class.
                                                             color = "firebrick3")
 res.NPS.FIXJ.sum.obse$recovery$plotPCA + ggplot2::geom_hline(yintercept = class.J$PCA,
                                                             color = "firebrick3")
-
+}
 }
 \references{
 Chang, Y.-P., Chiu, C.-Y., & Tsai, R.-C. (2019). Nonparametric CAT for CD in educational settings with small samples. \emph{Applied Psychological Measurement, 43}, 543-561.
