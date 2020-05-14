@@ -31,7 +31,7 @@
 #' @import stats
 #'
 #' @examples
-#'
+#' \dontrun{
 #'Q <- sim180DINA$simQ
 #'dat <- sim180DINA$simdat
 #'resGDINA <- GDINA::GDINA(dat = dat, Q = Q, model = "GDINA",verbose = FALSE)
@@ -42,7 +42,7 @@
 #'       sim180DINA$specifications$item.bank$specifications$model[which(rowSums(Q) != 1)])
 #'#mean(LR2.CDM$models.adj.pvalues[which(rowSums(Q) != 1)] ==
 #'#     sim180DINA$specifications$item.bank$specifications$model[which(rowSums(Q) != 1)])
-#'
+#'}
 #' @export
 #'
 
