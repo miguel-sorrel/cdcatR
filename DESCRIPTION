@@ -8,7 +8,8 @@ Description: A set of functions for conducting cognitive diagnostic computerized
 License: GPL-3
 LazyData: TRUE
 Depends: R (>= 3.5.0)
-Imports: GDINA (>= 2.2.0), ggplot2 (>= 3.3.0), cowplot, doParallel (>= 1.0.15), foreach, CDM (>= 7.4.19), NPCD, stats, parallel, snow, doSNOW
+Imports: GDINA (>= 2.2.0), ggplot2 (>= 3.3.0), cowplot, foreach, doSNOW, NPCD, stats
+Suggests: CDM
 URL: https://github.com/miguel-sorrel/cdcatR
 BugReports: https://github.com/miguel-sorrel/cdcatR/issues
 RoxygenNote: 7.1.0
