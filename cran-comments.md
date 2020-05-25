@@ -2,6 +2,11 @@ cdcat 1.0.0:
 
 This is a new release
 
+## Resubmission
+* We have addressed the two concerns mentioned in the mail we got on May 25, 2020 (thanks). Specifically, 
+* A more elaborate package description was added in the description field of the DESCRIPTION file. Some references were included
+* TRUE and FALSE are now always used instead of T and F. No variables are named T or F 
+
 ## Test environments
 * local Windows installation, R 3.6
 * Ubuntu Linux 16.04 LTS, R-release, GCC (check_rhub)

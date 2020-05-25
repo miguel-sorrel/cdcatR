@@ -108,7 +108,7 @@ gen.itembank <- function(Q = NULL,
     arg.Q <- NULL
     J <- gen.Q$J
     K <- gen.Q$K
-    sim.Q <- Q <- genQ(J, K, gen.Q$nI, gen.Q$propK.J, T, gen.Q$minJ.K, gen.Q$max.Kcor, seed)$Q
+    sim.Q <- Q <- genQ(J, K, gen.Q$nI, gen.Q$propK.J, TRUE, gen.Q$minJ.K, gen.Q$max.Kcor, seed)$Q
     arg.model <- model
     if(length(model) == 1){model <- rep(model, J)}
   }

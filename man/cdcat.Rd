@@ -13,7 +13,7 @@ cdcat(
   att.prior = NULL,
   initial.distr = NULL,
   precision.cut = 0.8,
-  NPS.args = list(Q = NULL, gate = NULL, pseudo.prob = T, w.type = 1, seed = NULL),
+  NPS.args = list(Q = NULL, gate = NULL, pseudo.prob = TRUE, w.type = 1, seed = NULL),
   n.cores = 2,
   print.progress = TRUE
 )

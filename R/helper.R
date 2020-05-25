@@ -238,7 +238,7 @@ cdcat.getdata <- function(cdcat.obj, alpha){
 }
 
 # For gen.itembank
-genQ <- function(J, K, n.id = 2, qkProp, PropWithId = T, min.jk = 1, max.kcor = 0.3, seed = NULL){
+genQ <- function(J, K, n.id = 2, qkProp, PropWithId = TRUE, min.jk = 1, max.kcor = 0.3, seed = NULL){
   # J: number of items
   # K: number of attributes
   # qkProp: proportion of non-identity matrix items with k attributes (e.g., qkProb = c(0.1, 0.45, 0.45), 0.1 of items will have 1 attribute, 0.45 will have 2 attributes, etc.)
@@ -253,7 +253,7 @@ genQ <- function(J, K, n.id = 2, qkProp, PropWithId = T, min.jk = 1, max.kcor = 
   pat <- GDINA::attributepattern(K)
   for(k in 1:length(qkProp)){assign(paste0("pat", k), rbind(pat[which(rowSums(pat) == k),]))}
   if((K * n.id) > J){stop("Identity matrix/matrices has/have more rows than the whole Q-matrix ((K * nI) > J)")}
-  I <- matrix(rep(diag(1, K), n.id), ncol = K, byrow = T)
+  I <- matrix(rep(diag(1, K), n.id), ncol = K, byrow = TRUE)
   Q <- c()
 
   if(!PropWithId){
@@ -264,7 +264,7 @@ genQ <- function(J, K, n.id = 2, qkProp, PropWithId = T, min.jk = 1, max.kcor = 
       tmp <- sample(1:length(Jk), 1)
       Jk[tmp] <- Jk[tmp] + 1
     }
-    for(k in 1:length(qkProp)){assign(paste0("replace", k), ifelse(Jk[k] > nrow(get(paste0("pat", k))), T, F))}
+    for(k in 1:length(qkProp)){assign(paste0("replace", k), ifelse(Jk[k] > nrow(get(paste0("pat", k))), TRUE, FALSE))}
     Q <- rbind(I)
     for(k in 1:length(qkProp)){Q <- rbind(Q, rbind(get(paste0("pat", k))[sample(nrow(get(paste0("pat", k))), size = Jk[k], replace = get(paste0("replace", k))),]))}
     i <- 0
@@ -282,7 +282,7 @@ genQ <- function(J, K, n.id = 2, qkProp, PropWithId = T, min.jk = 1, max.kcor = 
       Jk[tmp] <- Jk[tmp] + 1
     }
     if(min.jk > (sum(Jk * 1:length(Jk)) / (J*K)) * J){cat("Warning in genQ: min.jk may be to high according to the other arguments. Consider using a lower value for min.jk")}
-    for(k in 1:length(qkProp)){assign(paste0("replace", k), ifelse(Jk[k] > nrow(get(paste0("pat", k))), T, F))}
+    for(k in 1:length(qkProp)){assign(paste0("replace", k), ifelse(Jk[k] > nrow(get(paste0("pat", k))), TRUE, FALSE))}
     Q <- rbind(I)
     Jk[1] <- Jk[1] - nrow(Q)
     for(k in 1:length(qkProp)){Q <- rbind(Q, rbind(get(paste0("pat", k))[sample(nrow(get(paste0("pat", k))), size = Jk[k], replace = get(paste0("replace", k))),]))}
@@ -342,7 +342,7 @@ gen.GDINAparam <- function(P0, P1, k.j, min.delta = 0, seed = NULL){
     while(any(delta.k < min.delta)){
       catprob.parm <- delta.parm <- P0
       for(l in 2:(nrow(lc) - 1)){
-        k <- which(pos.k == l, arr.ind = T)[,2]
+        k <- which(pos.k == l, arr.ind = TRUE)[,2]
         if(length(k) == 1){
           catprob.parm <- c(catprob.parm, runif(1, P0, P1))
           delta.parm <- c(delta.parm, catprob.parm[l] - P0)
