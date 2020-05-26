@@ -23,4 +23,13 @@ There was 1 NOTE:
 * Maintainer: ‘Miguel A. Sorrel <miguel.sorrel@uam.es>’
   
   New submission
-
+  Possibly mis-spelled words in DESCRIPTION:
+    Barrada (7:277)
+    Chiu (7:371)
+    Abad (7:689)
+    Kaplan (7:252)
+    Olea (7:698)
+    Tsai (7:381)
+    de (7:260, 7:676)
+    
+* Please note thate these words are surnames. The spelling is correct
