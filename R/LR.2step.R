@@ -31,7 +31,6 @@
 #' @import stats
 #'
 #' @examples
-#' \dontrun{
 #'Q <- sim180DINA$simQ
 #'dat <- sim180DINA$simdat
 #'resGDINA <- GDINA::GDINA(dat = dat, Q = Q, model = "GDINA",verbose = FALSE)
@@ -42,7 +41,7 @@
 #'       sim180DINA$specifications$item.bank$specifications$model[which(rowSums(Q) != 1)])
 #'#mean(LR2.CDM$models.adj.pvalues[which(rowSums(Q) != 1)] ==
 #'#     sim180DINA$specifications$item.bank$specifications$model[which(rowSums(Q) != 1)])
-#'}
+#'
 #' @export
 #'
 
@@ -105,7 +104,7 @@ LR.2step <- function(fit, p.adjust.method = "holm", alpha.level = 0.05)
       catprob.parm <- list()
       for(j in 1:nrow(Q)){
         kj <- which(Q[j,] == 1)
-        tmp <- factor(apply(attpat[,kj, drop = FALSE], 1, paste, collapse = ""))
+        tmp <- factor(apply(attpat[,kj, drop = F], 1, paste, collapse = ""))
         tmp <- factor(tmp, levels = apply(unique(GDINA::attributepattern(length(kj))), 1, paste, collapse = ""))
         for(l in 1:(2^length(kj))){
           Rlj[j,l] <- sum(RLj[j, which(as.numeric(tmp) == l)])
@@ -188,7 +187,7 @@ LR.2step <- function(fit, p.adjust.method = "holm", alpha.level = 0.05)
   LR2.adjp <- LR2.p
   LR2.adjp <- matrix(p.adjust(LR2.adjp, method = p.adjust.method), ncol = ncol(LR2.p), nrow = nrow(LR2.p))
 
-  model.alpha <- apply(LR2.adjp, 1, function(x){if(max(x, na.rm = TRUE) > alpha.level){NA} else {return(0)}})
+  model.alpha <- apply(LR2.adjp, 1, function(x){if(max(x, na.rm = T) > alpha.level){NA} else {return(0)}})
   model.alpha[is.na(model.alpha)] <- apply(LR2.p[is.na(model.alpha),], 1, which.max)
 
   models <- rep(0, nrow(Q))

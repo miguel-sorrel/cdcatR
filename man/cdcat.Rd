@@ -13,7 +13,7 @@ cdcat(
   att.prior = NULL,
   initial.distr = NULL,
   precision.cut = 0.8,
-  NPS.args = list(Q = NULL, gate = NULL, pseudo.prob = TRUE, w.type = 1, seed = NULL),
+  NPS.args = list(Q = NULL, gate = NULL, pseudo.prob = T, w.type = 1, seed = NULL),
   n.cores = 2,
   print.progress = TRUE
 )
@@ -56,7 +56,17 @@ item selection method (NPS; Chang et al., 2019), or random selection. Fixed leng
 NPS is available, by using the pseudo-posterior probability of each student mastering each attribute (experimental).
 }
 \examples{
-\dontrun{
+\dontshow{
+Q <- sim180GDINA$simQ
+dat <- sim180GDINA$simdat[1:20, ]
+att <- sim180GDINA$simalpha[1:20, ]
+fit <- GDINA::GDINA(dat = dat, Q = Q, verbose = 0) # GDINA package
+
+res.FIXJ <- cdcat(fit = fit, dat = dat, FIXED.LENGTH = TRUE,
+                 MAXJ = 20, n.cores = 2)
+res.FIXJ$est[[1]] # estimates for the first examinee (fixed-length)
+}
+\donttest{
 ######################################
 # Example 1.                         #
 # CD-CAT simulation for a GDINA obj  #

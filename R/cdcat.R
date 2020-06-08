@@ -54,7 +54,17 @@
 #' @import utils
 #'
 #' @examples
-#' \dontrun{
+#' \dontshow{
+#'Q <- sim180GDINA$simQ
+#'dat <- sim180GDINA$simdat[1:20, ]
+#'att <- sim180GDINA$simalpha[1:20, ]
+#'fit <- GDINA::GDINA(dat = dat, Q = Q, verbose = 0) # GDINA package
+#'
+#'res.FIXJ <- cdcat(fit = fit, dat = dat, FIXED.LENGTH = TRUE,
+#'                  MAXJ = 20, n.cores = 2)
+#'res.FIXJ$est[[1]] # estimates for the first examinee (fixed-length)
+#' }
+#' \donttest{
 #'######################################
 #'# Example 1.                         #
 #'# CD-CAT simulation for a GDINA obj  #
@@ -209,7 +219,7 @@
 #'
 cdcat <- function(fit = NULL, dat = NULL,
                   itemSelect = "GDI", MAXJ = 20, FIXED.LENGTH = TRUE, att.prior = NULL, initial.distr = NULL, precision.cut = 0.80,
-                  NPS.args = list(Q = NULL, gate = NULL, pseudo.prob = TRUE, w.type = 1, seed = NULL),
+                  NPS.args = list(Q = NULL, gate = NULL, pseudo.prob = T, w.type = 1, seed = NULL),
                   n.cores = 2, print.progress = TRUE)
 {
 
@@ -233,7 +243,7 @@ cdcat <- function(fit = NULL, dat = NULL,
       for(j in 1:nrow(Q)){
         kj <- which(Q[j,] == 1)
         prob.j.l <- est$probitem[est$probitem$itemno == j,]$prob
-        tmp <- factor(apply(GDINA::attributepattern(ncol(Q))[,kj, drop = FALSE], 1, paste, collapse = ""))
+        tmp <- factor(apply(GDINA::attributepattern(ncol(Q))[,kj, drop = F], 1, paste, collapse = ""))
         tmp <- factor(tmp, levels = apply(unique(GDINA::attributepattern(length(kj))), 1, paste, collapse = ""))
         for(l in 1:length(prob.j.l)){LC.prob[j, which(as.numeric(tmp) == l)] <- prob.j.l[l]}
       }
@@ -306,7 +316,7 @@ cdcat <- function(fit = NULL, dat = NULL,
 
     out <- foreach(i = 1:N, .options.snow = opts,
                    .export = c("GDI.M", "H", "JSD.DICO.M", "PWKL.M", "MPWKL.M"),
-                   .inorder = TRUE) %dopar% {
+                   .inorder = T) %dopar% {
                      try({
 
                        # Start examinee i
@@ -395,7 +405,7 @@ cdcat <- function(fit = NULL, dat = NULL,
 
     out <- foreach(i = 1:N, .options.snow = opts,
                    .packages = "NPCD", .export = c("pseudoP", "NPC.eta"),
-                   .inorder = TRUE) %dopar% {
+                   .inorder = T) %dopar% {
                      try({
                        if(!is.null(NPS.args$seed)){set.seed(NPS.args$seed + i)}
 
@@ -442,7 +452,7 @@ cdcat <- function(fit = NULL, dat = NULL,
                          # Step 3: Select new item and update R
                          assign(paste0("e", k), c(rep(0, k - 1), 1, rep(0, K - k)))
                          while(length(hit) == 0){
-                           qj.prev <- matrix(get(paste0("e", k)), ncol = K, byrow = TRUE)
+                           qj.prev <- matrix(get(paste0("e", k)), ncol = K, byrow = T)
                            for(w in 1:(k - 1)){qj.prev <- rbind(qj.prev, sample(c(0, 1), 1) * get(paste0("e", w)) * y[w])}
                            qj <- colSums(qj.prev)
                            qj[qj > 0] <- 1
@@ -473,7 +483,7 @@ cdcat <- function(fit = NULL, dat = NULL,
                        # assign(paste0("a.", k), alphanp$alpha.est)
                        # a2 <- names(sort(NPC(y, Qy, gatey)$HD.l)[m])
                        pat.dist <- cbind(alphanp$pattern, alphanp$loss.matrix)
-                       if(K > 1){random.order <- sample(1:K, K, FALSE)}
+                       if(K > 1){random.order <- sample(1:K, K, F)}
                        for(k in random.order){pat.dist <- pat.dist[order(pat.dist[,k]),]}
                        pat.dist <- pat.dist[order(pat.dist[, K + 1]),]
                        assign(paste0("a.", K), pat.dist[order(pat.dist[,K + 1]),][1, 1:K])
@@ -490,26 +500,26 @@ cdcat <- function(fit = NULL, dat = NULL,
                        }
 
                        # Step 7: Select item to administer that can discriminate a.k and a2.k
-                       kt <- K + 1
-                       while(kt <= MAXJ){
+                       t <- K + 1
+                       while(t <= MAXJ){
                          hit <- NULL
                          while(is.null(hit)){
-                           items <- sample(1:nrow(get(paste0("R", kt - 1))))
+                           items <- sample(1:nrow(get(paste0("R", t - 1))))
                            for(j in items){
-                             qj <- as.double(get(paste0("R", kt - 1))[j,])
-                             eta.a <- NPC.eta(qj, get(paste0("a.", kt - 1)), get(paste0("gate", kt - 1))[j])
-                             eta.a2 <- NPC.eta(qj, get(paste0("a2.", kt - 1)), get(paste0("gate", kt - 1))[j])
+                             qj <- as.double(get(paste0("R", t - 1))[j,])
+                             eta.a <- NPC.eta(qj, get(paste0("a.", t - 1)), get(paste0("gate", t - 1))[j])
+                             eta.a2 <- NPC.eta(qj, get(paste0("a2.", t - 1)), get(paste0("gate", t - 1))[j])
                              if(eta.a != eta.a2){
 
                                # Step 10: Administer item and update y and R
-                               hit <- as.vector(which(sapply(apply(get(paste0("R", kt - 1)), 1, function(x) which(all(as.double(x) == qj))), sum) == 1))
+                               hit <- as.vector(which(sapply(apply(get(paste0("R", t - 1)), 1, function(x) which(all(as.double(x) == qj))), sum) == 1))
                                if(length(hit) > 1){hit <- sample(hit, 1)} # hit is not equal to item number: it is related to R, not to Q
-                               assign(paste0("R", kt), get(paste0("R", kt - 1))[-hit,])
-                               assign(paste0("gate", kt), get(paste0("gate", kt - 1))[-hit])
+                               assign(paste0("R", t), get(paste0("R", t - 1))[-hit,])
+                               assign(paste0("gate", t), get(paste0("gate", t - 1))[-hit])
                                y <- c(y, x[hit])
                                x <- x[-hit]
-                               Qy <- rbind(Qy, get(paste0("R", kt - 1))[hit,])
-                               gatey <- c(gatey, get(paste0("gate", kt - 1))[hit])
+                               Qy <- rbind(Qy, get(paste0("R", t - 1))[hit,])
+                               gatey <- c(gatey, get(paste0("gate", t - 1))[hit])
                                m <- 2
                                break
                              } else {
@@ -523,10 +533,10 @@ cdcat <- function(fit = NULL, dat = NULL,
                              # a2 <- names(sort(NPC(y, Qy, gatey)$HD.l)[m])
                              alphanp <- NPCD::AlphaNP(t(as.matrix(y)), Qy, gatey[1])
                              pat.dist <- cbind(alphanp$pattern, alphanp$loss.matrix)
-                             if(K > 1){random.order <- sample(1:K, K, FALSE)}
+                             if(K > 1){random.order <- sample(1:K, K, F)}
                              for(k in random.order){pat.dist <- pat.dist[order(pat.dist[,k]),]}
                              pat.dist <- pat.dist[order(pat.dist[, K + 1]),]
-                             assign(paste0("a2.", kt - 1), pat.dist[order(pat.dist[,K + 1]),][m, 1:K])
+                             assign(paste0("a2.", t - 1), pat.dist[order(pat.dist[,K + 1]),][m, 1:K])
                            }
                          }
 
@@ -536,24 +546,24 @@ cdcat <- function(fit = NULL, dat = NULL,
                          # assign(paste0("a.", t), alphanp$alpha.est)
                          # a2 <- names(sort(NPC(y, Qy, gatey)$HD.l)[m])
                          pat.dist <- cbind(alphanp$pattern, alphanp$loss.matrix)
-                         if(K > 1){random.order <- sample(1:K, K, FALSE)}
+                         if(K > 1){random.order <- sample(1:K, K, F)}
                          for(k in random.order){pat.dist <- pat.dist[order(pat.dist[,k]),]}
                          pat.dist <- pat.dist[order(pat.dist[, K + 1]),]
-                         assign(paste0("a.", kt), pat.dist[order(pat.dist[,K + 1]),][1, 1:K])
+                         assign(paste0("a.", t), pat.dist[order(pat.dist[,K + 1]),][1, 1:K])
                          m <- 2
-                         assign(paste0("a2.", kt), pat.dist[order(pat.dist[,K + 1]),][m, 1:K])
+                         assign(paste0("a2.", t), pat.dist[order(pat.dist[,K + 1]),][m, 1:K])
 
                          if(!NPS.args$pseudo.prob){
-                           out.i <- rbind(out.i, c(as.double(rownames(Qy))[kt], paste(Qy[kt,], collapse = ""), y[kt],
-                                                   paste(get(paste0("a.", kt)), collapse = ""), pat.dist[order(pat.dist[,K + 1]),][1, K + 1],
-                                                   paste(get(paste0("a2.", kt)), collapse = ""), pat.dist[order(pat.dist[,K + 1]),][2, K + 1],
+                           out.i <- rbind(out.i, c(as.double(rownames(Qy))[t], paste(Qy[t,], collapse = ""), y[t],
+                                                   paste(get(paste0("a.", t)), collapse = ""), pat.dist[order(pat.dist[,K + 1]),][1, K + 1],
+                                                   paste(get(paste0("a2.", t)), collapse = ""), pat.dist[order(pat.dist[,K + 1]),][2, K + 1],
                                                    pat.dist[order(pat.dist[,K + 1]),][2, K + 1] - pat.dist[order(pat.dist[,K + 1]),][1, K + 1]))
                          } else {
                            if(NPS.args$pseudo.prob){
                              pP.k <- as.vector(pseudoP(alphanp, inv.type = "min", w.type = NPS.args$w.type))
-                             out.i <- rbind(out.i, c(as.double(rownames(Qy))[kt], paste(Qy[kt,], collapse = ""), y[kt],
-                                                     paste(get(paste0("a.", kt)), collapse = ""), pat.dist[order(pat.dist[,K + 1]),][1, K + 1],
-                                                     paste(get(paste0("a2.", kt)), collapse = ""), pat.dist[order(pat.dist[,K + 1]),][2, K + 1],
+                             out.i <- rbind(out.i, c(as.double(rownames(Qy))[t], paste(Qy[t,], collapse = ""), y[t],
+                                                     paste(get(paste0("a.", t)), collapse = ""), pat.dist[order(pat.dist[,K + 1]),][1, K + 1],
+                                                     paste(get(paste0("a2.", t)), collapse = ""), pat.dist[order(pat.dist[,K + 1]),][2, K + 1],
                                                      pat.dist[order(pat.dist[,K + 1]),][2, K + 1] - pat.dist[order(pat.dist[,K + 1]),][1, K + 1],
                                                      round(pP.k, 5)))
                            }
@@ -567,9 +577,9 @@ cdcat <- function(fit = NULL, dat = NULL,
                            }
                          }
 
-                         kt <- kt + 1
+                         t <- t + 1
                        }
-                       att.pat[i,] <- get(paste0("a.", kt - 1))
+                       att.pat[i,] <- get(paste0("a.", t - 1))
                        exp.items[[i]] <- as.double(rownames(Qy))
                        out.i <- as.data.frame(out.i)
                        out.i$j <- as.double(as.character(out.i$j))
@@ -586,7 +596,7 @@ cdcat <- function(fit = NULL, dat = NULL,
                    } # end nonparametric CD-CAT for all examinees
   } # end CD-CAT
 
-  close(pb)
+  if(print.progress == TRUE) {close(pb)}
   parallel::stopCluster(cl)
   res <- list()
   res$est <- out

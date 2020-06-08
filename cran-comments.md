@@ -2,8 +2,13 @@ cdcat 1.0.0:
 
 This is a new release
 
-## Resubmission
-* We have addressed the two concerns mentioned in the mail we got on May 25, 2020 (thanks). Specifically, 
+## Second resubmission (June 8, 2020)
+* We have addressed the only concern mentioned in the mail we got on June 2, 2020 (thanks Swetlana Herbrandt). Specifically, 
+* We have includeda small executable (not wrapped in \dontrun or \donttest) example for the main function (i.e., cdcat()). It is wrapped in \dontshow so that this informal test is not shown in the help page
+* We now use \donttest instead of \dontrun for examples that take longer than 10 seconds. We have checked that all the examples work fine  
+
+## First sesubmission (May 26, 2020)
+* We have addressed the two concerns mentioned in the mail we got on May 25, 2020 (thanks Jelena Saf). Specifically, 
 * We have removed the redundant "in R" from the title
 * A more elaborate package description was added in the description field of the DESCRIPTION file. Some references were included
 * TRUE and FALSE are now always used instead of T and F. No variables are named T or F 

@@ -27,7 +27,6 @@ LR.2step(fit, p.adjust.method = "holm", alpha.level = 0.05)
 This function evaluates whether the saturated G-DINA model can be replaced by reduced CDMs without significant loss in model data fit for each item using two-step likelihood ratio test (2LR). Sorrel, de la Torre, Abad, and Olea (2017) and Ma & de la Torre (2018) can be consulted for details.
 }
 \examples{
-\dontrun{
 Q <- sim180DINA$simQ
 dat <- sim180DINA$simdat
 resGDINA <- GDINA::GDINA(dat = dat, Q = Q, model = "GDINA",verbose = FALSE)
@@ -38,7 +37,7 @@ mean(LR2.GDINA$models.adj.pvalues[which(rowSums(Q) != 1)] ==
       sim180DINA$specifications$item.bank$specifications$model[which(rowSums(Q) != 1)])
 #mean(LR2.CDM$models.adj.pvalues[which(rowSums(Q) != 1)] ==
 #     sim180DINA$specifications$item.bank$specifications$model[which(rowSums(Q) != 1)])
-}
+
 }
 \references{
 Ma, W. & de la Torre, J. (2018). Category-level model selection for the sequential G-DINA model. \emph{Journal of Educational and Behavorial Statistic, 44}, 45-77.
