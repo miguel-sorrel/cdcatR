@@ -249,7 +249,7 @@ genQ <- function(J, K, n.id = 2, qkProp, PropWithId = T, min.jk = 1, max.kcor = 
 
   if(!is.null(seed)){set.seed(seed)}
   if(length(qkProp) > K){stop("length(qkProp) must be <= K")}
-  if(sum(qkProp) != 1){stop("sum(qkProp) must be equal to 1")}
+  if (!isTRUE(all.equal(1, sum(qkProp), tolerance = .Machine$double.eps^0.25))) {stop("sum(qkProp) must be equal to 1")}
   pat <- GDINA::attributepattern(K)
   for(k in 1:length(qkProp)){assign(paste0("pat", k), rbind(pat[which(rowSums(pat) == k),]))}
   if((K * n.id) > J){stop("Identity matrix/matrices has/have more rows than the whole Q-matrix ((K * nI) > J)")}
