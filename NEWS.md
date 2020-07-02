@@ -1,3 +1,6 @@
+cdcat 1.0.1:
+* Addressed the noLD unit test issues in the previous version
+
 cdcat 1.0.0:
 
 DESCRIPTION:
