@@ -1,4 +1,7 @@
-cdcat 1.0.1:
+cdcat 1.0.2:
+
+## cdcatR 1.0.2 release (July 14, 2020)
+* Fixed minor bugs for the cdcat() function
 
 ## cdcatR 1.0.1 release (July 1, 2020)
 * CRAN Package Check Results found an issue for noLD. We have corrected this [if (sum(probs) != 1) {] has been replaced]. Thanks Prof Brian Ripley and CRAN

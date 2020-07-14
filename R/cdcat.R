@@ -228,6 +228,8 @@ cdcat <- function(fit = NULL, dat = NULL,
   #-------------------------
 
   est <- fit
+  Q <- NPS.args$Q
+  
   initial.distr.arg <- initial.distr
   if(!is.null(est)){
     if(!is.null(est$extra$call)){ # package GDINA
@@ -263,8 +265,8 @@ cdcat <- function(fit = NULL, dat = NULL,
   pattern <- GDINA::attributepattern(K)
   Lclass <- apply(GDINA::attributepattern(K), MARGIN = 1,FUN = function(x){paste(x,collapse = "")})
   if(is.null(att.prior)){att.prior <- rep(1/L, L)}
-  if(is.null(initial.distr)){initial.distr <- matrix(data = rep(rep(1/L, L), N), nrow = N)}
-  if(!is.null(initial.distr)){initial.distr <- matrix(data = rep(initial.distr, N), nrow = N, byrow = TRUE)}
+  if(is.null(initial.distr.arg)){initial.distr <- matrix(data = rep(rep(1/L, L), N), nrow = N)}
+  if(!is.null(initial.distr.arg)){initial.distr <- matrix(data = rep(initial.distr, N), nrow = N, byrow = TRUE)}
   cl <- parallel::makeCluster(n.cores, type = "SOCK")
   doSNOW::registerDoSNOW(cl)
 
@@ -329,7 +331,8 @@ cdcat <- function(fit = NULL, dat = NULL,
                                      "GDI" = GDI.M(LC.prob = LC.prob, mlogPost_GDI),
                                      "JSD" = JSD.DICO.M(LC.prob = LC.prob, mlogPost_GDI),
                                      "MPWKL" = MPWKL.M(LC.prob = LC.prob, mlogPost_GDI),
-                                     "PWKL" = PWKL.M(LC.prob = LC.prob, mlogPost_GDI, point.est = sample(1:L, size = 1)),
+                                     "PWKL" = PWKL.M(LC.prob = LC.prob, mlogPost_GDI, 
+                                                     point.est = sample(which(mlogPost_GDI == max(mlogPost_GDI)), 1)),
                                      "random" = runif(J, 0, 1))
                        names(GDI) <- 1:length(GDI)
 
@@ -367,7 +370,8 @@ cdcat <- function(fit = NULL, dat = NULL,
                                        "GDI" = GDI.M(LC.prob = LC.prob, mlogPost_GDI),
                                        "JSD" = JSD.DICO.M(LC.prob = LC.prob, mlogPost_GDI),
                                        "MPWKL" = MPWKL.M(LC.prob = LC.prob, mlogPost_GDI),
-                                       "PWKL" = PWKL.M(LC.prob = LC.prob, mlogPost_GDI, point.est = sample(1:L, size = 1)),
+                                       "PWKL" = PWKL.M(LC.prob = LC.prob, mlogPost_GDI, 
+                                                       point.est = sample(which(mlogPost_GDI == max(mlogPost_GDI)), 1)),
                                        "NP" = stop("itemSelect == 'NP' is currently not available"),
                                        "random" = runif(J, 0, 1))
                          names(GDI) <- 1:length(GDI)

@@ -1,3 +1,8 @@
+cdcat 1.0.2:
+* Fixed a bug for cdcat() when ItemSelect = "JSD"
+* Fixed a bug for cdcat() when ItemSelect = "PWKL"
+* Minor modification of cdcat() for gathering the information (Q-matrix)
+
 cdcat 1.0.1:
 * Addressed the noLD unit test issues in the previous version
 
