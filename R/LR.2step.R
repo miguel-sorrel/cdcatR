@@ -1,6 +1,6 @@
 #' Item-level model comparison using 2LR test
 #'
-#' This function evaluates whether the saturated G-DINA model can be replaced by reduced CDMs without significant loss in model data fit for each item using two-step likelihood ratio test (2LR). Sorrel, de la Torre, Abad, and Olea (2017) and Ma & de la Torre (2018) can be consulted for details.
+#' This function evaluates whether the saturated G-DINA model can be replaced by reduced CDMs without significant loss in model data fit for each item using two-step likelihood ratio test (2LR). Sorrel, de la Torre, Abad, and Olea (2017) and Ma & de la Torre (2018) can be consulted for details. Conducting this type of analysis can facilitate the calibration of the item bank and have implications for the CAT accuracy and item usage (Sorrel, Nájera, & Abad, 2021).
 #'
 #' @param fit Calibrated item bank with the \code{GDINA::GDINA} (Ma & de la Torre, 2020) or \code{CDM::gdina} (Robitzsch et al., 2020) R packages functions
 #' @param p.adjust.method Scalar character. Correction method for \emph{p}-values. Possible values include \code{"holm"}, \code{"hochberg"}, \code{"hommel"}, \code{"bonferroni"}, \code{"BH"}, \code{"BY"}, \code{"fdr"}, and \code{"none"}. See \code{p.adjust} function from the \code{stats} R package for additional details. Default is \code{holm}
@@ -27,6 +27,8 @@
 #' Robitzsch, A., Kiefer, T., George, A. C., & Uenlue, A. (2020). CDM: Cognitive Diagnosis Modeling. R package version 7.5-15. https://CRAN.R-project.org/package=CDM
 #'
 #' Sorrel, M. A., de la Torre, J., Abad, F. J., & Olea, J. (2017). Two-step likelihood ratio test for item-level model comparison in cognitive diagnosis models. \emph{Methodology, 13}, 39-47.
+#'
+#' Sorrel, M. A., Abad, F. J., & Nájera, P. (2021). Improving accuracy and usage by correctly selecting: The effects of model selection in cognitive diagnosis computerized adaptive testing. \emph{Applied Psychological Measurement, 45}, 112-129.
 #'
 #' @import stats
 #'

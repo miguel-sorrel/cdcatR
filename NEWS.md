@@ -1,3 +1,9 @@
+cdcat 1.0.3:
+* cdcat.summary: Minor modifications in the plots
+* gen.itembank: Two additional arguments incorporated (gs.parm and catprob.parm) to allow for more targeted manipulation of the quality of the item bank
+* cdcat: New arguments included for specification of the starting rule (startK and startRule), item exposure control (itemExposurecontrol, b, and maxr), and the inclusion of additional constraints (itemConstraint and constraint.args$ATTRIBUTEc)
+* helper: Functions updated to accommodate the above-mentioned modifications
+
 cdcat 1.0.2:
 * Fixed a bug for cdcat() when ItemSelect = "JSD"
 * Fixed a bug for cdcat() when ItemSelect = "PWKL"

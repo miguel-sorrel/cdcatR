@@ -1,8 +1,8 @@
 Package: cdcatR
 Type: Package
 Title: Cognitive Diagnostic Computerized Adaptive Testing 
-Version: 1.0.2
-Date: 2020-09-9
+Version: 1.0.3
+Date: 2020-07-2
 Authors@R: c(person(given = "Miguel A.",family = "Sorrel", role = c("aut", "cre", "cph"),email = "miguel.sorrel@uam.es"),person(given = "Pablo", family = "Nájera", role = c("aut","cph")), person(given="Francisco J.",family = "Abad",role = c("aut","cph")))
 Description: Provides a set of functions for conducting cognitive diagnostic computerized adaptive testing applications (Chen (2009) <doi:10.1007/s11336-009-9123-2>). It includes different item selection rules such us the global discrimination index (Kaplan, de la Torre, and Barrada (2015) <doi:10.1177/0146621614554650>) and the nonparametric selection method (Chang, Chiu, and Tsai (2019) <doi:10.1177/0146621618813113>), as well as several stopping rules. Functions for generating item banks and responses are also provided. To guide item bank calibration, model comparison at the item level can be conducted using the two-step likelihood ratio test statistic by Sorrel, de la Torre, Abad and Olea (2017) <doi:10.1027/1614-2241/a000131>.
 License: GPL-3
@@ -12,10 +12,9 @@ Imports: GDINA (>= 2.2.0), ggplot2 (>= 3.3.0), cowplot, foreach, doSNOW, NPCD, s
 Suggests: CDM
 URL: https://github.com/miguel-sorrel/cdcatR
 BugReports: https://github.com/miguel-sorrel/cdcatR/issues
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1.9000
 Encoding: UTF-8
 Author: Miguel A. Sorrel [aut, cre, cph],
   Pablo Nájera [aut, cph],
   Francisco J. Abad [aut, cph]
 Maintainer: Miguel A. Sorrel <miguel.sorrel@uam.es>
-
