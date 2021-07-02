@@ -58,7 +58,8 @@ cdcat.summary <- function(cdcat.obj, alpha, label = NULL){
       PCVplot <- ggplot2::ggplot(data = datacomp,
                                  ggplot2::aes(x=item.position, y=pattern.recovery, colour = model)) +
         ggplot2::theme(panel.grid.minor.x = ggplot2::element_blank(),
-                       panel.grid.minor.y = ggplot2::element_blank()) +
+                       panel.grid.minor.y = ggplot2::element_blank(),
+                       legend.title = ggplot2::element_blank()) +
         ggplot2::scale_x_continuous("Until Item Position", labels = 1:MAXJ, breaks = 1:MAXJ) +
         ggplot2::scale_y_continuous("Pattern Recovery", limits = c(0,1), labels = seq(from = 0, to = 1, by = 0.10),
                                     breaks = seq(from = 0, to = 1, by = 0.10)) +
@@ -67,7 +68,8 @@ cdcat.summary <- function(cdcat.obj, alpha, label = NULL){
       PCAmplot <- ggplot2::ggplot(data = datacomp,
                                   ggplot2::aes(x=item.position, y=attribute.recovery, colour = model)) +
         ggplot2::theme(panel.grid.minor.x = ggplot2::element_blank(),
-                       panel.grid.minor.y = ggplot2::element_blank()) +
+                       panel.grid.minor.y = ggplot2::element_blank(),
+                       legend.title = ggplot2::element_blank()) +
         ggplot2::scale_x_continuous("Until Item Position", labels = 1:MAXJ, breaks = 1:MAXJ) +
         ggplot2::scale_y_continuous("Attribute Recovery", limits = c(0,1), labels = seq(from = 0, to = 1, by = 0.10),
                                     breaks = seq(from = 0, to = 1, by = 0.10)) +
@@ -92,7 +94,7 @@ cdcat.summary <- function(cdcat.obj, alpha, label = NULL){
       }
 
       title_gg <- ggplot2::ggplot() +
-        ggplot2::labs(title = paste("Models from top to bottom:",
+        ggplot2::labs(title = paste("Applications from top to bottom:",
                                     paste(model, sep = "", collapse = ", "), collapse = ""),
                       subtitle = "x-axis: Item, y-axis: Item exposure rate")
       plot_row <- cowplot::plot_grid(plotlist = plots, ncol = 1)
@@ -151,7 +153,7 @@ cdcat.summary <- function(cdcat.obj, alpha, label = NULL){
       }
       title <- cowplot::ggdraw() +
         cowplot::draw_label(
-          paste("Models from left to right:",
+          paste("Applications from left to right:",
                 paste(model, sep = "", collapse = ", "), collapse = ""),
           fontface = 'bold', size = 10,
           x = 0, hjust = 0) +
@@ -178,7 +180,7 @@ cdcat.summary <- function(cdcat.obj, alpha, label = NULL){
       }
 
       title_gg <- ggplot2::ggplot() +
-        ggplot2::labs(title = paste("Models from top to bottom:",
+        ggplot2::labs(title = paste("Applications from top to bottom:",
                                     paste(model, sep = "", collapse = ", "), collapse = ""),
                       subtitle = "x-axis: Item, y-axis: Item exposure rate")
       plot_row <- cowplot::plot_grid(plotlist = plots, ncol = 1)

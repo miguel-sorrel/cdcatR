@@ -1,3 +1,16 @@
+proggresive.f <- function(jjselect, MAXJ, b, GDI){
+  # used in cdcat function
+  # performs progressive method on itemSelect (Revuelta & Ponsoda, 1998; Barrada, Olea, Ponsoda, & Abad, 2008)
+  if(jjselect == 1){
+    W_jjGDI <- 0 
+  }else{
+    W_jjGDI <- sum((c(2:jjselect)-1)^b)/ sum((c(2:MAXJ)-1)^b)
+  }
+  R_jjGDI <- runif(length(GDI),0,max(GDI)) # length(GDI) por j 22/06
+  S.GDI.jj <- ((1-rep(W_jjGDI,length(R_jjGDI)))*R_jjGDI + rep(W_jjGDI, length(R_jjGDI))*GDI)
+  return(S.GDI.jj)
+}
+
 overlap.rate <- function(CAT.length, exposure.rates){
   # used in cdcat.getdata function
   Q <- CAT.length
@@ -84,17 +97,17 @@ cdcat.getdata <- function(cdcat.obj, alpha){
                              "cond" = rep(1, N))
       CATlength$stats <- summary(data.len[, 1])
       CATlength$plot <- ggplot2::ggplot(data.len, ggplot2::aes(x=cond, y=length)) +
-        ggplot2::geom_violin(alpha=0.4) +
+        ggplot2::geom_violin(alpha=0.4) +  
         ggplot2::theme(panel.grid.minor.x = ggplot2::element_blank(), panel.grid.minor.y = ggplot2::element_blank()) +
-        ggplot2::geom_dotplot(binaxis = 'y', stackdir = 'center', binwidth = 0.15) +
+        ggplot2::geom_dotplot(binaxis = 'y', stackdir = 'center', binwidth = 0.10) +
         ggplot2::stat_summary(fun=mean, geom="point", shape=20, size=10, color="red", fill="red") +
         ggplot2::theme(legend.position="none",
                        axis.text.x = ggplot2::element_blank(),
                        axis.ticks.x = ggplot2::element_blank()) +
         ggplot2::scale_fill_brewer(palette="Set3") +
-        ggplot2::scale_y_continuous("CAT length", limits = c(0, (max(data.len[, 1]) + 2)),
-                                    labels = seq(from = 0, to = (max(data.len[, 1]) + 2), by = 5),
-                                    breaks = seq(from = 0, to = (max(data.len[, 1]) + 2), by = 5)) +
+        ggplot2::scale_y_continuous("CAT length", limits = c(0, (MAXJ + 2)),
+                                    labels = seq(from = 0, to = (MAXJ + 2), by = 5),
+                                    breaks = seq(from = 0, to = (MAXJ + 2), by = 5)) +
         ggplot2::scale_x_continuous("", labels = c("", "", ""), breaks = seq(0.75, 1.25, 0.25))
 
       J  <- nrow(cdcat.obj$specifications$Q)
@@ -204,15 +217,15 @@ cdcat.getdata <- function(cdcat.obj, alpha){
       CATlength$plot <- ggplot2::ggplot(data.len, ggplot2::aes(x=cond, y=length)) +
         ggplot2::geom_violin(alpha=0.4) +
         ggplot2::theme(panel.grid.minor.x = ggplot2::element_blank(), panel.grid.minor.y = ggplot2::element_blank()) +
-        ggplot2::geom_dotplot(binaxis = 'y', stackdir = 'center', binwidth = 0.15) +
+        ggplot2::geom_dotplot(binaxis = 'y', stackdir = 'center', binwidth = 0.10) +
         ggplot2::stat_summary(fun=mean, geom="point", shape=20, size=10, color="red", fill="red") +
         ggplot2::theme(legend.position="none",
                        axis.text.x = ggplot2::element_blank(),
                        axis.ticks.x = ggplot2::element_blank()) +
         ggplot2::scale_fill_brewer(palette="Set3") +
-        ggplot2::scale_y_continuous("CAT length", limits = c(0, (max(data.len[, 1]) + 2)),
-                                    labels = seq(from = 0, to = (max(data.len[, 1]) + 2), by = 5),
-                                    breaks = seq(from = 0, to = (max(data.len[, 1]) + 2), by = 5)) +
+        ggplot2::scale_y_continuous("CAT length", limits = c(0, (MAXJ + 2)),
+                                    labels = seq(from = 0, to = (MAXJ + 2), by = 5),
+                                    breaks = seq(from = 0, to = (MAXJ + 2), by = 5)) +
         ggplot2::scale_x_continuous("", labels = c("", "", ""), breaks = seq(0.75, 1.25, 0.25))
 
       J  <- nrow(cdcat.obj$specifications$Q)
@@ -237,8 +250,8 @@ cdcat.getdata <- function(cdcat.obj, alpha){
   }
 }
 
-# For gen.itembank
 genQ <- function(J, K, n.id = 2, qkProp, PropWithId = T, min.jk = 1, max.kcor = 0.3, seed = NULL){
+  # used in gen.itembank function
   # J: number of items
   # K: number of attributes
   # qkProp: proportion of non-identity matrix items with k attributes (e.g., qkProb = c(0.1, 0.45, 0.45), 0.1 of items will have 1 attribute, 0.45 will have 2 attributes, etc.)
@@ -304,7 +317,9 @@ genQ <- function(J, K, n.id = 2, qkProp, PropWithId = T, min.jk = 1, max.kcor = 
 
   return(list(Q = Q, Jk = Jk, att.cor = att.cor, options = options))
 }
+
 gen.ACDMparam <- function(P0, P1, k.j, min.delta = 0, seed = NULL){
+  # used in gen.itembank function
   if((P1 - P0) / k.j < min.delta){
     warning("min.delta not achievable with P0 and P1. min.delta has been forced to be lower.")
     min.delta <- (P1 - P0) / k.j
@@ -330,6 +345,7 @@ gen.ACDMparam <- function(P0, P1, k.j, min.delta = 0, seed = NULL){
   }
 }
 gen.GDINAparam <- function(P0, P1, k.j, min.delta = 0, seed = NULL){
+  # used in gen.itembank function
   if(!is.null(seed)){set.seed(seed)}
   if(k.j == 1){
     catprob.parm <- c("P(0)" = P0, "P(1)" = P1)

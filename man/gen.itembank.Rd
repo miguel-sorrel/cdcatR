@@ -7,8 +7,10 @@
 gen.itembank(
   Q = NULL,
   gen.Q = list(J = NULL, K = NULL, propK.J = NULL, nI = 1, minJ.K = NULL, max.Kcor = 1),
-  mean.IQ,
-  range.IQ,
+  mean.IQ = NULL,
+  range.IQ = NULL,
+  gs.parm = NULL,
+  catprob.parm = NULL,
   model = "GDINA",
   min.param = 0,
   seed = NULL
@@ -22,6 +24,10 @@ gen.itembank(
 \item{mean.IQ}{Item discrimination (mean for the uniform distribution). \emph{mean.IQ} = \emph{P}(\strong{1}) - \emph{P}(\strong{0}) (Sorrel et al., 2017; Najera et al., in press). Must be a scalar numeric between 0 and 1}
 
 \item{range.IQ}{Item discrimination (range for the uniform distribution). Must be a scalar numeric between 0 and 1}
+
+\item{gs.parm}{A matrix or data frame for guessing and slip parameters. The number of columns must be 2, where the first column represents the guessing parameters (or P(0)), and the second column represents slip parameters (or 1-P(1))}
+
+\item{catprob.parm}{A list of success probabilities of each latent group for each non-zero category of each item}
 
 \item{model}{A character vector of length \emph{J} with one model for each item, or a single value to be used for all items. The possible options include \code{"DINA"}, \code{"DINO"}, \code{"ACDM"}, and \code{"GDINA"}. One-attribute items will be coded in the output as \code{"GDINA"}}
 
@@ -42,7 +48,7 @@ gen.itembank(
 \description{
 This function can be used to generate an item bank.
 The user can provide a Q-matrix or create one defining a set of arguments.
-Item quality is sampled from a uniform distribution with mean = \emph{mean.IQ} and range = \emph{range.IQ}.
+Item quality is sampled from a uniform distribution with mean = \emph{mean.IQ} and range = \emph{range.IQ}. Alternatively, it is possible to provide a matrix with the guessing and slip parameters (\emph{gs.param}) or a list with the success probabilities of each latent group (\emph{catprob.parm}). 
 Item parameters are generated so that the monotonicity constraint is satisfied.
 }
 \examples{
@@ -58,6 +64,41 @@ bank <- gen.itembank(Q = Q, mean.IQ = .70, range.IQ = .20, model = "GDINA")
 ####################################
 # Example 2.                       #
 # Generate item bank providing a   #
+# Q-matrix with gs.parm            #
+####################################
+
+Q <- sim180GDINA$simQ
+J <- nrow(Q)
+gs <- data.frame(g = runif(J, 0.2, 0.4), s = runif(J, 0, 0.2))
+bank <- gen.itembank(Q = Q, gs.parm = gs, model = "GDINA", min.param = 0.05)
+
+####################################
+# Example 3.                       #
+# Generate item bank providing a   #
+# Q-matrix with catprob.parm       #
+####################################
+
+Q <- sim180GDINA$simQ[c(1:5, 73:77, 127:131),]
+catparm.list <- list(J1 = c(0.2, 0.8),
+                     J2 = c(0.1, 0.7),
+                     J3 = c(0.2, 0.9),
+                     J4 = c(0.3, 0.9),
+                     J5 = c(0.3, 0.8),
+                     J6 = c(0.2, 0.4, 0.5, 0.8), 
+                     J7 = c(0.1, 0.7, 0.8, 0.9), 
+                     J8 = c(0.2, 0.3, 0.3, 0.7),
+                     J9 = c(0.2, 0.4, 0.4, 0.6), 
+                     J10 = c(0.3, 0.5, 0.6, 0.9),
+                     J11 = c(0.1, 0.3, 0.3, 0.5, 0.4, 0.5, 0.7, 0.8),
+                     J12 = c(0.2, 0.6, 0.7, 0.6, 0.7, 0.8, 0.8, 0.9),
+                     J13 = c(0.2, 0.6, 0.2, 0.3, 0.6, 0.7, 0.4, 0.9),
+                     J14 = c(0.3, 0.4, 0.3, 0.5, 0.5, 0.6, 0.7, 0.9),
+                     J15 = c(0.1, 0.1, 0.2, 0.1, 0.2, 0.3, 0.2, 0.8))
+bank <- gen.itembank(Q = Q, catprob.parm = catparm.list)
+
+####################################
+# Example 4.                       #
+# Generate item bank providing a   #
 # Q-matrix using multiple models   #
 ####################################
 
@@ -67,7 +108,7 @@ model <- sample(c("DINA", "DINO", "ACDM"), size = nrow(Q), replace = TRUE)
 bank <- gen.itembank(Q = Q, mean.IQ = .70, range.IQ = .20, model = model)
 
 ####################################
-# Example 3.                       #
+# Example 5.                       #
 # Generate item bank without       #
 # providing a Q-matrix (using      #
 # gen.Q arguments)                 #

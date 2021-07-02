@@ -10,10 +10,17 @@ cdcat(
   itemSelect = "GDI",
   MAXJ = 20,
   FIXED.LENGTH = TRUE,
+  startRule = "random",
+  startK = FALSE,
   att.prior = NULL,
   initial.distr = NULL,
   precision.cut = 0.8,
   NPS.args = list(Q = NULL, gate = NULL, pseudo.prob = T, w.type = 1, seed = NULL),
+  itemExposurecontrol = NULL,
+  b = 2,
+  maxr = 1,
+  itemConstraint = NULL,
+  constraint.args = list(ATTRIBUTEc = NULL),
   n.cores = 2,
   print.progress = TRUE
 )
@@ -29,6 +36,10 @@ cdcat(
 
 \item{FIXED.LENGTH}{Scalar logical. Fixed CAT-length (\code{TRUE}) or fixed-precision (\code{FALSE}) application. Default is \code{TRUE}}
 
+\item{startRule}{Scalar character. Starting rule: first item is selected at random with \code{random} and first item is selected using \code{itemSelect} with \code{max}. Default is \code{random}. Seed for random is \code{NPS.args$seed}}
+
+\item{startK}{Scalar logical. Start the CAT with an identity matrix (\code{TRUE}) or not proceed with startRule from the first item (\code{FALSE}). Default is \code{FALSE}}
+
 \item{att.prior}{Numeric vector of length 2^\emph{K}, where \emph{K} is the number of attributes. Prior distribution for MAP/EAP estimates. Default is uniform}
 
 \item{initial.distr}{Numeric vector of length 2^\emph{K}, where \emph{K} is the number of attributes. Weighting distribution to initialize \code{itemSelect} at item position 1. Default is uniform}
@@ -36,6 +47,16 @@ cdcat(
 \item{precision.cut}{Scalar numeric. Cutoff for fixed-precision (assigned pattern posterior probability > precision.cut; Hsu, Wang, & Chen, 2013). When \code{itemSelect = "NPS"} this is evaluated at the attribute level using the pseudo-posterior probabilities for each attribute (\emph{K} assigned attribute pseudo-posterior probability > precision.cut). Default is .80. A higher cutoff is recommended when \code{itemSelect = "NPS"}}
 
 \item{NPS.args}{A list of options when \code{itemSelect = "NPS"}. \code{Q} = Q-matrix to be used in the analysis. \code{gate} = "AND" or "OR", depending on whether a conjunctive o disjunctive nonparametric CDM is used. \code{pseudo.prob} = pseudo-posterior probability of each examinee mastering each attribute (experimental). \code{w.type} = weight type used for computing the pseudo-posterior probability (experimental): 1 = Power-of-2 weight; 2 = Exponential weight. \code{seed} = Numeric vector of length 1. NPS has a random component, so a seed is required for consistent results.}
+
+\item{itemExposurecontrol}{Scalar character. Item exposure control: \code{NULL} or progressive method (Barrada, Olea, Ponsoda, & Abad, 2008) with \code{"progressive"}. Default is \code{NULL}}
+
+\item{b}{Scalar numeric. Acceleration parameter for the item exposure method. Only applies if \code{itemExposurecontrol = "progressive"}. In the progressive method the first item is selected at random and the last item (i.e., \code{MAXJ}) is selected purely based on \code{itemSelect}. The rest of the items are selected combining both a random and information components. The loss of importance of the random component will be linear with \code{b = 0}, inverse exponential with \code{b < 0}, or exponential with \code{b > 0}. Thus, \code{b} allows to optimize accuracy (\code{b < 0}) or item security (\code{b > 0}). Default is 2}
+
+\item{maxr}{Scalar numeric. Maximum item exposure rate that is tolerated. Default is 1. Note that for \code{maxr != 1} parallel computing cannot be implemented}
+
+\item{itemConstraint}{Scalar character. Constraints that must be satisfied by the set of items applied: \code{NULL} or attribute constraint (Henson & Douglas, 2005) with \code{"attribute"}. If \code{"attribute"} is chosen, then each attribute must be measured at least a specific number of times indicated in the \code{constraint.args$ATTRIBUTEc} argument. Default is \code{NULL}}
+
+\item{constraint.args}{A list of options when \code{itemConstraint != "NULL"}. At the moment it only includes the argument \code{ATTRIBUTEc} which must be a numeric vector of lenght \code{ncol(Q)} indicating the minimum number of items per attribute to be administered. Default is 3}
 
 \item{n.cores}{Scalar numeric. Number of cores to be used during parallelization. Default is 2}
 
@@ -219,6 +240,8 @@ res.NPS.FIXJ.sum.obse$recovery$plotPCA + ggplot2::geom_hline(yintercept = class.
 }
 }
 \references{
+Barrada, J. R., Olea, J., Ponsoda, V., & Abad, F. J. (2008). Incorporating randomness in the Fisher information for improving item-exposure control in CATs.\emph{British Journal of Mathematical and Statistical Psychology, 61}, 493-513.
+
 Chang, Y.-P., Chiu, C.-Y., & Tsai, R.-C. (2019). Nonparametric CAT for CD in educational settings with small samples. \emph{Applied Psychological Measurement, 43}, 543-561.
 
 Cheng, Y. (2009). When cognitive diagnosis meets computerized adaptive testing: CD-CAT. \emph{Psychometrika, 74}, 619-632.
@@ -226,6 +249,8 @@ Cheng, Y. (2009). When cognitive diagnosis meets computerized adaptive testing: 
 de la Torre, J., & Chiu, C. Y. (2016). General method of empirical Q-matrix validation. \emph{Psychometrika, 81}, 253-273.
 
 George, A. C., Robitzsch, A., Kiefer, T., Gross, J., & Uenlue, A. (2016). The R Package CDM for cognitive diagnosis models. \emph{Journal of Statistical Software, 74}, 1-24. doi:10.18637/jss.v074.i02
+
+Henson, R., & Douglas, J. (2005). Test construction for cognitive diagnosis. \emph{Applied Psychological Measurement, 29}, 262-277.
 
 Hsu, C. L., Wang, W. C., & Chen, S. Y. (2013). Variable-length computerized adaptive testing based on cognitive diagnosis models. \emph{Applied Psychological Measurement, 37}, 563-582.
 
