@@ -11,7 +11,7 @@
 #' @param itemSelect Scalar character. Item selection rule: \code{GDI}, \code{JSD}, \code{MPWKL}, \code{PWKL}, \code{NPS}, or \code{random}
 #' @param MAXJ Scalar numeric. Maximum number of items to be applied regardless of the \code{FIXED.LENGTH} argument. Default is 20
 #' @param FIXED.LENGTH Scalar logical. Fixed CAT-length (\code{TRUE}) or fixed-precision (\code{FALSE}) application. Default is \code{TRUE}
-#' @param startRule Scalar character. Starting rule: first item is selected at random with \code{random} and first item is selected using \code{itemSelect} with \code{max}. Default is \code{random}. Seed for random is \code{NPS.args$seed}    
+#' @param startRule Scalar character. Starting rule: first item is selected at random with \code{random} and first item is selected using \code{itemSelect} with \code{max}. Default is \code{random}. Seed for random is \code{NPS.args$seed}. This seed is also use for the other methods involving a random component (e.g., random start, progressive method)    
 #' @param startK Scalar logical. Start the CAT with an identity matrix (\code{TRUE}) or not proceed with startRule from the first item (\code{FALSE}). Default is \code{FALSE}
 #' @param att.prior Numeric vector of length 2^\emph{K}, where \emph{K} is the number of attributes. Prior distribution for MAP/EAP estimates. Default is uniform
 #' @param initial.distr Numeric vector of length 2^\emph{K}, where \emph{K} is the number of attributes. Weighting distribution to initialize \code{itemSelect} at item position 1. Default is uniform
@@ -19,9 +19,9 @@
 #' @param NPS.args A list of options when \code{itemSelect = "NPS"}. \code{Q} = Q-matrix to be used in the analysis. \code{gate} = "AND" or "OR", depending on whether a conjunctive o disjunctive nonparametric CDM is used. \code{pseudo.prob} = pseudo-posterior probability of each examinee mastering each attribute (experimental). \code{w.type} = weight type used for computing the pseudo-posterior probability (experimental): 1 = Power-of-2 weight; 2 = Exponential weight. \code{seed} = Numeric vector of length 1. NPS has a random component, so a seed is required for consistent results.
 #' @param itemExposurecontrol  Scalar character. Item exposure control: \code{NULL} or progressive method (Barrada, Olea, Ponsoda, & Abad, 2008) with \code{"progressive"}. Default is \code{NULL}
 #' @param b Scalar numeric. Acceleration parameter for the item exposure method. Only applies if \code{itemExposurecontrol = "progressive"}. In the progressive method the first item is selected at random and the last item (i.e., \code{MAXJ}) is selected purely based on \code{itemSelect}. The rest of the items are selected combining both a random and information components. The loss of importance of the random component will be linear with \code{b = 0}, inverse exponential with \code{b < 0}, or exponential with \code{b > 0}. Thus, \code{b} allows to optimize accuracy (\code{b < 0}) or item security (\code{b > 0}). Default is 2
-#' @param maxr Scalar numeric. Maximum item exposure rate that is tolerated. Default is 1. Note that for \code{maxr != 1} parallel computing cannot be implemented
+#' @param maxr Scalar numeric. Value should be in the range 0-1. Maximum item exposure rate that is tolerated. Default is 1. Note that for \code{maxr < 1} parallel computing cannot be implemented
 #' @param itemConstraint  Scalar character. Constraints that must be satisfied by the set of items applied: \code{NULL} or attribute constraint (Henson & Douglas, 2005) with \code{"attribute"}. If \code{"attribute"} is chosen, then each attribute must be measured at least a specific number of times indicated in the \code{constraint.args$ATTRIBUTEc} argument. Default is \code{NULL}
-#' @param constraint.args A list of options when \code{itemConstraint != "NULL"}. At the moment it only includes the argument \code{ATTRIBUTEc} which must be a numeric vector of lenght \code{ncol(Q)} indicating the minimum number of items per attribute to be administered. Default is 3 
+#' @param constraint.args A list of options when \code{itemConstraint != "NULL"}. At the moment it only includes the argument \code{ATTRIBUTEc} which must be a numeric vector of length \code{ncol(Q)} indicating the minimum number of items per attribute to be administered. Default is 3 
 #' @param n.cores Scalar numeric. Number of cores to be used during parallelization. Default is 2
 #' @param print.progress Scalar logical. Prints a progress bar to the console. Default is TRUE
 #'
@@ -317,14 +317,13 @@ cdcat <-
     if (!(class(fit) != "GDINA" | class(fit) != "gdina")) {
       stop("fit must be an object of class 'GDINA' or 'gdina'")
     }
-    if (!(itemSelect %in% c("GDI", "GDIrel", "JSD", "MPWKL", 
+    if (!(itemSelect %in% c("GDI", "JSD", "MPWKL", 
                             "PWKL", "NPS", "random"))) {
-      stop("itemSelect must be one of the following: 'GDI', 'GDIrel', 'JSD', 'MPWKL', 'PWKL', 'NPS', 'random'")
+      stop("itemSelect must be one of the following: 'GDI', 'JSD', 'MPWKL', 'PWKL', 'NPS', 'random'")
     }
-    if ((itemSelect == "GDIrel") & (any(rowSums(Q) > 7))) {
-      stop("itemSelect 'GDIrel' requires maximum complexity for an item to be Kj = 7")
+    if ((maxr > 1) | (maxr < 1)) {
+      stop("maxr should be in the range 0-1")
     }
-    
     if (is.null(itemConstraint) == FALSE) {
       if (is.null(constraint.args$ATTRIBUTEc)) {
         constraint.args$ATTRIBUTEc <- 3}
@@ -391,6 +390,9 @@ cdcat <-
     item.usage <- NULL
     
     if (itemSelect != "NPS") {
+        if (!is.null(NPS.args$seed)) {
+          set.seed(NPS.args$seed + i)
+        }
       
       if(maxr == 1) {
         
