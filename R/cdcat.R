@@ -390,9 +390,6 @@ cdcat <-
     item.usage <- NULL
     
     if (itemSelect != "NPS") {
-        if (!is.null(NPS.args$seed)) {
-          set.seed(NPS.args$seed + i)
-        }
       
       if(maxr == 1) {
         
@@ -413,6 +410,10 @@ cdcat <-
                        .export = c("GDI.M", "proggresive.f", "H", "JSD.DICO.M", "PWKL.M", "MPWKL.M"),
                        .inorder = T) %dopar% {
                          try({
+                           
+                           if (!is.null(NPS.args$seed)) {
+                             set.seed(NPS.args$seed + i)
+                           }
                            
                            # initialize
                            est.cat <- matrix(NA, nrow = 1, ncol = 10 + K, 
@@ -564,6 +565,10 @@ cdcat <-
           if(isTRUE(print.progress)) {  cat('\r Processing examinee', i, 'of', N)}
           
           try({
+            if (!is.null(NPS.args$seed)) {
+              set.seed(NPS.args$seed + i)
+            }
+            
             # initialize
             est.cat <- matrix(NA, nrow = 1, ncol = 10 + K, 
                               dimnames = list(1, c("j", "qj", "xj",
