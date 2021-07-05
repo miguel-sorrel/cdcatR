@@ -134,7 +134,7 @@ gen.itembank <- function(Q = NULL,
     if(is.null(gen.Q$K)){stop("gen.Q$K argument required.")}
     if(is.null(gen.Q$propK.J)){stop("gen.Q$propK.J argument required.")}
     if(is.null(gen.Q$nI)){gen.Q$nI <- 1}
-    if(is.null(gen.Q$minJ.K)){stop("gen.Q$minJ.K argument required.")}
+    if(is.null(gen.Q$minJ.K)){gen.Q$minJ.K <- 1}
     if(is.null(gen.Q$max.Kcor)){gen.Q$max.Kcor <- 1}
   }
 
