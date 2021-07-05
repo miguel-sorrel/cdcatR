@@ -9,8 +9,8 @@
 #' @param gen.Q A list of arguments to generate a Q-matrix if \code{Q} is not provided. \code{J} = number of items (scalar numeric). \code{K} = number of attributes (scalar numeric). \code{propK.J} = numeric vector summing up to 1 that determines the proportion of 1-attribute, 2-attribute, ..., items. The length of \code{propK.J} determines the maximum number of attributes considered for an item (see \code{Examples} below). \code{nI} = Scalar numeric that sets the minimum number of identity matrices to be included in the Q-matrix. \code{minJ.K} = numeric vector of length \emph{K} that sets the minimum number of items measuring each attribute. \code{max.Kcor} = scalar numeric that sets the maximum positive correlation allowed between two attributes
 #' @param mean.IQ Item discrimination (mean for the uniform distribution). \emph{mean.IQ} = \emph{P}(\strong{1}) - \emph{P}(\strong{0}) (Sorrel et al., 2017; Najera et al., in press). Must be a scalar numeric between 0 and 1
 #' @param range.IQ Item discrimination (range for the uniform distribution). Must be a scalar numeric between 0 and 1
-#' @param gs.parm A matrix or data frame for guessing and slip parameters. The number of columns must be 2, where the first column represents the guessing parameters (or P(0)), and the second column represents slip parameters (or 1-P(1)) 
-#' @param catprob.parm A list of success probabilities of each latent group for each non-zero category of each item  
+#' @param gs.parm A matrix or data frame for guessing and slip parameters. The number of columns must be 2, where the first column represents the guessing parameters (or \emph{P}(\strong{0})), and the second column represents slip parameters (or 1-\emph{P}(\strong{1})) 
+#' @param catprob.parm A list of success probabilities of each latent group for each non-zero category of each item. This argument requires to specify a Q-matrix in \code{Q}   
 #' @param model A character vector of length \emph{J} with one model for each item, or a single value to be used for all items. The possible options include \code{"DINA"}, \code{"DINO"}, \code{"ACDM"}, and \code{"GDINA"}. One-attribute items will be coded in the output as \code{"GDINA"}
 #' @param min.param Scalar numeric. Minimum value for the delta parameter of the principal effects of each attribute. Only usable if \code{model} = \code{"ACDM"} or \code{model} = \code{"GDINA"}
 #' @param seed Scalar numeric. A scalar to use with \code{set.seed}
@@ -26,7 +26,7 @@
 #'
 #' @references
 #'
-#' Najera, P., Sorrel, M. A., de la Torre, J., & Abad, F. J. (in press). Improving robustness in Q-matrix validation using an iterative and dynamic procedure. \emph{Applied Psychological Measurement}.
+#' Najera, P., Sorrel, M. A., de la Torre, J., & Abad, F. J. (2020). Improving robustness in Q-matrix validation using an iterative and dynamic procedure. \emph{Applied Psychological Measurement, 44}, 431-446.
 #'
 #' Sorrel, M. A., Abad, F. J., Olea, J., de la Torre, J., & Barrada, J. R. (2017). Inferential item-fit evaluation in cognitive diagnosis modeling. \emph{Applied Psychological Measurement, 41}, 614-631.
 #'
@@ -100,7 +100,7 @@
 #' @export
 #'
 gen.itembank <- function(Q = NULL,
-                         gen.Q = list(J = NULL, K = NULL, propK.J = NULL, nI = 1, minJ.K = NULL, max.Kcor = 1),
+                         gen.Q = list(J = NULL, K = NULL, propK.J = NULL, nI = 1, minJ.K = 1, max.Kcor = 1),
                          mean.IQ = NULL, range.IQ = NULL, gs.parm = NULL, catprob.parm = NULL, 
                          model = "GDINA", 
                          min.param = 0,
