@@ -6,7 +6,7 @@
 \usage{
 gen.itembank(
   Q = NULL,
-  gen.Q = list(J = NULL, K = NULL, propK.J = NULL, nI = 1, minJ.K = NULL, max.Kcor = 1),
+  gen.Q = list(J = NULL, K = NULL, propK.J = NULL, nI = 1, minJ.K = 1, max.Kcor = 1),
   mean.IQ = NULL,
   range.IQ = NULL,
   gs.parm = NULL,
@@ -25,9 +25,9 @@ gen.itembank(
 
 \item{range.IQ}{Item discrimination (range for the uniform distribution). Must be a scalar numeric between 0 and 1}
 
-\item{gs.parm}{A matrix or data frame for guessing and slip parameters. The number of columns must be 2, where the first column represents the guessing parameters (or P(0)), and the second column represents slip parameters (or 1-P(1))}
+\item{gs.parm}{A matrix or data frame for guessing and slip parameters. The number of columns must be 2, where the first column represents the guessing parameters (or \emph{P}(\strong{0})), and the second column represents slip parameters (or 1-\emph{P}(\strong{1}))}
 
-\item{catprob.parm}{A list of success probabilities of each latent group for each non-zero category of each item}
+\item{catprob.parm}{A list of success probabilities of each latent group for each non-zero category of each item. This argument requires to specify a Q-matrix in \code{Q}}
 
 \item{model}{A character vector of length \emph{J} with one model for each item, or a single value to be used for all items. The possible options include \code{"DINA"}, \code{"DINO"}, \code{"ACDM"}, and \code{"GDINA"}. One-attribute items will be coded in the output as \code{"GDINA"}}
 
@@ -120,7 +120,7 @@ bank <- gen.itembank(gen.Q = list(J = 150, K = 5, propK.J = c(0.4, 0.3, 0.2, 0.1
 
 }
 \references{
-Najera, P., Sorrel, M. A., de la Torre, J., & Abad, F. J. (in press). Improving robustness in Q-matrix validation using an iterative and dynamic procedure. \emph{Applied Psychological Measurement}.
+Najera, P., Sorrel, M. A., de la Torre, J., & Abad, F. J. (2020). Improving robustness in Q-matrix validation using an iterative and dynamic procedure. \emph{Applied Psychological Measurement, 44}, 431-446.
 
 Sorrel, M. A., Abad, F. J., Olea, J., de la Torre, J., & Barrada, J. R. (2017). Inferential item-fit evaluation in cognitive diagnosis modeling. \emph{Applied Psychological Measurement, 41}, 614-631.
 }

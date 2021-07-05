@@ -17,7 +17,7 @@ cdcat(
   precision.cut = 0.8,
   NPS.args = list(Q = NULL, gate = NULL, pseudo.prob = T, w.type = 1, seed = NULL),
   itemExposurecontrol = NULL,
-  b = 2,
+  b = 0,
   maxr = 1,
   itemConstraint = NULL,
   constraint.args = list(ATTRIBUTEc = NULL),
@@ -48,15 +48,15 @@ cdcat(
 
 \item{NPS.args}{A list of options when \code{itemSelect = "NPS"}. \code{Q} = Q-matrix to be used in the analysis. \code{gate} = "AND" or "OR", depending on whether a conjunctive o disjunctive nonparametric CDM is used. \code{pseudo.prob} = pseudo-posterior probability of each examinee mastering each attribute (experimental). \code{w.type} = weight type used for computing the pseudo-posterior probability (experimental): 1 = Power-of-2 weight; 2 = Exponential weight. \code{seed} = Numeric vector of length 1. NPS has a random component, so a seed is required for consistent results.}
 
-\item{itemExposurecontrol}{Scalar character. Item exposure control: \code{NULL} or progressive method (Barrada, Olea, Ponsoda, & Abad, 2008) with \code{"progressive"}. Default is \code{NULL}}
+\item{itemExposurecontrol}{Scalar character. Item exposure control: \code{NULL} or progressive method (Barrada, Olea, Ponsoda, & Abad, 2008) with \code{"progressive"}. Default is \code{NULL}. Seed for the random component is \code{NPS.args$seed}}
 
-\item{b}{Scalar numeric. Acceleration parameter for the item exposure method. Only applies if \code{itemExposurecontrol = "progressive"}. In the progressive method the first item is selected at random and the last item (i.e., \code{MAXJ}) is selected purely based on \code{itemSelect}. The rest of the items are selected combining both a random and information components. The loss of importance of the random component will be linear with \code{b = 0}, inverse exponential with \code{b < 0}, or exponential with \code{b > 0}. Thus, \code{b} allows to optimize accuracy (\code{b < 0}) or item security (\code{b > 0}). Default is 2}
+\item{b}{Scalar numeric. Acceleration parameter for the item exposure method. Only applies if \code{itemExposurecontrol = "progressive"}. In the progressive method the first item is selected at random and the last item (i.e., \code{MAXJ}) is selected purely based on \code{itemSelect}. The rest of the items are selected combining both a random and information components. The loss of importance of the random component will be linear with \code{b = 0}, inverse exponential with \code{b < 0}, or exponential with \code{b > 0}. Thus, \code{b} allows to optimize accuracy (\code{b < 0}) or item security (\code{b > 0}). Default is 0}
 
-\item{maxr}{Scalar numeric. Maximum item exposure rate that is tolerated. Default is 1. Note that for \code{maxr != 1} parallel computing cannot be implemented}
+\item{maxr}{Scalar numeric. Value should be in the range 0-1. Maximum item exposure rate that is tolerated. Default is 1. Note that for \code{maxr < 1} parallel computing cannot be implemented}
 
 \item{itemConstraint}{Scalar character. Constraints that must be satisfied by the set of items applied: \code{NULL} or attribute constraint (Henson & Douglas, 2005) with \code{"attribute"}. If \code{"attribute"} is chosen, then each attribute must be measured at least a specific number of times indicated in the \code{constraint.args$ATTRIBUTEc} argument. Default is \code{NULL}}
 
-\item{constraint.args}{A list of options when \code{itemConstraint != "NULL"}. At the moment it only includes the argument \code{ATTRIBUTEc} which must be a numeric vector of lenght \code{ncol(Q)} indicating the minimum number of items per attribute to be administered. Default is 3}
+\item{constraint.args}{A list of options when \code{itemConstraint != "NULL"}. At the moment it only includes the argument \code{ATTRIBUTEc} which must be a numeric vector of length \code{ncol(Q)} indicating the minimum number of items per attribute to be administered. Default is 3}
 
 \item{n.cores}{Scalar numeric. Number of cores to be used during parallelization. Default is 2}
 

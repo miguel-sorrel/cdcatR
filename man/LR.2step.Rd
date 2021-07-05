@@ -24,7 +24,7 @@ LR.2step(fit, p.adjust.method = "holm", alpha.level = 0.05)
 }
 }
 \description{
-This function evaluates whether the saturated G-DINA model can be replaced by reduced CDMs without significant loss in model data fit for each item using two-step likelihood ratio test (2LR). Sorrel, de la Torre, Abad, and Olea (2017) and Ma & de la Torre (2018) can be consulted for details. Conducting this type of analysis can facilitate the calibration of the item bank and have implications for the CAT accuracy and item usage (Sorrel, Nájera, & Abad, 2021).
+This function evaluates whether the saturated G-DINA model can be replaced by reduced CDMs without significant loss in model data fit for each item using two-step likelihood ratio test (2LR). Sorrel, de la Torre, Abad, and Olea (2017) and Ma & de la Torre (2018) can be consulted for details. Conducting this type of analysis can facilitate the calibration of the item bank and have implications for the CAT accuracy and item usage (Sorrel, Abad, & Nájera, 2021).
 }
 \examples{
 Q <- sim180DINA$simQ

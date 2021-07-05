@@ -18,7 +18,7 @@
 #' @param precision.cut Scalar numeric. Cutoff for fixed-precision (assigned pattern posterior probability > precision.cut; Hsu, Wang, & Chen, 2013). When \code{itemSelect = "NPS"} this is evaluated at the attribute level using the pseudo-posterior probabilities for each attribute (\emph{K} assigned attribute pseudo-posterior probability > precision.cut). Default is .80. A higher cutoff is recommended when \code{itemSelect = "NPS"}
 #' @param NPS.args A list of options when \code{itemSelect = "NPS"}. \code{Q} = Q-matrix to be used in the analysis. \code{gate} = "AND" or "OR", depending on whether a conjunctive o disjunctive nonparametric CDM is used. \code{pseudo.prob} = pseudo-posterior probability of each examinee mastering each attribute (experimental). \code{w.type} = weight type used for computing the pseudo-posterior probability (experimental): 1 = Power-of-2 weight; 2 = Exponential weight. \code{seed} = Numeric vector of length 1. NPS has a random component, so a seed is required for consistent results.
 #' @param itemExposurecontrol  Scalar character. Item exposure control: \code{NULL} or progressive method (Barrada, Olea, Ponsoda, & Abad, 2008) with \code{"progressive"}. Default is \code{NULL}. Seed for the random component is \code{NPS.args$seed}
-#' @param b Scalar numeric. Acceleration parameter for the item exposure method. Only applies if \code{itemExposurecontrol = "progressive"}. In the progressive method the first item is selected at random and the last item (i.e., \code{MAXJ}) is selected purely based on \code{itemSelect}. The rest of the items are selected combining both a random and information components. The loss of importance of the random component will be linear with \code{b = 0}, inverse exponential with \code{b < 0}, or exponential with \code{b > 0}. Thus, \code{b} allows to optimize accuracy (\code{b < 0}) or item security (\code{b > 0}). Default is 2
+#' @param b Scalar numeric. Acceleration parameter for the item exposure method. Only applies if \code{itemExposurecontrol = "progressive"}. In the progressive method the first item is selected at random and the last item (i.e., \code{MAXJ}) is selected purely based on \code{itemSelect}. The rest of the items are selected combining both a random and information components. The loss of importance of the random component will be linear with \code{b = 0}, inverse exponential with \code{b < 0}, or exponential with \code{b > 0}. Thus, \code{b} allows to optimize accuracy (\code{b < 0}) or item security (\code{b > 0}). Default is 0
 #' @param maxr Scalar numeric. Value should be in the range 0-1. Maximum item exposure rate that is tolerated. Default is 1. Note that for \code{maxr < 1} parallel computing cannot be implemented
 #' @param itemConstraint  Scalar character. Constraints that must be satisfied by the set of items applied: \code{NULL} or attribute constraint (Henson & Douglas, 2005) with \code{"attribute"}. If \code{"attribute"} is chosen, then each attribute must be measured at least a specific number of times indicated in the \code{constraint.args$ATTRIBUTEc} argument. Default is \code{NULL}
 #' @param constraint.args A list of options when \code{itemConstraint != "NULL"}. At the moment it only includes the argument \code{ATTRIBUTEc} which must be a numeric vector of length \code{ncol(Q)} indicating the minimum number of items per attribute to be administered. Default is 3 
@@ -234,7 +234,7 @@ cdcat <-
             att.prior = NULL, initial.distr = NULL, 
             precision.cut = 0.8, NPS.args = list(Q = NULL, gate = NULL, 
                                                  pseudo.prob = T, w.type = 1, seed = NULL),  
-            itemExposurecontrol = NULL, b = 2, maxr = 1,
+            itemExposurecontrol = NULL, b = 0, maxr = 1,
             itemConstraint = NULL, constraint.args = list(ATTRIBUTEc = NULL),
             n.cores = 2, print.progress = TRUE)
   {
@@ -377,22 +377,12 @@ cdcat <-
     if (sum(att.prior) != 1) {
       stop("att.prior should add up to 1")
     }
-    if(!is.null(itemExposurecontrol)) {
-      if (itemExposurecontrol == "restricprogressive") {
-        if (maxr != 1) {
-          stop("Restrictive progressive item exposure control cannot be implemented with maxr != 1. Set maxr = 1")
-        }
-      } 
-    }
-    
+
     # Step 3: conduct CD-CAT #############################################################################################
     out <- list()
     item.usage <- NULL
     
     if (itemSelect != "NPS") {
-        if (!is.null(NPS.args$seed)) {
-          set.seed(NPS.args$seed + i)
-        }
       
       if(maxr == 1) {
         
@@ -413,6 +403,10 @@ cdcat <-
                        .export = c("GDI.M", "proggresive.f", "H", "JSD.DICO.M", "PWKL.M", "MPWKL.M"),
                        .inorder = T) %dopar% {
                          try({
+                           
+                           if (!is.null(NPS.args$seed)) {
+                             set.seed(NPS.args$seed + i)
+                           }
                            
                            # initialize
                            est.cat <- matrix(NA, nrow = 1, ncol = 10 + K, 
@@ -564,6 +558,10 @@ cdcat <-
           if(isTRUE(print.progress)) {  cat('\r Processing examinee', i, 'of', N)}
           
           try({
+            if (!is.null(NPS.args$seed)) {
+              set.seed(NPS.args$seed + i)
+            }
+            
             # initialize
             est.cat <- matrix(NA, nrow = 1, ncol = 10 + K, 
                               dimnames = list(1, c("j", "qj", "xj",
