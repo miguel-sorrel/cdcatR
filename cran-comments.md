@@ -1,6 +1,6 @@
 cdcat 1.0.3:
 
-## cdcatR 1.0.3 release (July 5, 2021)
+## cdcatR 1.0.3 release (July 6, 2021)
 * We have included new arguments for the cdcat and gen.itembank functions of the package
 
 ## cdcatR 1.0.2 release (September 9, 2020)
