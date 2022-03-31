@@ -3,6 +3,7 @@ cdcat 1.0.4:
 ## cdcatR 1.0.4 release (March 31, 2021)
 * CRAN Package Check Results found the following issue "Calling && or || with either argument of length greater than one now gives a warning (which it is intended will become an error).". This has been corrected by removing the problematic cases and contacting the author of the simGDINA function. Thanks Prof Brian Ripley and CRAN. 
 * We have also included minor changes in att.plot and LR.2step functions
+<<<<<<< HEAD
 
 * cdcatR 1.0.4 re-submission:
 
@@ -34,6 +35,8 @@ Maintainer: 'Miguel A. Sorrel <miguel.sorrel@uam.es>'
        From: DESCRIPTION"
 ```
 Please note these two DOIs are valid, both are from the journal Applied Psychological Measurement.
+=======
+>>>>>>> b49429ea89dd4b54520fb3c544d0a264c2a5f147
  
 ## cdcatR 1.0.3 release (July 6, 2021)
 * We have included new arguments for the cdcat and gen.itembank functions of the package
