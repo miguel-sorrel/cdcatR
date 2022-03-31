@@ -25,18 +25,18 @@ att.plot <- function(cdcat.obj, i, k = NULL)
   } else {
     do.k <- k
   }
-
+  
   plots <- list()
   if(cdcat.obj$specifications$itemSelect != "NPS"){
     est <- lapply(cdcat.obj$est, '[[', 1)[[i]]
-    est <- as.matrix(est[, (ncol(est):1)[1:K]])
+    est <- as.matrix(est[, (ncol(est):1)[K:1]])
     est <- apply(est, 2, as.numeric)
     est <- cbind(est, sqrt(est * (1 - est)))
     colnames(est) <- c(paste("K", 1:K, sep = ""), paste("SE.K", 1:K, sep = ""))
     est <- as.data.frame(est)
-
+    
     Ji <- nrow(est)
-
+    
     for(k in do.k){
       est.k <- data.frame(
         "item.position" = 1:Ji,
@@ -49,7 +49,7 @@ att.plot <- function(cdcat.obj, i, k = NULL)
       est.k$color <- "steelblue3"
       est.k$color[which(est.k$est.k < 0.5 & est.k$upr < 0.5)] <- "firebrick3"
       est.k$color[which(est.k$est.k > 0.5 & est.k$lwr > 0.5)] <- "seagreen3"
-
+      
       plots[[k]] <- ggplot2::ggplot(data = est.k, ggplot2::aes(x = item.position, y = est.k)) +
         ggplot2::theme_gray() +
         ggplot2::scale_x_continuous("Until Item Position",
@@ -83,9 +83,9 @@ att.plot <- function(cdcat.obj, i, k = NULL)
       est <- cbind(est, sqrt(est[, (K + 1):(2*K)] * (1 - est[, (K + 1):(2*K)])))
       colnames(est) <- c(paste("K", 1:K, sep = ""), paste("pP.K", 1:K, sep = ""), paste("SE.pP.K", 1:K, sep = ""))
     }
-
+    
     Ji <- K - 1 + nrow(est)
-
+    
     for (k in do.k) {
       est.k <- data.frame("item.position" = K:Ji, "est.k" = est[, k])
       est.k$color <- "steelblue3"
@@ -101,7 +101,7 @@ att.plot <- function(cdcat.obj, i, k = NULL)
         est.k$color[which(est.k$est.k == 0)] <- "firebrick3"
         est.k$color[which(est.k$est.k == 1)] <- "seagreen3"
       }
-
+      
       plots[[k]] <- ggplot2::ggplot(data = est.k, ggplot2::aes(x = item.position)) +
         ggplot2::theme_gray() +
         ggplot2::scale_x_continuous("Until Item Position",
@@ -113,7 +113,7 @@ att.plot <- function(cdcat.obj, i, k = NULL)
           labels = seq(from = 0, to = 1, by = 0.5),
           breaks = seq(from = 0, to = 1, by = 0.5)
         )
-
+      
       if(cdcat.obj$specifications$NPS.args$pseudo.prob){
         plots[[k]] <- plots[[k]] +
           ggplot2::geom_line(ggplot2::aes(y = pP.k), color = "gray30", linetype = "longdash") +
@@ -124,13 +124,13 @@ att.plot <- function(cdcat.obj, i, k = NULL)
             alpha = 0.2
           )
       }
-
+      
       plots[[k]] <- plots[[k]] +
         ggplot2::geom_line(ggplot2::aes(y = est.k)) +
         ggplot2::geom_point(ggplot2::aes(y = est.k), shape = 21, color = "black", fill = est.k$color, size = 2) +
         ggplot2::theme(legend.position = "none", panel.grid.minor = ggplot2::element_blank())
     }
   }
-
+  
   cowplot::plot_grid(plotlist = plots[do.k], nrow = length(do.k))
 }

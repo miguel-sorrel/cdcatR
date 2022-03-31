@@ -1,3 +1,8 @@
+cdcat 1.0.4:
+* Some examples removed from gen.data()
+* Fixed attribute labels in att.plot()
+* Fixed a bug for LR.2step() where the function stopped if the computations resulted in NA
+
 cdcat 1.0.3:
 * cdcat.summary: Minor modifications in the plots
 * gen.itembank: Two additional arguments incorporated (gs.parm and catprob.parm) to allow for more targeted manipulation of the quality of the item bank

@@ -39,57 +39,6 @@
 #'
 #' simdata <- gen.data(N = 1000, item.bank = bank)
 #'
-#'####################################
-#'# Example 2.                       #
-#'# Generate multiple datasets (DINA #
-#'# model and multivariate normal    #
-#'# attribute distribution)          #
-#'####################################
-#'
-#'Q <- sim180GDINA$simQ
-#'K <- ncol(Q)
-#'bank <- gen.itembank(Q = Q, mean.IQ = .70, range.IQ = .20, model = "DINA")
-#'
-#'cutoffs <- qnorm(c(1:K)/(K+1))
-#'m <- rep(0,K)
-#'vcov <- matrix(0.5,K,K)
-#'diag(vcov) <- 1
-#'simdata <- gen.data(N = 1000, R = 20, item.bank = bank, att.dist = "mvnorm",
-#'                    mvnorm.parm = list(mean = m, sigma = vcov, cutoffs = cutoffs))
-#'
-#'####################################
-#'# Example 3.                       #
-#'# Generate dataset (multiple       #
-#'# models and higher-order          #
-#'# attribute distribution)          #
-#'####################################
-#'
-#'Q <- sim180GDINA$simQ
-#'K <- ncol(Q)
-#'model <- sample(c("DINA", "DINO", "ACDM"), size = nrow(Q), replace = TRUE)
-#'bank <- gen.itembank(Q = Q, mean.IQ = .70, range.IQ = .20, model = model)
-#'
-#'N <- 1000
-#'theta <- rnorm(N)
-#'lambda <- data.frame(a = runif(K, 0.7, 1.3), b = seq( -2, 2, length.out = K))
-#'simdata <- gen.data(N = N, item.bank = bank, att.dist = "higher.order",
-#'                    higher.order.parm = list(theta = theta,lambda = lambda))
-#'
-#'####################################
-#'# Example 4.                       #
-#'# Generate dataset (GDINA model    #
-#'# and given attribute profiles)    #
-#'####################################
-#'
-#'Q <- sim180GDINA$simQ
-#'K <- ncol(Q)
-#'bank <- gen.itembank(Q = Q, mean.IQ = .70, range.IQ = .20, model = "GDINA")
-#'
-#'att.profiles <- matrix(data = c(1,0,0,0,0,
-#'                                1,1,0,0,0,
-#'                                1,1,1,0,0,
-#'                                1,1,1,1,1), ncol = K, byrow = TRUE)
-#'simdata <- gen.data(item.bank = bank, att.profiles = att.profiles)
 #'
 #' @export
 #'

@@ -48,12 +48,12 @@
 #'
 
 LR.2step <- function(fit, p.adjust.method = "holm", alpha.level = 0.05)
-  {
-
+{
+  
   if(!(class(fit) != "GDINA" | class(fit) != "gdina")){stop("fit must be an object of class 'GDINA' or 'gdina'")}
   if(!(p.adjust.method %in% c("holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"))){stop("p.adjust.method must be one of the following: 'holm', 'hochberg', 'hommel', 'bonferroni', 'BH', 'BY', 'fdr', 'none'")}
   if(alpha.level > 1 | alpha.level < 0){stop("alpha.level must be a value between 0 and 1.")}
-
+  
   make.Lik.DINA.k <- function(vP){
     p <- rep(vP[1], classes - 1)
     p[classes] <- vP[1] + vP[2]
@@ -85,7 +85,7 @@ LR.2step <- function(fit, p.adjust.method = "holm", alpha.level = 0.05)
     L <- sum(RNjjob[1,] * logp) + sum(RNjjob[3,] * logq)
     return(-L)
   }
-
+  
   est <- fit
   if(!is.null(est)){
     if(!is.null(est$extra$call)){ # package GDINA
@@ -118,17 +118,17 @@ LR.2step <- function(fit, p.adjust.method = "holm", alpha.level = 0.05)
       Nlj[is.na(Nlj)] <- 0
     }
   }
-
+  
   Kjs <- rowSums(Q)
   Ks <- cumsum(2^Kjs)
   item <- which(rowSums(Q) > 1)
-
+  
   J <- nrow(Q)
   out <- list()
   LR2 <- matrix(data = 0, nrow = J, ncol = 4)
   LR2.p <- matrix(data = 0, nrow = J, ncol = 4)
   df <- matrix(data = 0, nrow = J, ncol = 4)
-
+  
   for(jj in 1:J){
     pars.jj <- catprob.parm[[jj]]
     pars.jj[pars.jj < 0] <- 0
@@ -138,72 +138,72 @@ LR.2step <- function(fit, p.adjust.method = "holm", alpha.level = 0.05)
     RNjjob <- rbind(Rlj[jj, 1:Kj], Nlj[jj, 1:Kj], Nlj[jj, 1:Kj] - Rlj[jj, 1:Kj])
     classes <- 2^Kjs[jj]
     posible.patterns <- GDINA::attributepattern(Kjj)
-
+    
     par.DINA <- constrOptim(theta = c(0.1, 0.1), f = make.Lik.DINA.k, grad = NULL,
                             ui = rbind(c(1, 0), c(0, 1), c(1, 1), c(-1, 0), c(0, -1), c(-1, -1)),
                             ci = c(.0001, .0001, .0001, -.9999, -.9999, -.9999))
-
+    
     par.DINO <- constrOptim(theta = c(0.1, 0.1), f = make.Lik.DINO.k, grad = NULL,
                             ui = rbind(c(1, 0), c(0, 1), c(1, 1), c(-1, 0), c(0, -1), c(-1, -1)),
                             ci = c(.0001, .0001, .0001, -.9999, -.9999 , -.9999))
-
+    
     par.ACDM <- constrOptim(theta = rep(0.1, Kjs[jj]+1), f = make.Lik.ACDM.k, grad = NULL,
                             ui = rbind(diag(Kjs[jj] + 1), -diag(Kjs[jj] + 1), rep(-1, Kjs[jj] + 1)),
                             ci = c(rep(.0001, Kjs[jj] + 1), rep(-.9999, Kjs[jj] + 2)))
-
+    
     par.GDINA.value <- make.Lik.GDINA.k(pars = pars.jj)
-
+    
     if(ncol(RNjjob) == 2){
       LR2[jj,] <- LR2.p[jj,] <- df[jj,] <- cbind(jj, NA, NA, NA)
     } else {
       LR2DINA <- 2 * (par.GDINA.value * (-1) - par.DINA$value * (-1))
       LR2DINO <- 2 * (par.GDINA.value * (-1) - par.DINO$value * (-1))
       LR2ACDM <- 2 * (par.GDINA.value * (-1) - par.ACDM$value * (-1))
-
+      
       dfDINA  <- dfDINO <- ncol(RNjjob) - 2
       dfACDM  <- ncol(RNjjob) - (Kjj + 1)
-
+      
       pDINA <-  1 - pchisq(LR2DINA, dfDINA)
       pDINO <-  1 - pchisq(LR2DINO, dfDINO)
       pACDM <-  1 - pchisq(LR2ACDM, dfACDM)
-
+      
       LR2[jj,] <- cbind(jj, LR2DINA, LR2DINO, LR2ACDM)
       LR2.p[jj,] <- cbind(jj, pDINA, pDINO, pACDM)
       df[jj,] <- cbind(jj, dfDINA, dfDINO, dfACDM)
     }
   }
-
+  
   if((sum(na.omit(LR2[, -1] == -Inf)) > 0) | (sum(is.nan(LR2[, -1])) > 0)) {
-  prob.items <- apply(LR2[, -1], 2, function(x) {which(x == -Inf)})[, 1]
+    prob.items <- apply(LR2[, -1], 2, function(x) {which(x == -Inf)})[, 1]
     warning(c("2LR statistic couldn't be computed for items ", paste(prob.items, collapse = ", "),
               ". G-DINA was retained for those items"))
   }
-
+  
   LR2[, -1][which(LR2[, -1] == -Inf)] <- -9999
   LR2[, -1][is.nan(LR2[, -1])] <- -9999
   LR2.p[, -1][is.nan(LR2.p[, -1])] <- 0
-
+  
   LR2 <- na.omit(LR2)[, -1]
   LR2.p <- na.omit(LR2.p)[, -1]
   df <- na.omit(df)[, -1]
   LR2.adjp <- LR2.p
   LR2.adjp <- matrix(p.adjust(LR2.adjp, method = p.adjust.method), ncol = ncol(LR2.p), nrow = nrow(LR2.p))
-
+  
   model.alpha <- apply(LR2.adjp, 1, function(x){if(max(x, na.rm = T) > alpha.level){NA} else {return(0)}})
-  model.alpha[is.na(model.alpha)] <- apply(LR2.p[is.na(model.alpha),], 1, which.max)
-
+  model.alpha[is.na(model.alpha)] <- apply(LR2.p[is.na(model.alpha),,drop = FALSE], 1, which.max)
+  
   models <- rep(0, nrow(Q))
   models[which(rowSums(Q) != 1)] <- model.alpha
   models.adjp <- models
-
+  
   models.adjp[which(models.adjp == 0)] <- "GDINA"
   models.adjp[which(models.adjp == 1)] <- "DINA"
   models.adjp[which(models.adjp == 2)] <- "DINO"
   models.adjp[which(models.adjp == 3)] <- "ACDM"
-
+  
   colnames(LR2) <- colnames(LR2.p) <- colnames(LR2.adjp) <- colnames(df) <- c("DINA", "DINO", "ACDM")
   rownames(LR2) <- rownames(LR2.p) <- rownames(LR2.adjp) <- rownames(df) <- paste("Item", item)
   out <- list(LR2 = LR2, pvalues = LR2.p, adj.pvalues = LR2.adjp, df = df, models.adj.pvalues = models.adjp)
-
+  
   return(out)
 }
