@@ -2,7 +2,38 @@ cdcat 1.0.4:
 
 ## cdcatR 1.0.4 release (March 31, 2021)
 * CRAN Package Check Results found the following issue "Calling && or || with either argument of length greater than one now gives a warning (which it is intended will become an error).". This has been corrected by removing the problematic cases and contacting the author of the simGDINA function. Thanks Prof Brian Ripley and CRAN. 
-* We have also included minor changes in the cdcat.summary, att.plot, and LR.2step functions
+* We have also included minor changes in att.plot and LR.2step functions
+
+* cdcatR 1.0.4 re-submission:
+
+### Test envirnoments
+* Local Windows 10 x64, R 4.1.2
+* Ubuntu Linux 16.04 LTS, R-release, GCC (check_rhub)
+* Windows Server 2008 R2 SP1, R-devel, 32/64 bit (check_rhub)
+* Fedora Linux, R-devel, clang, gfortran (check_rhub)
+* (check_win_devel)
+
+### R CMD check results
+* There were no ERRORs or WARNINGs.
+* There were 2 NOTES:
+* First note: 
+```
+Found the following files/directories: 'lastMiKTeXException'"
+```
+Please note that this might be due to a bug/crash in MiKTeX, as is noted in R-hub issue #503, which can be found at r-hub/rhub#503
+* Second note:
+```
+Maintainer: 'Miguel A. Sorrel <miguel.sorrel@uam.es>'
+   Found the following (possibly) invalid DOIs:
+     DOI: 10.1177/0146621614554650
+       From: DESCRIPTION
+       Status: Service Unavailable
+     DOI: 10.1177/0146621618813113
+       Status: Service Unavailable
+       Message: 503
+       From: DESCRIPTION"
+```
+Please note these two DOIs are valid, both are from the journal Applied Psychological Measurement.
  
 ## cdcatR 1.0.3 release (July 6, 2021)
 * We have included new arguments for the cdcat and gen.itembank functions of the package
