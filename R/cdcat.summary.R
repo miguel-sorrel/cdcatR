@@ -16,7 +16,7 @@
 #' @export
 #'
 cdcat.summary <- function(cdcat.obj, alpha, label = NULL){
-  if(is.list(cdcat.obj)) {
+ if(class(cdcat.obj) == "list") {
     cdcat.obj.l <- cdcat.obj
     if(!is.null(label)){
       if(length(label) != length(cdcat.obj.l)){stop("label and cdcat.obj.l must have the same length")}
