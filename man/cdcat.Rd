@@ -15,22 +15,23 @@ cdcat(
   att.prior = NULL,
   initial.distr = NULL,
   precision.cut = 0.8,
-  NPS.args = list(Q = NULL, gate = NULL, pseudo.prob = T, w.type = 1, seed = NULL),
+  NP.args = list(Q = NULL, gate = NULL, PPP = TRUE, w = 2),
   itemExposurecontrol = NULL,
   b = 0,
   maxr = 1,
   itemConstraint = NULL,
   constraint.args = list(ATTRIBUTEc = NULL),
   n.cores = 2,
+  seed = NULL,
   print.progress = TRUE
 )
 }
 \arguments{
-\item{fit}{An object of class \code{GDINA} or \code{gdina}. Calibrated item bank with the \code{GDINA::GDINA} (Ma & de la Torre, 2020) or \code{CDM::gdina} (Robitzsch et al., 2020) R packages functions}
+\item{fit}{An object of class \code{GDINA}, \code{gdina} (parametric CD-CAT), or \code{GNPC} (non-parametric CD-CAT based on GNPS). Calibrated item bank with the \code{GDINA::GDINA} (Ma & de la Torre, 2020), \code{CDM::gdina} (Robitzsch et al., 2020), or \code{cdmTools::GNPC} (Najera et al., 2022) R packages functions}
 
 \item{dat}{Numeric matrix of dimensions \emph{N} number of examinees x \emph{J} number of items. Dataset to be analyzed. If \code{is.null(dat)} the data is taken data from the fit object (i.e.,  the calibration sample is used)}
 
-\item{itemSelect}{Scalar character. Item selection rule: \code{GDI}, \code{JSD}, \code{MPWKL}, \code{PWKL}, \code{NPS}, or \code{random}}
+\item{itemSelect}{Scalar character. Item selection rule: \code{GDI}, \code{JSD}, \code{MPWKL}, \code{PWKL}, \code{NPS}, \code{GNPS}, or \code{random}}
 
 \item{MAXJ}{Scalar numeric. Maximum number of items to be applied regardless of the \code{FIXED.LENGTH} argument. Default is 20}
 
@@ -46,7 +47,7 @@ cdcat(
 
 \item{precision.cut}{Scalar numeric. Cutoff for fixed-precision (assigned pattern posterior probability > precision.cut; Hsu, Wang, & Chen, 2013). When \code{itemSelect = "NPS"} this is evaluated at the attribute level using the pseudo-posterior probabilities for each attribute (\emph{K} assigned attribute pseudo-posterior probability > precision.cut). Default is .80. A higher cutoff is recommended when \code{itemSelect = "NPS"}}
 
-\item{NPS.args}{A list of options when \code{itemSelect = "NPS"}. \code{Q} = Q-matrix to be used in the analysis. \code{gate} = "AND" or "OR", depending on whether a conjunctive o disjunctive nonparametric CDM is used. \code{pseudo.prob} = pseudo-posterior probability of each examinee mastering each attribute (experimental). \code{w.type} = weight type used for computing the pseudo-posterior probability (experimental): 1 = Power-of-2 weight; 2 = Exponential weight. \code{seed} = Numeric vector of length 1. NPS has a random component, so a seed is required for consistent results.}
+\item{NP.args}{A list of options when \code{itemSelect = "NPS" or "GNPS"}. \code{Q} = Q-matrix to be used in the analysis. \code{gate} = "AND" or "OR", depending on whether a conjunctive o disjunctive nonparametric CDM is used. \code{PPP} = pseudo-posterior probability of each examinee mastering each attribute (experimental). \code{w} = weight type used for computing the pseudo-posterior probability (experimental): 1 = Power-of-2 weight; 2 = Exponential weight}
 
 \item{itemExposurecontrol}{Scalar character. Item exposure control: \code{NULL} or progressive method (Barrada, Olea, Ponsoda, & Abad, 2008) with \code{"progressive"}. Default is \code{NULL}. Seed for the random component is \code{NPS.args$seed}}
 
@@ -59,6 +60,8 @@ cdcat(
 \item{constraint.args}{A list of options when \code{itemConstraint != "NULL"}. At the moment it only includes the argument \code{ATTRIBUTEc} which must be a numeric vector of length \code{ncol(Q)} indicating the minimum number of items per attribute to be administered. Default is 3}
 
 \item{n.cores}{Scalar numeric. Number of cores to be used during parallelization. Default is 2}
+
+\item{seed}{Numeric vector of length 1. Some methods have a random component, so a seed is required for consistent results}
 
 \item{print.progress}{Scalar logical. Prints a progress bar to the console. Default is TRUE}
 }
@@ -73,8 +76,8 @@ cdcat(
 \code{cdcat} conducts a CD-CAT application for a given dataset. Different item selection rules can be used: the general discrimination index
 (GDI; de la Torre & Chiu, 2016; Kaplan et al., 2015), the Jensen-Shannon divergence index (JSD; Kang et al., 2017; Minchen & de la Torre, 2016;
 Yigit et al., 2018), the posterior-weighted Kullback-Leibler index (PWKL; Cheng, 2009), the modified PWKL index (MPWKL; Kaplan et al., 2015), the nonparametric
-item selection method (NPS; Chang et al., 2019), or random selection. Fixed length or fixed precision CD-CAT can be applied. Fixed precision CD-CAT with
-NPS is available, by using the pseudo-posterior probability of each student mastering each attribute (experimental).
+item selection method (NPS; Chang et al., 2019), the general nonparametric item selection method (GNPS; Chiu & Chang, 2021), or random selection. Fixed length or fixed precision CD-CAT can be applied. Fixed precision CD-CAT with
+NPS and GNPS is available, by using the pseudo-posterior probability of each student mastering each attribute (experimental).
 }
 \examples{
 \dontshow{
@@ -116,23 +119,22 @@ att.plot(cdcat.obj = res.FIXJ, i = 1) # plot for the first examinee (fixed-lengt
 att.plot(cdcat.obj = res.VARJ, i = 1) # plot  for the first examinee (fixed-precision)
 # FIXJ summary
 res.FIXJ.sum.real <- cdcat.summary(cdcat.obj = res.FIXJ, alpha = att) # vs. real accuracy
-res.FIXJ.sum.real$recovery$plotPCV
-res.FIXJ.sum.real$recovery$plotPCA
-res.FIXJ.sum.real$item.exposure$plot
+res.FIXJ.sum.real$alpha.recovery$PCV.plot
+res.FIXJ.sum.real$item.exposure$exp.plot
 # VARJ summary
 res.VARJ.sum.real <- cdcat.summary(cdcat.obj = res.VARJ, alpha = att)
-res.VARJ.sum.real$recovery
-res.VARJ.sum.real$CATlength$stats
-res.VARJ.sum.real$CATlength$plot
-res.VARJ.sum.real$item.exposure$plot
+res.VARJ.sum.real$alpha.recovery$PCV
+res.VARJ.sum.real$item.exposure$stats
+res.VARJ.sum.real$item.exposure$length.plot
+res.VARJ.sum.real$item.exposure$exp.plot
 # vs. maximum observable accuracy
 att.J <- GDINA::personparm(fit, "MAP")[, -(K+1)] # GDINA package
 # att.J <- t(sapply(strsplit(as.character(fit$pattern$map.est), ""), as.numeric)) # CDM package
 class.J <- GDINA::ClassRate(att, att.J) # upper-limit for accuracy
 res.FIXJ.sum.obse <- cdcat.summary(cdcat.obj = res.FIXJ, alpha = att.J)
-res.FIXJ.sum.obse$recovery$plotPCV + ggplot2::geom_hline(yintercept = class.J$PCV[K],
+res.FIXJ.sum.obse$alpha.recovery$PCV.plot + ggplot2::geom_hline(yintercept = class.J$PCV[K],
                                                         color = "firebrick3")
-res.FIXJ.sum.obse$recovery$plotPCA + ggplot2::geom_hline(yintercept = class.J$PCA,
+res.FIXJ.sum.obse$alpha.recovery$PCA.plot + ggplot2::geom_hline(yintercept = class.J$PCA,
                                                         color = "firebrick3")
 
 ######################################
@@ -192,7 +194,7 @@ res.VARJ.sum$CATlength$plot
 ######################################
 # Example 3.                         #
 # Nonparametric CD-CAT for           #
-# small-scale assessment             #
+# small-scale assessment (NPS)       #
 ######################################
 
 #-----------Data----------#
@@ -205,12 +207,12 @@ att <- sim180DINA$simalpha[1:N,]
 #--------Nonparametric CD-CAT--------#
 res.NPS.FIXJ <- cdcat(dat = dat, itemSelect = "NPS", FIXED.LENGTH = TRUE,
                      MAXJ = 25, n.cores = 2,
-                     NPS.args = list(Q = Q, gate = "AND", pseudo.prob = TRUE, w.type = 1,
-                     seed = 12345))
+                     NP.args = list(Q = Q, gate = "AND", pseudo.prob = TRUE, w.type = 2),
+                     seed = 12345)
 res.NPS.VARJ <- cdcat(dat = dat, itemSelect = "NPS", FIXED.LENGTH = FALSE,
                      MAXJ = 25, precision.cut = 0.90, n.cores = 2,
-                     NPS.args = list(Q = Q, gate = "AND", pseudo.prob = TRUE, w.type = 1,
-                     seed = 12345))
+                     NP.args = list(Q = Q, gate = "AND", pseudo.prob = TRUE, w.type = 2),
+                     seed = 12345)
 
 #---------------Results--------------#
 res.NPS.FIXJ$est[[1]] # estimates for the first examinee (fixed-length)
@@ -219,24 +221,64 @@ att.plot(res.NPS.FIXJ, i = 1) # plot for estimates for the first examinee (fixed
 att.plot(res.NPS.VARJ, i = 1) # plot for estimates for the first examinee (fixed-precision)
 # FIXJ summary
 res.NPS.FIXJ.sum.real <- cdcat.summary(cdcat.obj = res.NPS.FIXJ, alpha = att) # vs. real accuracy
-res.NPS.FIXJ.sum.real$recovery$plotPCV
-res.NPS.FIXJ.sum.real$recovery$plotPCA
-res.NPS.FIXJ.sum.real$item.exposure$plot
+res.NPS.FIXJ.sum.real$alpha.recovery$PCV.plot
+res.NPS.FIXJ.sum.real$item.exposure$exp.plot
 # VARJ summary
 res.NPS.VARJ.sum.real <- cdcat.summary(cdcat.obj = res.NPS.VARJ, alpha = att)
-res.NPS.VARJ.sum.real$recovery
-res.NPS.VARJ.sum.real$CATlength$stats
-res.NPS.VARJ.sum.real$CATlength$plot
-res.NPS.VARJ.sum.real$item.exposure$plot
+res.NPS.VARJ.sum.real$alpha.recovery$PCV.plot
+res.NPS.VARJ.sum.real$item.exposure$stats
+res.NPS.VARJ.sum.real$item.exposure$length.plot
+res.NPS.VARJ.sum.real$item.exposure$exp.plot
 # vs. maximum observable accuracy
 fit <- NPCD::AlphaNP(Y = dat, Q = Q, gate = "AND")
 att.J <- fit$alpha.est
 class.J <- GDINA::ClassRate(att, att.J) # upper-limit for accuracy
 res.NPS.FIXJ.sum.obse <- cdcat.summary(cdcat.obj = res.NPS.FIXJ, alpha = att.J)
-res.NPS.FIXJ.sum.obse$recovery$plotPCV + ggplot2::geom_hline(yintercept = class.J$PCV[K],
+res.NPS.FIXJ.sum.obse$alpha.recovery$PCV.plot + ggplot2::geom_hline(yintercept = class.J$PCV[K],
                                                             color = "firebrick3")
-res.NPS.FIXJ.sum.obse$recovery$plotPCA + ggplot2::geom_hline(yintercept = class.J$PCA,
+res.NPS.FIXJ.sum.obse$alpha.recovery$PCA.plot + ggplot2::geom_hline(yintercept = class.J$PCA,
                                                             color = "firebrick3")
+                                                            
+######################################
+# Example 4.                         #
+# Nonparametric CD-CAT for           #
+# small-scale assessment (GNPS)      #
+######################################
+
+#-----------Data----------#
+Q <- sim180DINA$simQ
+K <- ncol(Q)
+N <- 50
+dat <- sim180DINA$simdat[1:N,]
+att <- sim180DINA$simalpha[1:N,]
+
+#----------Model calibration----------#
+gnpc <- cdmTools::GNPC(dat = dat, Q = Q, verbose = 0)
+
+#--------Nonparametric CD-CAT--------#
+res.GNPS.FIXJ <- cdcat(fit = gnpc, dat = dat, itemSelect = "GNPS", FIXED.LENGTH = TRUE,
+                    MAXJ = 25, n.cores = 2, 
+                    NP.args = list(Q = Q, gate = "AND", PPP = TRUE, w.type = 2),
+                    seed = 12345)
+res.GNPS.VARJ <- cdcat(fit = gnpc, dat = dat, itemSelect = "GNPS", FIXED.LENGTH = FALSE,
+                    MAXJ = 25, precision.cut = 0.90, n.cores = 2, 
+                    NP.args = list(Q = Q, gate = "AND", PPP = TRUE, w.type = 2),
+                      seed = 12345)
+
+#---------------Results--------------#
+res.GNPS.FIXJ$est[[1]] # estimates for the first examinee (fixed-length)
+res.GNPS.VARJ$est[[1]] # estimates for the first examinee (fixed-precision)
+att.plot(res.GNPS.FIXJ, i = 1) # plot for estimates for the first examinee (fixed-length)
+att.plot(res.GNPS.VARJ, i = 1) # plot for estimates for the first examinee (fixed-precision)
+# FIXJ summary
+res.GNPS.FIXJ.sum.real <- cdcat.summary(cdcat.obj = res.GNPS.FIXJ, alpha = att) # vs. real accuracy
+res.GNPS.FIXJ.sum.real$alpha.recovery$PCV.plot
+res.GNPS.FIXJ.sum.real$item.exposure$exp.plot
+# VARJ summary
+res.GNPS.VARJ.sum.real <- cdcat.summary(cdcat.obj = res.GNPS.VARJ, alpha = att)
+res.GNPS.VARJ.sum.real$alpha.recovery$PCV.plot
+res.GNPS.VARJ.sum.real$item.exposure$exp.plot
+res.GNPS.VARJ.sum.real$item.exposure$length.plot
 }
 }
 \references{
@@ -245,6 +287,8 @@ Barrada, J. R., Olea, J., Ponsoda, V., & Abad, F. J. (2008). Incorporating rando
 Chang, Y.-P., Chiu, C.-Y., & Tsai, R.-C. (2019). Nonparametric CAT for CD in educational settings with small samples. \emph{Applied Psychological Measurement, 43}, 543-561.
 
 Cheng, Y. (2009). When cognitive diagnosis meets computerized adaptive testing: CD-CAT. \emph{Psychometrika, 74}, 619-632.
+
+Chiu, C. Y., & Chang, Y. P. (2021). Advances in CD-CAT: The general nonparametric item selection method. \emph{Psychometrika, 86}, 1039-1057.
 
 de la Torre, J., & Chiu, C. Y. (2016). General method of empirical Q-matrix validation. \emph{Psychometrika, 81}, 253-273.
 
@@ -261,6 +305,8 @@ Kaplan, M., de la Torre, J., & Barrada, J. R. (2015). New item selection methods
 Ma, W. & de la Torre, J. (2020). GDINA: The generalized DINA model framework. R package version 2.7.9. Retrived from https://CRAN.R-project.org/package=GDINA
 
 Minchen, N., & de la Torre, J. (2016, July). \emph{The continuous G-DINA model and the Jensen-Shannon divergence}. Paper presented at the International Meeting of the Psychometric Society, Asheville, NC, United States.
+
+Nájera, P., Sorrel, M. A., & Abad, F. J. (2022). cdmTools: Useful Tools for Cognitive Diagnosis Modeling. R package version 1.0.1. https://CRAN.R-project.org/package=cdmTools
 
 Robitzsch, A., Kiefer, T., George, A. C., & Uenlue, A. (2020). CDM: Cognitive Diagnosis Modeling. R package version 7.5-15. https://CRAN.R-project.org/package=CDM
 

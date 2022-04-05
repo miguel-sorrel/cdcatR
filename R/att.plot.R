@@ -27,7 +27,7 @@ att.plot <- function(cdcat.obj, i, k = NULL)
   }
   
   plots <- list()
-  if(cdcat.obj$specifications$itemSelect != "NPS"){
+  if(isFALSE(cdcat.obj$specifications$itemSelect %in% c("NPS", "GNPS"))){
     est <- lapply(cdcat.obj$est, '[[', 1)[[i]]
     est <- as.matrix(est[, (ncol(est):1)[K:1]])
     est <- apply(est, 2, as.numeric)
@@ -73,14 +73,14 @@ att.plot <- function(cdcat.obj, i, k = NULL)
                        panel.grid.minor.x = ggplot2::element_blank(),
                        panel.grid.minor.y = ggplot2::element_blank())
     }
-  } else if(cdcat.obj$specifications$itemSelect == "NPS"){
+  } else {
     est.pre <- lapply(cdcat.obj$est, '[[', 1)[[i]]
     est <- est.pre[K:nrow(est.pre), 4]
     est <- t(as.data.frame(lapply(strsplit(est, ""), as.numeric)))
     rownames(est) <- K:nrow(est.pre); colnames(est) <- paste0("K", 1:K)
-    if(cdcat.obj$specifications$NPS.args$pseudo.prob){
+    if(cdcat.obj$specifications$NP.args$PPP){
       est <- cbind(est, est.pre[K:nrow(est.pre), 9:(8 + K)])
-      est <- cbind(est, sqrt(est[, (K + 1):(2*K)] * (1 - est[, (K + 1):(2*K)])))
+      est <- cbind(est, sqrt(matrix(as.numeric(as.matrix(est[, (K + 1):(2 * K)])), ncol = K) * (1 - matrix(as.numeric(as.matrix(est[, (K + 1):(2 * K)])), ncol = K))))
       colnames(est) <- c(paste("K", 1:K, sep = ""), paste("pP.K", 1:K, sep = ""), paste("SE.pP.K", 1:K, sep = ""))
     }
     
@@ -89,10 +89,10 @@ att.plot <- function(cdcat.obj, i, k = NULL)
     for (k in do.k) {
       est.k <- data.frame("item.position" = K:Ji, "est.k" = est[, k])
       est.k$color <- "steelblue3"
-      if(cdcat.obj$specifications$NPS.args$pseudo.prob){
+      if(cdcat.obj$specifications$NP.args$PPP){
         est.k$pP.k <- est[, K + k]
-        est.k$lwr <- est[, K + k] - 1.96 * est[, (2*K + k)]
-        est.k$upr <- est[, K + k] + 1.96 * est[, (2*K + k)]
+        est.k$lwr <- as.numeric(est[, K + k]) - 1.96 * est[, (2*K + k)]
+        est.k$upr <- as.numeric(est[, K + k]) + 1.96 * est[, (2*K + k)]
         est.k$lwr[est.k$lwr <= 0] <- 0
         est.k$upr[est.k$upr >= 1] <- 1
         est.k$color[which(est.k$est.k == 0 & est.k$upr < 0.5)] <- "firebrick3"
@@ -101,7 +101,7 @@ att.plot <- function(cdcat.obj, i, k = NULL)
         est.k$color[which(est.k$est.k == 0)] <- "firebrick3"
         est.k$color[which(est.k$est.k == 1)] <- "seagreen3"
       }
-      
+      est.k$pP.k <- as.numeric(est.k$pP.k)
       plots[[k]] <- ggplot2::ggplot(data = est.k, ggplot2::aes(x = item.position)) +
         ggplot2::theme_gray() +
         ggplot2::scale_x_continuous("Until Item Position",
@@ -114,7 +114,7 @@ att.plot <- function(cdcat.obj, i, k = NULL)
           breaks = seq(from = 0, to = 1, by = 0.5)
         )
       
-      if(cdcat.obj$specifications$NPS.args$pseudo.prob){
+      if(cdcat.obj$specifications$NP.args$PPP){
         plots[[k]] <- plots[[k]] +
           ggplot2::geom_line(ggplot2::aes(y = pP.k), color = "gray30", linetype = "longdash") +
           ggplot2::geom_ribbon(

@@ -28,8 +28,3 @@ To install this package from source:
 ```
 #install.packages("remotes")
 remotes::install_github("miguel-sorrel/cdcatR")
-<<<<<<< HEAD
-```
-=======
-```
->>>>>>> 4967b5f0b67ce8c7f65cf5030c2732dedb140b26

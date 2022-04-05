@@ -4,21 +4,29 @@
 \alias{cdcat.summary}
 \title{Summary information for a \code{cdcat} object}
 \usage{
-cdcat.summary(cdcat.obj, alpha, label = NULL)
+cdcat.summary(cdcat.obj, alpha = NULL, label = NULL, plots = TRUE)
 }
 \arguments{
 \item{cdcat.obj}{An object or list of objects of class \code{cdcat}}
 
-\item{alpha}{Numeric matrix of dimensions \emph{N} x \emph{K} with the reference attribute patterns used to compute attribute classification accuracy. It is expected that it will contain the true, generating alpha pattern or those estimated with the entire item bank. It is a guideline to evaluate the \code{cdcat} results}
+\item{alpha}{Numeric matrix of dimensions \emph{N} x \emph{K} with the reference attribute patterns used to compute attribute classification accuracy. It is expected that it will contain the true, generating alpha pattern or those estimated with the entire item bank. It is a guideline to evaluate the \code{cdcat} results. This is required to obtain the \code{alpha.recovery} output and if a list of objects of class \code{cdcat} is provided as input.}
 
 \item{label}{Character vector that contains the labels for the \code{cdcat} object(s). If \code{NULL} (by default), the models are used as labels}
+
+\item{plots}{Scalar logical. Whether or not the plots should be created. Default is \code{TRUE}}
 }
 \value{
 \code{cdcat.summary} returns an object of class \code{cdcat.summary}.
 \describe{
+If a list of objects of class \code{cdcat} is provided:
 \item{recovery}{A list that contains the attribute classification accuracy results calculated at the pattern- (\emph{PCV}) and attribute-levels (\emph{PCA}). Two plots monitoring these variables are provided when \code{FIXED.LENGTH = TRUE}}
 \item{item.exposure}{A list that contains the item exposure rates results: descriptive statistics (\code{stats}) and a plot representing the item exposure rates (\code{plot}). Note that when \code{FIXED.LENGTH = FALSE} the overlap rate is calculated based on the average CAT length}
 \item{CATlength}{If the object or list of objects of class \code{cdcat} are fixed-precision applications (i.e., \code{FIXED.LENGTH = FALSE}), this additional list is included. It contains descriptive statistics (\code{stats}) and a plot (\code{plot}) describing the CAT length}
+If only one object of class \code{cdcat} is provided:
+\item{alpha.estimates}{Information about the classifications made by the CD-CAT procedure}
+\item{item.exposure}{A list that contains the item exposure rates and CAT length results: descriptive statistics (\code{stats}) and a plot representing the item exposure rates (\code{plot}). Note that when \code{FIXED.LENGTH = FALSE} the overlap rate is calculated based on the average CAT length}
+\item{alpha.recovery}{If \code{alpha} was provided a list that contains information on attribute classification accuracy is provided}
+\item{specifications}{A list that contains all the specifications}
 }
 }
 \description{

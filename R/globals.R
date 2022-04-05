@@ -12,4 +12,17 @@ utils::globalVariables(
     'attribute.recovery',
     'cond',
     'pb',
-    'item'))
+    'item',
+    'ClassRate',
+    'Attribute',
+    'Prevalence',
+    'Profile',
+    'Frequency',
+    'Probability',
+    'Length',
+    'Item',
+    'Exp',
+    'ItemPos',
+    'PCV',
+    'PCA'
+  ))

@@ -1,3 +1,7 @@
+cdcat 1.0.5:
+* The general non-parametric method for CD-CAT was included in cdcat()
+* The cdcat.summary() function can now be also used without providing the argument att() 
+
 cdcat 1.0.4:
 * Some examples removed from gen.data()
 * Fixed attribute labels in att.plot()
