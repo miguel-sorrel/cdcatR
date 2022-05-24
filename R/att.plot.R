@@ -97,11 +97,16 @@ att.plot <- function(cdcat.obj, i, k = NULL)
         est.k$upr[est.k$upr >= 1] <- 1
         est.k$color[which(est.k$est.k == 0 & est.k$upr < 0.5)] <- "firebrick3"
         est.k$color[which(est.k$est.k == 1 & est.k$lwr > 0.5)] <- "seagreen3"
+        
+        est.k$pP.k <- as.numeric(est.k$pP.k)
+        
       } else {
         est.k$color[which(est.k$est.k == 0)] <- "firebrick3"
         est.k$color[which(est.k$est.k == 1)] <- "seagreen3"
+        
+        
       }
-      est.k$pP.k <- as.numeric(est.k$pP.k)
+      
       plots[[k]] <- ggplot2::ggplot(data = est.k, ggplot2::aes(x = item.position)) +
         ggplot2::theme_gray() +
         ggplot2::scale_x_continuous("Until Item Position",

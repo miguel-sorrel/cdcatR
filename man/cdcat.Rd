@@ -47,7 +47,7 @@ cdcat(
 
 \item{precision.cut}{Scalar numeric. Cutoff for fixed-precision (assigned pattern posterior probability > precision.cut; Hsu, Wang, & Chen, 2013). When \code{itemSelect = "NPS"} this is evaluated at the attribute level using the pseudo-posterior probabilities for each attribute (\emph{K} assigned attribute pseudo-posterior probability > precision.cut). Default is .80. A higher cutoff is recommended when \code{itemSelect = "NPS"}}
 
-\item{NP.args}{A list of options when \code{itemSelect = "NPS" or "GNPS"}. \code{Q} = Q-matrix to be used in the analysis. \code{gate} = "AND" or "OR", depending on whether a conjunctive o disjunctive nonparametric CDM is used. \code{PPP} = pseudo-posterior probability of each examinee mastering each attribute (experimental). \code{w} = weight type used for computing the pseudo-posterior probability (experimental): 1 = Power-of-2 weight; 2 = Exponential weight}
+\item{NP.args}{A list of options when \code{itemSelect = "NPS" or "GNPS"}. \code{Q} = Q-matrix to be used in the analysis. \code{gate} = "AND" or "OR", depending on whether a conjunctive o disjunctive nonparametric CDM is used. \code{PPP} = pseudo-posterior probability of each examinee mastering each attribute (experimental). \code{w} = weight type used for computing the pseudo-posterior probability (experimental)}
 
 \item{itemExposurecontrol}{Scalar character. Item exposure control: \code{NULL} or progressive method (Barrada, Olea, Ponsoda, & Abad, 2008) with \code{"progressive"}. Default is \code{NULL}. Seed for the random component is \code{NPS.args$seed}}
 

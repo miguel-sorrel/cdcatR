@@ -162,7 +162,7 @@ cdcat.getdata <- function(cdcat.obj, alpha = NULL, plots = TRUE){
     }
   }
   
-  if(itemSelect == "GNPS" | !cdcat.obj$specifications$NP.args$PPP){
+  if(!cdcat.obj$specifications$NP.args$PPP){
     alpha.pp <- att.prob <- att.prob.plot <- NULL
   }
   if(is.null(alpha)){
@@ -194,50 +194,6 @@ cdcat.getdata <- function(cdcat.obj, alpha = NULL, plots = TRUE){
   }
   class(res) <- "cdcat.summary"
   return(res)
-}
-print.cdcat.summary <- function(x){
-  if(length(x$specifications) == 1){
-    models <- rownames(x$recovery$PCV)
-    mss <- "========================================================="
-    if(is.null(x$recovery$PCVcomp)){
-      mss <- paste0(mss, "\n", "Variable length CD-CAT comparison of models: ", paste(models, collapse = ", "))
-    } else {
-      mss <- paste0(mss, "\n", "Fixed length CD-CAT comparison of models: ", paste(models, collapse = ", "))
-    }
-    mss <- paste0(mss, "\n", "\n",
-                  "\t", paste(models, collapse = "\t"), "\n",
-                  "PCA", "\t", paste(x$recovery$PCA[,ncol(x$recovery$PCA)], collapse = "\t"), "\n",
-                  "PCV", "\t", paste(x$recovery$PCV[,ncol(x$recovery$PCV)], collapse = "\t"), "\n",
-                  "Overlap", "\t", paste(round(x$item.exposure$stats[,ncol(x$item.exposure$stats)], 3), collapse = "\t"), "\n")
-    mss <- paste0(mss, "=========================================================")
-  } else {
-    itemSelect <- x$specifications$itemSelect
-    FIXED.LENGTH <- x$specifications$FIXED.LENGTH
-    MAXJ <- x$specifications$MAXJ
-    att.prevalence <- round(colMeans(x$alpha.estimates$est), 3)
-    MEANJ <- weighted.mean(x$item.exposure$length[,1], x$item.exposure$length[,2])
-    overlap.rate <- x$item.exposure$stats["overlap rate"]
-    mss <- "========================================================="
-    if(FIXED.LENGTH){
-      mss <- paste0(mss, "\n", "Fixed length CD-CAT")
-    } else {
-      mss <- paste0(mss, "\n", "Variable length CD-CAT")
-    }
-    mss <- paste0(mss, " using the ", itemSelect, " item selection rule", "\n", "\n")
-    mss <- paste0(mss, 
-                  "Maximum number of items = ", MAXJ, "\n", 
-                  "Average number of items = ", MEANJ, "\n",
-                  "Overlap rate = ", round(overlap.rate, 3), "\n","\n",
-                  "Attribute prevalence:", "\n")
-    for(k in 1:length(att.prevalence)){mss <- paste0(mss, names(att.prevalence)[k], " = ", round(as.numeric(att.prevalence[k]), 3), "\n")}
-    if(!is.null(x$alpha.recovery)){
-      mss <- paste0(mss, "\n",
-                    "Attribute class. accuracy (PCA) = ", round(as.numeric(x$alpha.recovery$PCA["mean.PCA"]), 3), "\n",
-                    "Pattern class. accuracy (PCV) = ", round(as.numeric(x$alpha.recovery$PCV[length(x$alpha.recovery$PCV)]), 3), "\n")
-    }
-    mss <- paste0(mss, "=========================================================")
-  }
-  cat(mss)
 }
 
 genQ <- function(J, K, n.id = 2, qkProp, PropWithId = T, min.jk = 1, max.kcor = 0.3, seed = NULL){
@@ -462,3 +418,4 @@ PPP <- function(dist, pattern, w, pp = NULL, alpha.est = NULL){
   }
   return(res)
 }
+1

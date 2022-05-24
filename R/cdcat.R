@@ -16,7 +16,7 @@
 #' @param att.prior Numeric vector of length 2^\emph{K}, where \emph{K} is the number of attributes. Prior distribution for MAP/EAP estimates. Default is uniform
 #' @param initial.distr Numeric vector of length 2^\emph{K}, where \emph{K} is the number of attributes. Weighting distribution to initialize \code{itemSelect} at item position 1. Default is uniform
 #' @param precision.cut Scalar numeric. Cutoff for fixed-precision (assigned pattern posterior probability > precision.cut; Hsu, Wang, & Chen, 2013). When \code{itemSelect = "NPS"} this is evaluated at the attribute level using the pseudo-posterior probabilities for each attribute (\emph{K} assigned attribute pseudo-posterior probability > precision.cut). Default is .80. A higher cutoff is recommended when \code{itemSelect = "NPS"}
-#' @param NP.args A list of options when \code{itemSelect = "NPS" or "GNPS"}. \code{Q} = Q-matrix to be used in the analysis. \code{gate} = "AND" or "OR", depending on whether a conjunctive o disjunctive nonparametric CDM is used. \code{PPP} = pseudo-posterior probability of each examinee mastering each attribute (experimental). \code{w} = weight type used for computing the pseudo-posterior probability (experimental): 1 = Power-of-2 weight; 2 = Exponential weight
+#' @param NP.args A list of options when \code{itemSelect = "NPS" or "GNPS"}. \code{Q} = Q-matrix to be used in the analysis. \code{gate} = "AND" or "OR", depending on whether a conjunctive o disjunctive nonparametric CDM is used. \code{PPP} = pseudo-posterior probability of each examinee mastering each attribute (experimental). \code{w} = weight type used for computing the pseudo-posterior probability (experimental)
 #' @param itemExposurecontrol  Scalar character. Item exposure control: \code{NULL} or progressive method (Barrada, Olea, Ponsoda, & Abad, 2008) with \code{"progressive"}. Default is \code{NULL}. Seed for the random component is \code{NPS.args$seed}
 #' @param b Scalar numeric. Acceleration parameter for the item exposure method. Only applies if \code{itemExposurecontrol = "progressive"}. In the progressive method the first item is selected at random and the last item (i.e., \code{MAXJ}) is selected purely based on \code{itemSelect}. The rest of the items are selected combining both a random and information components. The loss of importance of the random component will be linear with \code{b = 0}, inverse exponential with \code{b < 0}, or exponential with \code{b > 0}. Thus, \code{b} allows to optimize accuracy (\code{b < 0}) or item security (\code{b > 0}). Default is 0
 #' @param maxr Scalar numeric. Value should be in the range 0-1. Maximum item exposure rate that is tolerated. Default is 1. Note that for \code{maxr < 1} parallel computing cannot be implemented
@@ -363,7 +363,7 @@ cdcat <- function(fit = NULL, dat = NULL, itemSelect = "GDI", MAXJ = 20,
   } else if(itemSelect == "GNPS"){
     if(is.null(fit)){stop("fit required when itemSelect != 'NPS'")}
     if(maxr != 1){warning("maxr argument does not operate  with itemSelect == 'GNPS'")}
-    if(!is.null(itemExposurecontrol)){warning("itemExposurecontrol is set to 'NULL' with itemSelect == 'GNPS'")}
+    if(!is.null(itemExposurecontrol)){warning("itemExpo4surecontrol is set to 'NULL' with itemSelect == 'GNPS'")}
     if(is.null(NP.args$PPP)){NP.args$PPP <- TRUE}
     if(is.null(NP.args$w)){NP.args$w <- 2} ##################################### Check
     if(!(NP.args$PPP %in% c(TRUE, FALSE))){stop("PPP == TRUE or PPP == FALSE required in NP.args")}
@@ -400,12 +400,12 @@ cdcat <- function(fit = NULL, dat = NULL, itemSelect = "GDI", MAXJ = 20,
           item.log <- NULL
           item.usage <- lapply(out, function(x) x[[2]])
           mlogPost_GDI <- initial.distr[i, ]
+
           GDI <- switch(itemSelect,
                         GDI = GDI.M(LC.prob = LC.prob, mlogPost_GDI),
                         JSD = JSD.DICO.M(LC.prob = LC.prob, mlogPost_GDI),
                         MPWKL = MPWKL.M(LC.prob = LC.prob, mlogPost_GDI),
-                        PWKL = PWKL.M(LC.prob = LC.prob, mlogPost_GDI),
-                        point.est = sample(which(mlogPost_GDI == max(mlogPost_GDI)), 1),
+                        PWKL = PWKL.M(LC.prob = LC.prob, mlogPost_GDI, point.est = sample(which(mlogPost_GDI == max(mlogPost_GDI)), 1)),
                         random = runif(J, 0, 1))
           if(!is.null(itemExposurecontrol)){
             if(itemExposurecontrol == "progressive"){GDI <- proggresive.f(jjselect = 1, MAXJ = MAXJ, b = b, GDI = GDI)}
@@ -465,12 +465,12 @@ cdcat <- function(fit = NULL, dat = NULL, itemSelect = "GDI", MAXJ = 20,
             } else {
               eligible <- which((!(1:nrow(Q) %in% jjcatGDI)))
             }
+            
             GDI <- switch(itemSelect,
                           GDI = GDI.M(LC.prob = LC.prob, mlogPost_GDI),
                           JSD = JSD.DICO.M(LC.prob = LC.prob, mlogPost_GDI),
                           MPWKL = MPWKL.M(LC.prob = LC.prob, mlogPost_GDI),
-                          PWKL = PWKL.M(LC.prob = LC.prob, mlogPost_GDI),
-                          point.est = sample(which(mlogPost_GDI == max(mlogPost_GDI)), 1),
+                          PWKL = PWKL.M(LC.prob = LC.prob, mlogPost_GDI, point.est = sample(which(mlogPost_GDI == max(mlogPost_GDI)), 1)),
                           random = runif(J, 0, 1))
             if(!is.null(itemExposurecontrol)){
               if(itemExposurecontrol == "progressive"){GDI <- proggresive.f(jjselect = jjselect + 1, MAXJ = MAXJ, b = b, GDI = GDI)}
@@ -505,12 +505,12 @@ cdcat <- function(fit = NULL, dat = NULL, itemSelect = "GDI", MAXJ = 20,
           item.log <- NULL
           item.usage <- lapply(out, function(x) x[[2]])
           mlogPost_GDI <- initial.distr[i, ]
+          
           GDI <- switch(itemSelect,
                         GDI = GDI.M(LC.prob = LC.prob, mlogPost_GDI),
                         JSD = JSD.DICO.M(LC.prob = LC.prob, mlogPost_GDI),
                         MPWKL = MPWKL.M(LC.prob = LC.prob, mlogPost_GDI),
-                        PWKL = PWKL.M(LC.prob = LC.prob, mlogPost_GDI),
-                        point.est = sample(which(mlogPost_GDI == max(mlogPost_GDI)), 1),
+                        PWKL = PWKL.M(LC.prob = LC.prob, mlogPost_GDI, point.est = sample(which(mlogPost_GDI == max(mlogPost_GDI)), 1)),
                         random = runif(J, 0, 1))
           if(!is.null(itemExposurecontrol)){
             if(itemExposurecontrol == "progressive"){GDI <- proggresive.f(jjselect = 1, MAXJ = MAXJ, b = b, GDI = GDI)}
@@ -575,11 +575,11 @@ cdcat <- function(fit = NULL, dat = NULL, itemSelect = "GDI", MAXJ = 20,
             } else {
               eligible <- which((!(1:nrow(Q) %in% jjcatGDI)))
             }
-            GDI <- switch(itemSelect, GDI = GDI.M(LC.prob = LC.prob, mlogPost_GDI),
+            GDI <- switch(itemSelect,
+                          GDI = GDI.M(LC.prob = LC.prob, mlogPost_GDI),
                           JSD = JSD.DICO.M(LC.prob = LC.prob, mlogPost_GDI),
                           MPWKL = MPWKL.M(LC.prob = LC.prob, mlogPost_GDI),
-                          PWKL = PWKL.M(LC.prob = LC.prob, mlogPost_GDI),
-                          point.est = sample(which(mlogPost_GDI == max(mlogPost_GDI)), 1),
+                          PWKL = PWKL.M(LC.prob = LC.prob, mlogPost_GDI, point.est = sample(which(mlogPost_GDI == max(mlogPost_GDI)), 1)),
                           random = runif(J, 0, 1))
             if(!is.null(itemExposurecontrol)){
               if(itemExposurecontrol == "progressive"){GDI <- proggresive.f(jjselect = jjselect + 1, MAXJ = MAXJ, b = b, GDI = GDI)}
