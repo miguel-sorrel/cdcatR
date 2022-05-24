@@ -342,7 +342,7 @@ cdcat <- function(fit = NULL, dat = NULL, itemSelect = "GDI", MAXJ = 20,
   if(is.null(att.prior)){att.prior <- rep(1/L, L)}
   if(is.null(initial.distr.arg)){initial.distr <- matrix(data = rep(rep(1/L, L), N), nrow = N)}
   if(!is.null(initial.distr.arg)){initial.distr <- matrix(data = rep(initial.distr, N), nrow = N, byrow = TRUE)}
-  if(!(class(fit) != "GDINA" | class(fit) != "list" | class(fit) != "gdina")){stop("fit must be an object of class 'GDINA' or 'gdina'")}  
+  if(!inherits(fit, what = c("GDINA", "gdina", "GNPC", "NULL"))){stop("fit must be an object of class 'GDINA', 'gdina', or 'GNPC'")}
   if(!(itemSelect %in% c("GDI", "JSD", "MPWKL", "PWKL", "NPS", "GNPS", "random"))){stop("itemSelect must be one of the following: 'GDI', 'JSD', 'MPWKL', 'PWKL', 'NPS', 'GNPS', 'random'")}
   if((maxr > 1) | (maxr < 1)){stop("maxr should be in the range 0-1")}
   if(is.null(itemConstraint) == FALSE){if(is.null(constraint.args$ATTRIBUTEc)){constraint.args$ATTRIBUTEc <- 3}}

@@ -1,7 +1,9 @@
 cdcat 1.0.6:
 
-## cdcatR 1.0.6 release (May 24, 2022)
-* The {cdcatR} package was removed from CRAN due to an issue with the {CDM} package. The CDM packages has been successfully submitted to CRAN so there should not be any problem now
+## cdcatR 1.0.6 release (May 25, 2022)
+* The {cdcatR} package was removed from CRAN due to an issue with the {CDM} package. The {CDM
+package has been successfully re-submitted to CRAN so there should not be any problem now
+* Following the indications received on May 24, we now use inherits() instead of if() conditions comparing class() to string. Thank you. Please find below an explanation for the other two notes we get in some checks
 
 #### Test envirnoments
 * Local Windows 10 x64, R 4.1.2

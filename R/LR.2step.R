@@ -50,7 +50,7 @@
 LR.2step <- function(fit, p.adjust.method = "holm", alpha.level = 0.05)
 {
   
-  if(!(class(fit) != "GDINA" | class(fit) != "gdina")){stop("fit must be an object of class 'GDINA' or 'gdina'")}
+  if(!inherits(fit, what = c("GDINA", "gdina"))){stop("fit must be an object of class 'GDINA' or 'gdina'")}
   if(!(p.adjust.method %in% c("holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"))){stop("p.adjust.method must be one of the following: 'holm', 'hochberg', 'hommel', 'bonferroni', 'BH', 'BY', 'fdr', 'none'")}
   if(alpha.level > 1 | alpha.level < 0){stop("alpha.level must be a value between 0 and 1.")}
   
