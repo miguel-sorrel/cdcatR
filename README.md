@@ -5,7 +5,7 @@
 
 ## How to cite the package
 
-Sorrel, M.A., Nájera, P., and Abad, F.J. (2021). cdcatR: Cognitive Diagnostic Computerized Adaptive Testing in R. R package version 1.0.3 Retrieved from https://cran.r-project.org/package=cdcatR.
+Sorrel, M.A., Nájera, P., and Abad, F.J. (2021). cdcatR: Cognitive Diagnostic Computerized Adaptive Testing in R. R package version 1.0.6 Retrieved from https://cran.r-project.org/package=cdcatR.
 
 ## Features of the package
 

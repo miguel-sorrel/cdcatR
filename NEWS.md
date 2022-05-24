@@ -1,3 +1,7 @@
+cdcat 1.0.6:
+* Update to satisfy CRAN requirements. 
+* Minor edits in the documentation of cdcat() and fixed typos for cdcat.summary() output for itemSelect = 'GNPS' or 'NPS' applications
+
 cdcat 1.0.5:
 * The general non-parametric method for CD-CAT was included in cdcat()
 * The cdcat.summary() function can now be also used without providing the argument att() 

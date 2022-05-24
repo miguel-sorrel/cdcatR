@@ -1,4 +1,44 @@
-cdcat 1.0.5:
+cdcat 1.0.6:
+
+## cdcatR 1.0.6 release (May 24, 2022)
+* The {cdcatR} package was removed from CRAN due to an issue with the {CDM} package. The CDM packages has been successfully submitted to CRAN so there should not be any problem now
+
+#### Test envirnoments
+* Local Windows 10 x64, R 4.1.2
+* Ubuntu Linux 16.04 LTS, R-release, GCC (check_rhub)
+* Windows Server 2008 R2 SP1, R-devel, 32/64 bit (check_rhub)
+* Fedora Linux, R-devel, clang, gfortran (check_rhub)
+* (check_win_devel)
+
+#### R CMD check results
+* There were no ERRORs or WARNINGs.
+* There were 2 NOTES:
+* First note: 
+```
+Found the following files/directories: 'lastMiKTeXException'
+```
+Please note that this might be due to a bug/crash in MiKTeX, as is noted in R-hub issue #503, which can be found at r-hub/rhub#503
+
+* Second note:
+```
+Maintainer: 'Miguel A. Sorrel <miguel.sorrel@uam.es>'
+
+  New submission
+  
+  Package was archived on CRAN
+  
+  Uses the superseded package: 'doSNOW'
+  
+   Found the following (possibly) invalid DOIs:
+     DOI: 10.1177/0146621614554650
+       From: DESCRIPTION
+       Status: Service Unavailable
+     DOI: 10.1177/0146621618813113
+       Status: Service Unavailable
+       Message: 503
+       From: DESCRIPTION
+```
+Please note these two DOIs are valid, both are from the journal Applied Psychological Measurement. As indicated the package was archived due to a problem with the CDM package but that package made it to CRAN again successfully on May 13th. Finally the `doSNOW` package is required to show a progress bar inside a foreach loop
 
 ## cdcatR 1.0.5 release (April 5, 2022)
 * We included a new item selection methods and conducted some minor modifications to adapt the outputs

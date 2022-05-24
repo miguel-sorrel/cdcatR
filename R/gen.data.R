@@ -53,7 +53,7 @@ gen.data <- function(N = NULL, R = 1, item.bank = NULL, att.profiles = NULL, att
   # Warning end error messages
   #----------------------------
 
-  if(class(item.bank) != "gen.itembank"){stop("item.bank must be an object of class 'gen.itembank'")}
+  if(!inherits(item.bank, what = "gen.itembank")){stop("item.bank must be an object of class 'gen.itembank'")}
   if(!is.null(att.profiles)){N <- nrow(att.profiles)}
   if(is.null(N)){stop("N argument missing, with no default.")}
   if(R < 1){stop("R argument must be a positive scalar.")}
