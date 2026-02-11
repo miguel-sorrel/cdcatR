@@ -42,12 +42,12 @@ cdcat.getdata <- function(cdcat.obj, alpha = NULL, plots = TRUE){
   for(i in 1:N){
     tmp <- cdcat.obj$est[[i]]$est.cat
     if(itemSelect %in% c("NPS", "GNPS")){
-      alpha.est[i,] <- as.numeric(unlist(strsplit(tmp$alpha[nrow(tmp)], "", "")))
+      alpha.est[i,] <- as.numeric(unlist(strsplit(tmp$alpha[nrow(tmp)], "")))
       if(cdcat.obj$specifications$NP.args$PPP){
         alpha.pp[i,] <- as.numeric(tmp[nrow(tmp), (ncol(tmp) - K + 1):ncol(tmp)])
       }
     } else {
-      alpha.est[i,] <- as.numeric(unlist(strsplit(tmp$MAP[nrow(tmp)], "", "")))
+      alpha.est[i,] <- as.numeric(unlist(strsplit(tmp$MAP[nrow(tmp)], "")))
       alpha.pp[i,] <- as.numeric(tmp[nrow(tmp), (ncol(tmp) - K + 1):ncol(tmp)])
     }
     item.exp[[i]] <- cdcat.obj$est[[i]]$item.usage
